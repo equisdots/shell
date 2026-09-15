@@ -7,24 +7,40 @@ Version: **0.1.0** · License: MIT
 
 ## State
 
-Repo skeleton with the **first panel: davincix** (wallpaper picker), ported
-as-is from xlinux (the stable base). Per the project rule, xlinux keeps working
-and panels are ported progressively.
+Repo skeleton growing from xlinux (the stable base), port by port. xlinux keeps
+working; nothing is removed there.
 
-> The davincix panel is **not runnable standalone yet**: it still depends on
-> shell services that will land with `core` — theme (`Colors`), `Caching`,
-> `Scaler`, `Config`, the widget registry and the `qs_manager` open/close flow.
-> Its only external dependency that is ready today is the wallpaper engine:
-> [equisdots/davincix](https://github.com/equisdots/davincix) (CLI kernel,
-> resolved by the panel via `$DAVINCIX_CLI` or a sibling `kernel/`).
+Ported so far, **as-is** (behaviour preserved, only naming updated):
+
+- **Bar** — complete port of the dock/bar (host + both engines + modules +
+  editor). Renames applied: `dock` → `bar`, `SerpBar` → `ClassicBar`,
+  `serpbar` → `classicbar`; engine values `"bar"`/`"classic"`; config keys
+  `"bar"`, `"classicbar"`, `"barEngine"`. The module catalog/loaders now use
+  `bar/modules/` relative paths.
+- **davincix panel** — wallpaper picker.
+
+> Nothing is runnable standalone yet: the shell host is missing `core`
+> (theme/paths/scaler/config/`WindowRegistry`), the compositor adapter and the
+> entry point (`Shell.qml` + registry). Pending wiring is marked in the code
+> where relevant (e.g. palette dir and the desktop scripts in `~/.config/hypr`,
+> which still point at the live xlinux locations).
 
 ## Layout
 
 | Path | Content |
 |---|---|
-| `panels/davincix/` | Wallpaper picker UI (first panel) |
-| `panels/davincix/lib/` | Pure helpers (`constants.js`, `color.js`) |
-| `panels/davincix/components/` | Views: `grid/`, `filter/`, `ConfirmDialog.qml` |
+| `bar/Bar.qml` | Bar host: per-screen `PanelWindow`, pollers, geometry, dual engine |
+| `bar/ClassicBar.qml` | Classic engine (left/center/right sections + autohide) |
+| `bar/Zone.qml` | Zones engine (data-driven `left/center/right`) |
+| `bar/ModulePill.qml` | Pill chrome used by every module |
+| `bar/BarLayout.js` | Pure layout/model logic (catalog, zones, classic sections, presets) |
+| `bar/Colors.qml` | Palette engine (base16 + semantic roles) |
+| `bar/modules/` | The 18 bar modules |
+| `bar/BarEditor.qml` | Bar editor widget (SUPER+SHIFT+D target) |
+| `bar/edit/` | Editor controls (pills, cards, steppers…) |
+| `bar/editor/` | Editor pages + `persist-hypr.sh` + search overlay |
+| `settings/tabs/` | Shared settings tabs (host API) |
+| `panels/davincix/` | Wallpaper picker panel |
 
-Future layers (not created yet): `core/`, `bar/`, `lock/`, `notifications/`,
-`install/`.
+Future layers (not created yet): `core/`, `lock/`, `notifications/`,
+`install/`, `guide/`.
