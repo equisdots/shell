@@ -62,6 +62,17 @@ Item {
         return root.bar.colors[value] !== undefined ? root.bar.colors[value] : value;
     }
 
+    // Effective colour of a workspaces slot (override or palette default) for
+    // the little indicator dots.
+    function slotSwatch(slotValue, fallbackRole) {
+        let v = (slotValue !== undefined && slotValue !== "") ? slotValue : fallbackRole;
+        if (v === "workspaceActive") {
+            let wa = root.bar.colors.workspaceActive;
+            return (wa !== undefined && wa.a > 0) ? wa : root.bar.colors.mauve;
+        }
+        return root.colorOf(v);
+    }
+
     readonly property var flickable: body.item ? body.item.flickable : null
 
     Loader {
@@ -425,6 +436,7 @@ Item {
                                             bar: root.bar
                                             label: "Active fill"
                                             value: card.cfg.colors.active !== undefined ? card.cfg.colors.active : ""
+                                            swatch: root.slotSwatch(card.cfg.colors.active, "workspaceActive")
                                             placeholder: "default: workspaceActive"
                                             fieldWidth: 100
                                             onEdited: (text) => root.bar.applyBar(BarLayout.setModuleColorSlot(root.bar.bar, modelData.id, "active", text))
@@ -435,6 +447,7 @@ Item {
                                             bar: root.bar
                                             label: "Active text"
                                             value: card.cfg.colors.activeText !== undefined ? card.cfg.colors.activeText : ""
+                                            swatch: root.slotSwatch(card.cfg.colors.activeText, "crust")
                                             placeholder: "default: crust"
                                             fieldWidth: 100
                                             onEdited: (text) => root.bar.applyBar(BarLayout.setModuleColorSlot(root.bar.bar, modelData.id, "activeText", text))
@@ -452,6 +465,7 @@ Item {
                                             bar: root.bar
                                             label: "Occupied fill"
                                             value: card.cfg.colors.occupied !== undefined ? card.cfg.colors.occupied : ""
+                                            swatch: root.slotSwatch(card.cfg.colors.occupied, "surface0")
                                             placeholder: "default: surface0"
                                             fieldWidth: 100
                                             onEdited: (text) => root.bar.applyBar(BarLayout.setModuleColorSlot(root.bar.bar, modelData.id, "occupied", text))
@@ -462,6 +476,7 @@ Item {
                                             bar: root.bar
                                             label: "Empty fill"
                                             value: card.cfg.colors.empty !== undefined ? card.cfg.colors.empty : ""
+                                            swatch: root.slotSwatch(card.cfg.colors.empty, "base")
                                             placeholder: "default: base"
                                             fieldWidth: 100
                                             onEdited: (text) => root.bar.applyBar(BarLayout.setModuleColorSlot(root.bar.bar, modelData.id, "empty", text))
@@ -479,6 +494,7 @@ Item {
                                             bar: root.bar
                                             label: "Hover fill"
                                             value: card.cfg.colors.hover !== undefined ? card.cfg.colors.hover : ""
+                                            swatch: root.slotSwatch(card.cfg.colors.hover, "surface1")
                                             placeholder: "default: surface1"
                                             fieldWidth: 100
                                             onEdited: (text) => root.bar.applyBar(BarLayout.setModuleColorSlot(root.bar.bar, modelData.id, "hover", text))
@@ -489,6 +505,7 @@ Item {
                                             bar: root.bar
                                             label: "Marker"
                                             value: card.cfg.colors.marker !== undefined ? card.cfg.colors.marker : ""
+                                            swatch: root.slotSwatch(card.cfg.colors.marker, "text")
                                             placeholder: "default: text"
                                             fieldWidth: 100
                                             onEdited: (text) => root.bar.applyBar(BarLayout.setModuleColorSlot(root.bar.bar, modelData.id, "marker", text))
@@ -506,6 +523,7 @@ Item {
                                             bar: root.bar
                                             label: "Marker empty"
                                             value: card.cfg.colors.markerEmpty !== undefined ? card.cfg.colors.markerEmpty : ""
+                                            swatch: root.slotSwatch(card.cfg.colors.markerEmpty, "overlay0")
                                             placeholder: "default: overlay0"
                                             fieldWidth: 100
                                             onEdited: (text) => root.bar.applyBar(BarLayout.setModuleColorSlot(root.bar.bar, modelData.id, "markerEmpty", text))
