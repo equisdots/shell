@@ -30,8 +30,10 @@ var ORIENTATIONS = ["horizontal", "vertical"];
 var SHAPES = ["rect", "square", "circle"];
 var SLIDESHOW_INTERVAL = 300;
 
-// Fuentes de búsqueda (proveedor del kernel + etiqueta del selector).
+// Fuentes de búsqueda (proveedor del kernel + etiqueta + tipo).
 var SEARCH_SOURCES = [
-    { id: "ddg", label: "DDG" },
-    { id: "wallhaven", label: "WH" }
+    { id: "ddg", label: "DDG", kind: "image" },
+    { id: "wallhaven", label: "WH", kind: "image" },
+    { id: "pexels", label: "PEX", kind: "video" },
+    { id: "pixabay", label: "PIX", kind: "video" }
 ];

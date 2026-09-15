@@ -540,9 +540,30 @@ Item {
     property bool slideshowOn: false
     property var favoriteNames: []
 
-    // Search provider (kernel providers/: ddg | wallhaven).
+    // Search provider (kernel providers/: ddg | wallhaven | pexels | pixabay).
     property string searchSource: "ddg"
+    property string searchKind: "image"   // image | video
     readonly property var searchSources: C.SEARCH_SOURCES
+    readonly property var activeSearchSources: window.searchSources.filter(function(s) {
+        return s.kind === window.searchKind;
+    })
+
+    function sourceIsOfKind(id, kind) {
+        for (let i = 0; i < window.searchSources.length; i++) {
+            let s = window.searchSources[i];
+            if (s.id === id) return s.kind === kind;
+        }
+        return false;
+    }
+
+    // Abre la búsqueda en modo imagen o vídeo (elige fuente por defecto).
+    function openSearch(kind) {
+        window.searchKind = kind;
+        if (!window.sourceIsOfKind(window.searchSource, kind)) {
+            window.searchSource = kind === "video" ? "pexels" : "ddg";
+        }
+        window.currentFilter = "Search";
+    }
 
     // ── Delete confirmation state ────────────────────────────────────────────
     property bool confirmOpen: false
