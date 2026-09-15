@@ -63,3 +63,8 @@ Ported so far, **as-is** (behaviour preserved, only naming updated):
 
 Future layers (not created yet): `lock/`, `notifications/`, `install/`,
 `guide/`.
+
+## Docs
+
+- `docs/personalization.md` — configuration surface (bar engines, island fill
+  API, per-block defaults).

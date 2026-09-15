@@ -56,7 +56,7 @@ Item {
     // fill is disabled — colored icon on the strip, no double fill.
     readonly property bool accentTint: bar && bar.accentTintMode === true
     readonly property color contentColor: {
-        if (accentVisible) return colors.base;
+        if (accentVisible || (root.fillForced && root.accentActive && root.accentRole !== "")) return colors.base;
         if (root.accentTint && accentRole !== "") {
             return root.hasAccentColor ? root.accentColor : (colors[accentRole] || colors.text);
         }
@@ -71,6 +71,13 @@ Item {
     property bool fullHeight: false        // use bar.barHeight instead of pillHeight
     property bool showState: true          // collapse the pill when false
     property bool noFill: false            // force transparent background (media/tray)
+    // Per-island fill override from the layout ("default" | "on" | "off").
+    // "on" forces the pill fill (even under unified/barBg/pillBg defaults);
+    // "off" forces a transparent island. See the island fill API in
+    // bar/BarLayout.js.
+    property string fillMode: "default"
+    readonly property bool fillForced: root.fillMode === "on"
+    readonly property bool fillSuppressed: root.fillMode === "off"
     property int padH: bar.s(12)
     property int padV: bar.s(8)
 
@@ -108,7 +115,15 @@ Item {
 
         // background
         readonly property color idleBg: {
-            if (root.noFill || root.unified || !bar.topbarPillBg) return "transparent";
+            if (root.fillSuppressed || root.noFill) return "transparent";
+            if (root.fillForced) {
+                if (root.accentActive && root.accentRole !== "") {
+                    return root.hasAccentColor ? root.accentColor : (colors[root.accentRole] || colors.surface1);
+                }
+                let c = colors[root.bgRole] || colors.surface0;
+                return Qt.rgba(c.r, c.g, c.b, bar.topbarPillSolid ? 1.0 : (root.bgRole === "surface0" ? 0.4 : 0.6));
+            }
+            if (root.unified || !bar.topbarPillBg) return "transparent";
             if (accentVisible) return root.hasAccentColor ? root.accentColor : (colors[root.accentRole] || colors.surface1);
             // barBg: standard islands become transparent and float on the bar strip.
             if (bar.barBg) return "transparent";
@@ -117,7 +132,15 @@ Item {
             return Qt.rgba(c.r, c.g, c.b, bar.topbarPillSolid ? 1.0 : (role === "surface0" ? 0.4 : 0.6));
         }
         readonly property color hoverBg: {
-            if (root.noFill || root.unified || !bar.topbarPillBg) return "transparent";
+            if (root.fillSuppressed || root.noFill) return "transparent";
+            if (root.fillForced) {
+                if (root.accentActive && root.accentRole !== "") {
+                    return root.hasAccentColor ? root.accentColor : (colors[root.accentRole] || colors.surface1);
+                }
+                let c = colors[root.bgHoverRole] || colors.surface1;
+                return Qt.rgba(c.r, c.g, c.b, bar.topbarPillSolid ? 1.0 : (root.bgHoverRole === "surface1" ? 0.6 : 0.9));
+            }
+            if (root.unified || !bar.topbarPillBg) return "transparent";
             if (accentVisible) return root.hasAccentColor ? root.accentColor : (colors[root.accentRole] || colors.surface1);
             if (bar.barBg) {
                 // subtle hover highlight floating on the bar strip
@@ -131,7 +154,7 @@ Item {
         color: isHovered ? hoverBg : idleBg
         Behavior on color { ColorAnimation { duration: 200 } }
 
-        radius: root.unified ? 0 : (root.horizontal
+        radius: (root.unified && !root.fillForced) ? 0 : (root.horizontal
             ? bar.pillRadius(root.fullHeight ? bar.barHeight : bar.pillHeight)
             : bar.pillRadius(bar.pillWidth))
         border.width: root.unified ? 0 : root.effectiveBorderWidth

@@ -107,9 +107,68 @@ function cloneModules(list) {
     if (!isList(list)) return out;
     for (let i = 0; i < list.length; i++) {
         let e = list[i];
-        if (typeof e === "string") out.push({ id: e, enabled: true });
-        else if (e && e.id) out.push({ id: e.id, enabled: e.enabled !== false });
+        if (typeof e === "string") {
+            out.push({ id: e, enabled: true });
+            continue;
+        }
+        if (!e || !e.id) continue;
+        let entry = { id: e.id, enabled: e.enabled !== false };
+        if (e.fill !== undefined) entry.fill = normalizeFillMode(e.fill);
+        out.push(entry);
     }
+    return out;
+}
+
+// --- island fill API ---------------------------------------------------------
+// Per-island and per-block fill control (personalization API). Values are
+// canonical strings:
+//   "default" -> inherit (zone value, then the bar-wide pill settings)
+//   "on"      -> force the pill fill (ignores unified/barBg/pillBg defaults)
+//   "off"     -> force a transparent island
+// Booleans are accepted for convenience (true -> "on", false -> "off").
+function normalizeFillMode(v) {
+    if (v === true || v === "on" || v === "filled") return "on";
+    if (v === false || v === "off" || v === "none") return "off";
+    return "default";
+}
+
+// Effective fill for one module inside a zone: island override first, else the
+// zone-level value, else "default".
+function moduleFillMode(zone, id) {
+    let zoneMode = "default";
+    if (zone && zone.fill !== undefined) zoneMode = normalizeFillMode(zone.fill);
+    if (!zone || !isList(zone.modules)) return zoneMode;
+    for (let i = 0; i < zone.modules.length; i++) {
+        let m = zone.modules[i];
+        if (m && m.id === id) {
+            return m.fill !== undefined ? normalizeFillMode(m.fill) : zoneMode;
+        }
+    }
+    return zoneMode;
+}
+
+// Set one island's fill. The module entry must already exist in the zone.
+function setModuleFill(bar, zoneId, id, mode) {
+    let out = cloneBar(bar);
+    let zi = zoneIndex(out, zoneId);
+    if (zi === -1) return out;
+    let mods = out.zones[zi].modules;
+    for (let i = 0; i < mods.length; i++) {
+        if (mods[i] && mods[i].id === id) {
+            mods[i].fill = normalizeFillMode(mode);
+            break;
+        }
+    }
+    return out;
+}
+
+// Set the fill for a whole block (zone); islands without their own value
+// inherit it.
+function setZoneFill(bar, zoneId, mode) {
+    let out = cloneBar(bar);
+    let zi = zoneIndex(out, zoneId);
+    if (zi === -1) return out;
+    out.zones[zi].fill = normalizeFillMode(mode);
     return out;
 }
 
