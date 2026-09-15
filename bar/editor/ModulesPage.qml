@@ -42,7 +42,8 @@ Item {
         "wifi":      { icon: "",       accent: "color6" },
         "bluetooth": { icon: "",       accent: "color4" },
         "volume":    { icon: "",       accent: "color3" },
-        "battery":   { icon: "",       accent: "" },
+        "battery":   { icon: "",       accent: "green" },
+        "time":      { icon: "",       accent: "teal" },
         "weather":   { icon: "",       accent: "yellow" },
         "focus":     { icon: "",       accent: "" },
         "recording": { icon: "",       accent: "red" }
