@@ -104,3 +104,20 @@ optional blinking cursor; enable it from the Modules page (clock card) or with
 Note: the zones engine implements this surface today. The classic engine
 stores its modules as plain ids, so per-island options there are not available
 yet; it keeps using the bar-wide settings.
+
+## Notifications
+
+Section `"notifications"` (consumed by `notifications/NotificationPopups.qml`
+through the pure API in `core/Notifications.js`):
+
+| Option | Default | Meaning |
+|---|---|---|
+| `width` | 350 | Popup width (unscaled) |
+| `marginTop` / `marginRight` | 60 / 20 | Distance from the top-right corner |
+| `spacing` | 12 | Gap between popups |
+| `radius` / `padding` | 14 / 12 | Popup corner radius and inner padding |
+| `timeout` | 5000 | Default dismiss time in ms for notifications without their own (0 = never) |
+| `maxVisible` | 3 | How many popups stay on screen (0 = no limit) |
+
+API (`core/Notifications.js`): `normalize(raw)`, `layout(raw, scale)`,
+`defaultTimeout(raw)`, `maxVisible(raw)`, `setOption(raw, key, value)`.

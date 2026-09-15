@@ -60,9 +60,9 @@ Ported so far, **as-is** (behaviour preserved, only naming updated):
 | `bar/editor/` | Editor pages + `persist-hypr.sh` + search overlay |
 | `settings/tabs/` | Shared settings tabs (host API) |
 | `panels/davincix/` | Wallpaper picker panel |
+| `notifications/` | Notifications layer: server + history + popups |
 
-Future layers (not created yet): `lock/`, `notifications/`, `install/`,
-`guide/`.
+Future layers (not created yet): `lock/`, `install/`.
 
 ## Docs
 

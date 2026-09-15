@@ -291,6 +291,7 @@ function defaultBar() {
         font: "Hack Nerd Font",
         timeFormat: "HH:mm:ss",
         dateFormat: "dddd, MMMM dd",
+        modules: {},
         // How EMPTY workspaces render in the Workspaces module:
         // "number" (default), "dot", "letter" or "custom" (the character set in
         // workspacesMarkerText, e.g. a Japanese glyph). Occupied workspaces
@@ -335,6 +336,9 @@ function normalizeBar(raw) {
         font: (typeof raw.font === "string" && raw.font.trim() !== "") ? raw.font : def.font,
         timeFormat: (typeof raw.timeFormat === "string" && raw.timeFormat.trim() !== "") ? raw.timeFormat : def.timeFormat,
         dateFormat: (typeof raw.dateFormat === "string" && raw.dateFormat.trim() !== "") ? raw.dateFormat : def.dateFormat,
+        // Per-module personalization map (see moduleConfig): kept verbatim;
+        // entries are normalized on read.
+        modules: (raw.modules && typeof raw.modules === "object" && !Array.isArray(raw.modules)) ? raw.modules : def.modules,
         zones: []
     };
 
