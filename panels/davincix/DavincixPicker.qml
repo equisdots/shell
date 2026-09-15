@@ -1130,7 +1130,6 @@ Item {
         theme: _theme
         open: window.keysPanelOpen
         keys: window.providerKeys
-        topOffset: filterBar.y + filterBar.height + window.s(10)
         onSaveRequested: (name, value) => window.saveProviderKey(name, value)
         onClosed: window.keysPanelOpen = false
     }
