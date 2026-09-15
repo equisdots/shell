@@ -54,6 +54,7 @@ Ported so far, **as-is** (behaviour preserved, only naming updated):
 | `bar/BarLayout.js` | Pure layout/model logic (catalog, zones, classic sections, presets) |
 | `bar/Colors.qml` | Palette engine (base16 + semantic roles) |
 | `bar/modules/` | The 18 bar modules |
+| `bar/popups/` | Popups triggered by bar modules (port target; see its README) |
 | `bar/BarEditor.qml` | Bar editor widget (SUPER+SHIFT+D target) |
 | `bar/edit/` | Editor controls (pills, cards, steppers) |
 | `bar/editor/` | Editor pages + `persist-hypr.sh` + search overlay |
