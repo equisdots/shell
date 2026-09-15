@@ -518,6 +518,11 @@ Variants {
             property int pillWidth: orientation === "horizontal" ? barHeight - s(12) : barWidth - s(8)
             function pillRadius(h) { return Math.round(h * 0.5 * roundness); }
 
+            // Personalization API for modules (see the module personalization
+            // API in BarLayout.js): bar-wide icon color + per-module config.
+            readonly property string iconColor: (barConfig.iconColor !== undefined && barConfig.iconColor !== null) ? barConfig.iconColor : ""
+            function moduleConfig(id) { return BarLayout.moduleConfig(barConfig, id); }
+
             implicitHeight: orientation === "horizontal" ? barHeight : (barWindow.screen ? barWindow.screen.height : 1080)
             implicitWidth: orientation === "horizontal" ? (barWindow.screen ? barWindow.screen.width : 1920) : barWidth
 

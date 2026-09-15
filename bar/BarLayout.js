@@ -112,9 +112,7 @@ function cloneModules(list) {
             continue;
         }
         if (!e || !e.id) continue;
-        let entry = { id: e.id, enabled: e.enabled !== false };
-        if (e.fill !== undefined) entry.fill = normalizeFillMode(e.fill);
-        out.push(entry);
+        out.push({ id: e.id, enabled: e.enabled !== false });
     }
     return out;
 }
@@ -132,36 +130,6 @@ function normalizeFillMode(v) {
     return "default";
 }
 
-// Effective fill for one module inside a zone: island override first, else the
-// zone-level value, else "default".
-function moduleFillMode(zone, id) {
-    let zoneMode = "default";
-    if (zone && zone.fill !== undefined) zoneMode = normalizeFillMode(zone.fill);
-    if (!zone || !isList(zone.modules)) return zoneMode;
-    for (let i = 0; i < zone.modules.length; i++) {
-        let m = zone.modules[i];
-        if (m && m.id === id) {
-            return m.fill !== undefined ? normalizeFillMode(m.fill) : zoneMode;
-        }
-    }
-    return zoneMode;
-}
-
-// Set one island's fill. The module entry must already exist in the zone.
-function setModuleFill(bar, zoneId, id, mode) {
-    let out = cloneBar(bar);
-    let zi = zoneIndex(out, zoneId);
-    if (zi === -1) return out;
-    let mods = out.zones[zi].modules;
-    for (let i = 0; i < mods.length; i++) {
-        if (mods[i] && mods[i].id === id) {
-            mods[i].fill = normalizeFillMode(mode);
-            break;
-        }
-    }
-    return out;
-}
-
 // Set the fill for a whole block (zone); islands without their own value
 // inherit it.
 function setZoneFill(bar, zoneId, mode) {
@@ -171,6 +139,48 @@ function setZoneFill(bar, zoneId, mode) {
     out.zones[zi].fill = normalizeFillMode(mode);
     return out;
 }
+
+// --- module personalization API ----------------------------------------------
+// Per-module customization, keyed by module id. User values live in the bar
+// config under "modules"; every field is optional:
+//   "icon":   glyph override for components that call mod.glyph(...)
+//   "color":  content color (a colors.* role name or a #hex string)
+//   "fill":   per-island fill ("default" | "on" | "off")
+//   "accent": accent role override (turns the island into an accent island)
+// The bar-wide "iconColor" sets the default content color for every module.
+function defaultModuleConfig() {
+    return { icon: "", color: "", fill: "default", accent: "" };
+}
+
+function normalizeModuleConfig(v) {
+    let out = defaultModuleConfig();
+    if (!v || typeof v !== "object") return out;
+    if (typeof v.icon === "string") out.icon = v.icon;
+    if (typeof v.color === "string") out.color = v.color;
+    if (v.fill !== undefined) out.fill = normalizeFillMode(v.fill);
+    if (typeof v.accent === "string") out.accent = v.accent;
+    return out;
+}
+
+// Effective per-module config (defaults + user values).
+function moduleConfig(bar, id) {
+    if (!bar || !bar.modules || typeof bar.modules !== "object") return defaultModuleConfig();
+    return normalizeModuleConfig(bar.modules[id]);
+}
+
+function setModuleValue(bar, id, key, value) {
+    let out = cloneBar(bar);
+    if (!out.modules || typeof out.modules !== "object") out.modules = {};
+    let cfg = normalizeModuleConfig(out.modules[id]);
+    cfg[key] = (key === "fill") ? normalizeFillMode(value) : value;
+    out.modules[id] = cfg;
+    return out;
+}
+function setModuleIcon(bar, id, glyph)  { return setModuleValue(bar, id, "icon", glyph); }
+function setModuleColor(bar, id, color) { return setModuleValue(bar, id, "color", color); }
+function setModuleFill(bar, id, mode)   { return setModuleValue(bar, id, "fill", mode); }
+function setModuleAccent(bar, id, role) { return setModuleValue(bar, id, "accent", role); }
+function setGlobalIconColor(bar, color) { let out = cloneBar(bar); out.iconColor = color; return out; }
 
 // --- defaults -------------------------------------------------------------------
 function defaultZone(id, align, modules) {

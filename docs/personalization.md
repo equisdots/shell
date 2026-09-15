@@ -19,44 +19,57 @@ Shared, bar-wide controls (see `bar/BarLayout.js` for defaults and presets):
   strip, islands float) or `"fill"` (strip touches the screen edge).
 - `pillBg` / `pillSolid` / `barBg`: island fill switch, solid vs translucent
   fill, and continuous bar strip.
+- `iconColor`: default content color for every module (a `colors.*` role name
+  or a `#hex` string; empty = per-module defaults).
 - `roundness`, `thickness`, `edgeGap`, `position`, `palette`, `font`,
   `barOpacity`.
 - Per zone: `unify` (single pill for the whole zone), `zoneBg` (optional
   container role), `borderWidth`, `borderColor`.
 
-## Island fill (per island and per block)
+## Module customization
 
-Each island can force its fill independently of the bar-wide settings, and a
-whole block (zone) can set the default for its islands.
+Per-module values live in the bar config under `modules`, keyed by module id.
+Every field is optional:
 
-- `bar.zones[].fill` - block default: `"default"` | `"on"` | `"off"`.
-- `bar.zones[].modules[].fill` - island override with the same values.
-- Booleans are accepted for convenience: `true` = `"on"`, `false` = `"off"`.
-- A missing value means `"default"`.
+```json
+"bar": {
+  "iconColor": "",
+  "modules": {
+    "search": { "icon": "\uf0349", "color": "#89b4fa", "fill": "on", "accent": "" }
+  }
+}
+```
 
-Resolution order for one island:
+| Field | Meaning |
+|---|---|
+| `icon` | Glyph override for modules that support it (see below) |
+| `color` | Content color: a `colors.*` role name or a `#hex` string |
+| `fill` | Island fill: `"default"` / `"on"` / `"off"` (booleans accepted) |
+| `accent` | Accent role override (e.g. `"green"`), turning the island into an accent island like wifi/bluetooth |
 
-1. Island value (`modules[].fill`).
-2. Block value (`zones[].fill`).
-3. Bar-wide settings (`pillBg`, `barBg`, `pillSolid`, `unify`).
+Precedence for the content color: module `color` > `iconColor` > the module's
+own logic (accent islands draw content in `colors.base`). For the fill:
+module `fill` > zone `fill` > bar-wide settings.
 
-Meaning of the values:
+The `icon` override applies to modules with a fixed glyph, which call
+`mod.glyph("<default>")` in their component: `help`, `search`, `settings`,
+`update` and `keyboard` today. Modules whose icon changes with state (wifi,
+battery, volume, ...) keep their state icons; wiring `glyph()` into any other
+module is a one-line change.
 
-- `"on"`: force the pill fill even when the bar-wide defaults would render it
-  transparent (useful for islands like media/tray, or under a `solid`/`fill`
-  style). Accent islands keep their accent fill.
-- `"off"`: force a transparent island (useful to blend selected icons into the
-  zone container).
-- `"default"`: inherit the behavior described above.
+## Programmatic API
 
-Programmatic helpers (pure functions, return a new bar object ready for
-`Config.setSetting("bar", ...)`) live in `bar/BarLayout.js`:
+Pure functions in `bar/BarLayout.js` return a new bar object ready for
+`Config.setSetting("bar", ...)`:
 
-- `normalizeFillMode(value)` -> canonical `"default" | "on" | "off"`.
-- `moduleFillMode(zone, id)` -> effective mode for an island.
-- `setModuleFill(bar, zoneId, id, mode)` -> sets one island.
-- `setZoneFill(bar, zoneId, mode)` -> sets one block.
+- `normalizeFillMode(value)` -> `"default" | "on" | "off"`.
+- `setZoneFill(bar, zoneId, mode)` -> block fill.
+- `setModuleFill(bar, id, mode)` -> island fill.
+- `setModuleIcon(bar, id, glyph)` / `setModuleColor(bar, id, color)` /
+  `setModuleAccent(bar, id, role)` -> per-module values.
+- `setGlobalIconColor(bar, color)` -> bar-wide icon color.
+- `moduleConfig(bar, id)` -> effective per-module config (defaults + values).
 
-Note: the per-island API applies to the zones engine. The classic engine
-stores its modules as plain ids, so per-island fill there is not available yet;
-its block-level behavior keeps using the bar-wide settings.
+Note: the zones engine implements this surface today. The classic engine
+stores its modules as plain ids, so per-island options there are not available
+yet; it keeps using the bar-wide settings.

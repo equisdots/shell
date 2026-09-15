@@ -190,7 +190,7 @@ Item {
                         "effectiveBorderWidth": Qt.binding(() => zoneRoot.unified ? 0 : (zoneRoot.zoneData.borderWidth || 0)),
                         "effectiveBorderColor": Qt.binding(() => zoneRoot.unified ? "surface1" : (zoneRoot.zoneData.borderColor || "surface1")),
                         "unified": Qt.binding(() => zoneRoot.unified),
-                        "fillMode": BarLayout.moduleFillMode(zoneRoot.zoneData, slotWrap.modelData)
+                        "fillMode": zoneRoot.zoneFillMode
                     });
                 }
             }
