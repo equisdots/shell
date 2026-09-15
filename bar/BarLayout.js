@@ -140,6 +140,14 @@ function setZoneFill(bar, zoneId, mode) {
     return out;
 }
 
+// Clock format for the zones engine (Qt.formatDateTime pattern). The classic
+// engine keeps its own classicbar.timeFormat.
+function setTimeFormat(bar, fmt) {
+    let out = cloneBar(bar);
+    out.timeFormat = (typeof fmt === "string" && fmt.trim() !== "") ? fmt.trim() : "HH:mm:ss";
+    return out;
+}
+
 // --- module personalization API ----------------------------------------------
 // Per-module customization, keyed by module id. User values live in the bar
 // config under "modules"; every field is optional:
@@ -265,6 +273,7 @@ function defaultBar() {
         borderActive: "",
         borderInactive: "",
         font: "Hack Nerd Font",
+        timeFormat: "HH:mm:ss",
         // How EMPTY workspaces render in the Workspaces module:
         // "number" (default), "dot", "letter" or "custom" (the character set in
         // workspacesMarkerText, e.g. a Japanese glyph). Occupied workspaces
@@ -307,6 +316,7 @@ function normalizeBar(raw) {
         borderActive: (typeof raw.borderActive === "string") ? raw.borderActive : def.borderActive,
         borderInactive: (typeof raw.borderInactive === "string") ? raw.borderInactive : def.borderInactive,
         font: (typeof raw.font === "string" && raw.font.trim() !== "") ? raw.font : def.font,
+        timeFormat: (typeof raw.timeFormat === "string" && raw.timeFormat.trim() !== "") ? raw.timeFormat : def.timeFormat,
         zones: []
     };
 

@@ -275,6 +275,18 @@ Item {
                                             }
                                         }
                                     }
+
+                                    // Reloj: formato del engine de zonas (Qt.formatDateTime).
+                                    FieldCard {
+                                        width: cardCol.width
+                                        visible: modelData.id === "time"
+                                        bar: root.bar
+                                        label: "Clock format"
+                                        value: root.bar.bar.timeFormat !== undefined ? root.bar.bar.timeFormat : ""
+                                        placeholder: "default: HH:mm:ss (HH:mm, h:mm a...)"
+                                        fieldWidth: 170
+                                        onEdited: (text) => root.bar.applyBar(BarLayout.setTimeFormat(root.bar.bar, text))
+                                    }
                                 }
                             }
                         }

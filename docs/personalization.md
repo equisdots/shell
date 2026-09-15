@@ -23,6 +23,9 @@ Shared, bar-wide controls (see `bar/BarLayout.js` for defaults and presets):
   or a `#hex` string; empty = per-module defaults).
 - `roundness`, `thickness`, `edgeGap`, `position`, `palette`, `font`,
   `barOpacity`.
+- `timeFormat`: clock format for the zones engine (a `Qt.formatDateTime`
+  pattern, e.g. `HH:mm`, `HH:mm:ss`, `h:mm a`); the classic engine keeps its
+  own `classicbar.timeFormat`.
 - Per zone: `unify` (single pill for the whole zone), `zoneBg` (optional
   container role), `borderWidth`, `borderColor`.
 
@@ -84,6 +87,7 @@ Pure functions in `bar/BarLayout.js` return a new bar object ready for
 - `setModuleIcon(bar, id, glyph)` / `setModuleColor(bar, id, color)` /
   `setModuleAccent(bar, id, role)` -> per-module values.
 - `setGlobalIconColor(bar, color)` -> bar-wide icon color.
+- `setTimeFormat(bar, fmt)` -> zones-engine clock format.
 - `moduleConfig(bar, id)` -> effective per-module config (defaults + values).
 
 Note: the zones engine implements this surface today. The classic engine
