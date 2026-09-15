@@ -63,9 +63,18 @@ that built-in fill, while `"off"` forces a transparent island. The rest follow
 the bar-wide settings unless overridden.
 
 Built-in accents (accent islands that recolor with the palette, like
-wifi/bluetooth): `settings` = mauve, `search` = sapphire, `time` = teal,
-`battery` = green (red/green dynamic while low/charging), `help` = peach. An
-empty `accent` clears the default.
+wifi/bluetooth): `help` peach, `search` sapphire, `settings` mauve,
+`update` green, `time` teal, `date` blue, `media` pink, `tray` sapphire,
+`keyboard` color5, `wifi` color6, `bluetooth` color4, `sysmon` color1,
+`volume` color3, `battery` green (red/green dynamic while low/charging),
+`recording` red, `weather` yellow, `focus` peach. `workspaces` keeps its own
+palette look (`bgRole` crust + `workspaceActive`). An empty `accent` clears the
+default.
+
+The workspaces module also exposes its own options (bar-wide, not per-module):
+`workspacesMarker` (`"number" | "dot" | "letter" | "custom"`) and
+`workspacesMarkerText` (up to 4 characters, used with `custom`); API:
+`setWorkspacesMarker(bar, mode)` / `setWorkspacesMarkerText(bar, ch)`.
 
 The `icon` override applies to every module that renders a single glyph
 (fixed or state-driven): `help`, `search`, `settings`, `update`, `keyboard`,

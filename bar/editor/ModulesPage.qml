@@ -362,6 +362,57 @@ Item {
                                             onEdited: (text) => root.bar.applyBar(BarLayout.setModuleSize(root.bar.bar, modelData.id, parseInt(text) || 0))
                                         }
                                     }
+
+                                    // Workspaces: marcador de workspaces vacios + caracter propio.
+                                    Row {
+                                        width: parent.width
+                                        visible: modelData.id === "workspaces"
+                                        spacing: bar.s(6)
+
+                                        EditorButton {
+                                            bar: root.bar
+                                            compact: true
+                                            label: "Numbers"
+                                            active: root.bar.bar.workspacesMarker === "number"
+                                            onActivated: root.bar.applyBar(BarLayout.setWorkspacesMarker(root.bar.bar, "number"))
+                                        }
+
+                                        EditorButton {
+                                            bar: root.bar
+                                            compact: true
+                                            label: "Dots"
+                                            active: root.bar.bar.workspacesMarker === "dot"
+                                            onActivated: root.bar.applyBar(BarLayout.setWorkspacesMarker(root.bar.bar, "dot"))
+                                        }
+
+                                        EditorButton {
+                                            bar: root.bar
+                                            compact: true
+                                            label: "Letters"
+                                            active: root.bar.bar.workspacesMarker === "letter"
+                                            onActivated: root.bar.applyBar(BarLayout.setWorkspacesMarker(root.bar.bar, "letter"))
+                                        }
+
+                                        EditorButton {
+                                            bar: root.bar
+                                            compact: true
+                                            label: "Custom"
+                                            active: root.bar.bar.workspacesMarker === "custom"
+                                            onActivated: root.bar.applyBar(BarLayout.setWorkspacesMarker(root.bar.bar, "custom"))
+                                        }
+                                    }
+
+                                    FieldCard {
+                                        width: cardCol.width
+                                        visible: modelData.id === "workspaces" && root.bar.bar.workspacesMarker === "custom"
+                                        bar: root.bar
+                                        label: "Marker character"
+                                        value: root.bar.bar.workspacesMarkerText !== undefined ? root.bar.bar.workspacesMarkerText : ""
+                                        placeholder: "e.g. a glyph or short text"
+                                        fieldWidth: 120
+                                        maxLength: 4
+                                        onEdited: (text) => root.bar.applyBar(BarLayout.setWorkspacesMarkerText(root.bar.bar, text))
+                                    }
                                 }
                             }
                         }

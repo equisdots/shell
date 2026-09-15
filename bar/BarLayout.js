@@ -155,6 +155,18 @@ function setDateFormat(bar, fmt) {
     return out;
 }
 
+// Workspaces module: empty-workspace marker style + custom character.
+function setWorkspacesMarker(bar, mode) {
+    let out = cloneBar(bar);
+    out.workspacesMarker = ["number", "dot", "letter", "custom"].indexOf(mode) !== -1 ? mode : "number";
+    return out;
+}
+function setWorkspacesMarkerText(bar, ch) {
+    let out = cloneBar(bar);
+    out.workspacesMarkerText = (typeof ch === "string") ? ch.slice(0, 4) : "";
+    return out;
+}
+
 // --- module personalization API ----------------------------------------------
 // Per-module customization, keyed by module id. User values live in the bar
 // config under "modules"; every field is optional:
@@ -170,11 +182,24 @@ var DEFAULT_FILLED_MODULES = ["battery", "settings", "search", "time", "help"];
 // Accent islands by default: their pill is filled with the palette role, so
 // they recolor with the palette (like wifi/bluetooth). Overridable per module.
 var DEFAULT_MODULE_ACCENTS = {
-    "settings": "mauve",
-    "search":   "sapphire",
-    "time":     "teal",
-    "battery":  "green",
-    "help":     "peach"
+    "help":       "peach",
+    "search":     "sapphire",
+    "settings":   "mauve",
+    "update":     "green",
+    "time":       "teal",
+    "date":       "blue",
+    "media":      "pink",
+    "tray":       "sapphire",
+    "keyboard":   "color5",
+    "wifi":       "color6",
+    "bluetooth":  "color4",
+    "sysmon":     "color1",
+    "volume":     "color3",
+    "battery":    "green",
+    "recording":  "red",
+    "weather":    "yellow",
+    "focus":      "peach"
+    // workspaces keeps its own palette look (bgRole crust + workspaceActive).
 };
 
 function defaultModuleConfig(id) {
