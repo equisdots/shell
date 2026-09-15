@@ -47,6 +47,14 @@ Item {
     // Glyph override for modules with a fixed icon: text: mod.glyph("<default>").
     function glyph(def) { return root.moduleCfg.icon !== "" ? root.moduleCfg.icon : def; }
 
+    // Per-module color slot override (a colors.* role name or a #hex string);
+    // falls back to `fallbackRole` when the slot is unset. Returns a color.
+    function slotColor(slot, fallbackRole) {
+        let v = (root.moduleCfg.colors !== undefined) ? root.moduleCfg.colors[slot] : "";
+        if (v === undefined || v === "") v = fallbackRole;
+        return colors[v] !== undefined ? colors[v] : v;
+    }
+
     // --- visuals -------------------------------------------------------------
     // accentRole: a colors.* role. When accentActive, the pill becomes a solid
     // accent island and content is drawn in colors.base (wifi/bt/vol/batt style).

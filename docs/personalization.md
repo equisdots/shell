@@ -132,3 +132,22 @@ through the pure API in `core/Notifications.js`):
 
 API (`core/Notifications.js`): `normalize(raw)`, `layout(raw, scale)`,
 `defaultTimeout(raw)`, `maxVisible(raw)`, `setOption(raw, key, value)`.
+
+
+### Workspaces color slots
+
+`modules.workspaces.colors` overrides the per-state colors (role name or
+`#hex`); empty values keep the defaults:
+
+| Slot | Default | Applies to |
+|---|---|---|
+| `active` | `workspaceActive` (palette role, else `mauve`) | Active workspace fill |
+| `activeText` | `crust` | Content on the active workspace |
+| `occupied` | `surface0` | Occupied workspace fill |
+| `empty` | `base` | Empty workspace fill |
+| `hover` | `surface1` | Hover fill |
+| `marker` | `text` | Marker/icons of occupied workspaces |
+| `markerEmpty` | `overlay0` | Marker of empty workspaces |
+
+API: `setModuleColorSlot(bar, id, slot, value)` (empty value removes the
+override); the generic `colors` map is normalized by `moduleConfig`.

@@ -413,6 +413,104 @@ Item {
                                         maxLength: 4
                                         onEdited: (text) => root.bar.applyBar(BarLayout.setWorkspacesMarkerText(root.bar.bar, text))
                                     }
+
+                                    // Workspaces: color slot (rol o #hex).
+                                    Row {
+                                        width: parent.width
+                                        visible: modelData.id === "workspaces"
+                                        spacing: bar.s(8)
+
+                                        FieldCard {
+                                            width: (cardCol.width - bar.s(8)) / 2
+                                            bar: root.bar
+                                            label: "Active fill"
+                                            value: card.cfg.colors.active !== undefined ? card.cfg.colors.active : ""
+                                            placeholder: "default: workspaceActive"
+                                            fieldWidth: 100
+                                            onEdited: (text) => root.bar.applyBar(BarLayout.setModuleColorSlot(root.bar.bar, modelData.id, "active", text))
+                                        }
+
+                                        FieldCard {
+                                            width: (cardCol.width - bar.s(8)) / 2
+                                            bar: root.bar
+                                            label: "Active text"
+                                            value: card.cfg.colors.activeText !== undefined ? card.cfg.colors.activeText : ""
+                                            placeholder: "default: crust"
+                                            fieldWidth: 100
+                                            onEdited: (text) => root.bar.applyBar(BarLayout.setModuleColorSlot(root.bar.bar, modelData.id, "activeText", text))
+                                        }
+                                    }
+
+                                    // Workspaces: color slot (rol o #hex).
+                                    Row {
+                                        width: parent.width
+                                        visible: modelData.id === "workspaces"
+                                        spacing: bar.s(8)
+
+                                        FieldCard {
+                                            width: (cardCol.width - bar.s(8)) / 2
+                                            bar: root.bar
+                                            label: "Occupied fill"
+                                            value: card.cfg.colors.occupied !== undefined ? card.cfg.colors.occupied : ""
+                                            placeholder: "default: surface0"
+                                            fieldWidth: 100
+                                            onEdited: (text) => root.bar.applyBar(BarLayout.setModuleColorSlot(root.bar.bar, modelData.id, "occupied", text))
+                                        }
+
+                                        FieldCard {
+                                            width: (cardCol.width - bar.s(8)) / 2
+                                            bar: root.bar
+                                            label: "Empty fill"
+                                            value: card.cfg.colors.empty !== undefined ? card.cfg.colors.empty : ""
+                                            placeholder: "default: base"
+                                            fieldWidth: 100
+                                            onEdited: (text) => root.bar.applyBar(BarLayout.setModuleColorSlot(root.bar.bar, modelData.id, "empty", text))
+                                        }
+                                    }
+
+                                    // Workspaces: color slot (rol o #hex).
+                                    Row {
+                                        width: parent.width
+                                        visible: modelData.id === "workspaces"
+                                        spacing: bar.s(8)
+
+                                        FieldCard {
+                                            width: (cardCol.width - bar.s(8)) / 2
+                                            bar: root.bar
+                                            label: "Hover fill"
+                                            value: card.cfg.colors.hover !== undefined ? card.cfg.colors.hover : ""
+                                            placeholder: "default: surface1"
+                                            fieldWidth: 100
+                                            onEdited: (text) => root.bar.applyBar(BarLayout.setModuleColorSlot(root.bar.bar, modelData.id, "hover", text))
+                                        }
+
+                                        FieldCard {
+                                            width: (cardCol.width - bar.s(8)) / 2
+                                            bar: root.bar
+                                            label: "Marker"
+                                            value: card.cfg.colors.marker !== undefined ? card.cfg.colors.marker : ""
+                                            placeholder: "default: text"
+                                            fieldWidth: 100
+                                            onEdited: (text) => root.bar.applyBar(BarLayout.setModuleColorSlot(root.bar.bar, modelData.id, "marker", text))
+                                        }
+                                    }
+
+                                    // Workspaces: color slot (rol o #hex).
+                                    Row {
+                                        width: parent.width
+                                        visible: modelData.id === "workspaces"
+                                        spacing: bar.s(8)
+
+                                        FieldCard {
+                                            width: (cardCol.width - bar.s(8)) / 2
+                                            bar: root.bar
+                                            label: "Marker empty"
+                                            value: card.cfg.colors.markerEmpty !== undefined ? card.cfg.colors.markerEmpty : ""
+                                            placeholder: "default: overlay0"
+                                            fieldWidth: 100
+                                            onEdited: (text) => root.bar.applyBar(BarLayout.setModuleColorSlot(root.bar.bar, modelData.id, "markerEmpty", text))
+                                        }
+                                    }
                                 }
                             }
                         }

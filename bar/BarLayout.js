@@ -207,6 +207,7 @@ function defaultModuleConfig(id) {
         icon: "", color: "",
         accent: DEFAULT_MODULE_ACCENTS[id] !== undefined ? DEFAULT_MODULE_ACCENTS[id] : "",
         fill: (DEFAULT_FILLED_MODULES.indexOf(id) !== -1) ? "on" : "default",
+        colors: {},       // per-slot color overrides (role name or #hex)
         size: 0,          // font px override (0 = module default)
         effect: "",       // per-module view effect ("typewriter" for the clock)
         cursor: true      // blinking cursor for the typewriter effect
@@ -225,6 +226,11 @@ function normalizeModuleConfig(v, id) {
         out.fill = (mode === "default") ? out.fill : mode;
     }
     if (typeof v.accent === "string") out.accent = v.accent;  // "" clears the default accent
+    if (v.colors && typeof v.colors === "object" && !Array.isArray(v.colors)) {
+        for (let slot in v.colors) {
+            if (typeof v.colors[slot] === "string") out.colors[slot] = v.colors[slot];
+        }
+    }
     if (typeof v.size === "number" && v.size >= 0) out.size = Math.round(v.size);
     if (typeof v.effect === "string") out.effect = v.effect;
     if (v.cursor !== undefined) out.cursor = v.cursor === true;
@@ -253,6 +259,17 @@ function setGlobalIconColor(bar, color) { let out = cloneBar(bar); out.iconColor
 function setModuleSize(bar, id, px)   { return setModuleValue(bar, id, "size", px); }
 function setModuleEffect(bar, id, v) { return setModuleValue(bar, id, "effect", v); }
 function setModuleCursor(bar, id, v) { return setModuleValue(bar, id, "cursor", v); }
+// Per-slot color override (workspaces: active/activeText/occupied/empty/hover/
+// marker/markerEmpty). Empty value removes the override.
+function setModuleColorSlot(bar, id, slot, value) {
+    let out = cloneBar(bar);
+    if (!out.modules || typeof out.modules !== "object") out.modules = {};
+    let cfg = normalizeModuleConfig(out.modules[id], id);
+    if (typeof value === "string" && value !== "") cfg.colors[slot] = value;
+    else delete cfg.colors[slot];
+    out.modules[id] = cfg;
+    return out;
+}
 
 // --- defaults -------------------------------------------------------------------
 function defaultZone(id, align, modules) {
