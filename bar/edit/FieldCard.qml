@@ -20,6 +20,7 @@ Rectangle {
     property int fieldWidth: 240
     property int maxLength: 32767
     property bool previewFont: false
+    property string placeholder: ""
     signal edited(string text)
 
     height: bar ? bar.s(44) : 44
@@ -47,6 +48,8 @@ Rectangle {
             Layout.preferredHeight: bar ? bar.s(30) : 30
             Layout.alignment: Qt.AlignVCenter
             text: fld.value
+            placeholderText: fld.placeholder
+            placeholderTextColor: bar ? Qt.alpha(bar.colors.subtext0, 0.55) : "transparent"
             font.family: fld.previewFont && field.text !== "" ? field.text : "Hack Nerd Font"
             font.pixelSize: bar ? bar.s(13) : 13
             color: bar ? bar.colors.text : "transparent"

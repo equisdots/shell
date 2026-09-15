@@ -148,30 +148,53 @@ function setZoneFill(bar, zoneId, mode) {
 //   "fill":   per-island fill ("default" | "on" | "off")
 //   "accent": accent role override (turns the island into an accent island)
 // The bar-wide "iconColor" sets the default content color for every module.
-function defaultModuleConfig() {
-    return { icon: "", color: "", fill: "default", accent: "" };
+// Islands that ship with a background by default (palette role fill); the user
+// can still force "None" per module.
+var DEFAULT_FILLED_MODULES = ["battery", "settings", "search", "time", "help"];
+
+// Accent islands by default: their pill is filled with the palette role, so
+// they recolor with the palette (like wifi/bluetooth). Overridable per module.
+var DEFAULT_MODULE_ACCENTS = {
+    "settings": "mauve",
+    "search":   "sapphire",
+    "time":     "teal",
+    "battery":  "green",
+    "help":     "peach"
+};
+
+function defaultModuleConfig(id) {
+    return {
+        icon: "", color: "",
+        accent: DEFAULT_MODULE_ACCENTS[id] !== undefined ? DEFAULT_MODULE_ACCENTS[id] : "",
+        fill: (DEFAULT_FILLED_MODULES.indexOf(id) !== -1) ? "on" : "default"
+    };
 }
 
-function normalizeModuleConfig(v) {
-    let out = defaultModuleConfig();
+function normalizeModuleConfig(v, id) {
+    let out = defaultModuleConfig(id);
     if (!v || typeof v !== "object") return out;
     if (typeof v.icon === "string") out.icon = v.icon;
     if (typeof v.color === "string") out.color = v.color;
-    if (v.fill !== undefined) out.fill = normalizeFillMode(v.fill);
-    if (typeof v.accent === "string") out.accent = v.accent;
+    if (v.fill !== undefined) {
+        // An explicit "default" returns to the module's built-in default
+        // (filled for DEFAULT_FILLED_MODULES, bar-wide behavior otherwise).
+        let mode = normalizeFillMode(v.fill);
+        out.fill = (mode === "default") ? out.fill : mode;
+    }
+    if (typeof v.accent === "string") out.accent = v.accent;  // "" clears the default accent
     return out;
 }
 
 // Effective per-module config (defaults + user values).
 function moduleConfig(bar, id) {
-    if (!bar || !bar.modules || typeof bar.modules !== "object") return defaultModuleConfig();
-    return normalizeModuleConfig(bar.modules[id]);
+    if (!bar || !bar.modules || typeof bar.modules !== "object") return defaultModuleConfig(id);
+    return normalizeModuleConfig(bar.modules[id], id);
 }
 
 function setModuleValue(bar, id, key, value) {
     let out = cloneBar(bar);
     if (!out.modules || typeof out.modules !== "object") out.modules = {};
-    let cfg = normalizeModuleConfig(out.modules[id]);
+    let cfg = normalizeModuleConfig(out.modules[id], id);
     cfg[key] = (key === "fill") ? normalizeFillMode(value) : value;
     out.modules[id] = cfg;
     return out;

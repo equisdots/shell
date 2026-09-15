@@ -9,7 +9,10 @@ ModulePill {
     id: mod
     moduleId: "battery"
 
-    accentColor: bar.batDynamicColor
+    accentRole: "green"
+    // Dynamic fill only while charging or low; the pill uses the palette role
+    // otherwise (so it recolors with the palette like wifi/bluetooth).
+    accentColor: (bar.isCharging || bar.batCap <= 20) ? bar.batDynamicColor : "transparent"
     accentActive: true
 
     onClicked: Quickshell.execDetached(["bash", "-c", "~/.config/hypr/scripts/qs_manager.sh toggle battery"])

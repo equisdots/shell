@@ -51,6 +51,16 @@ Precedence for the content color: module `color` > `iconColor` > the module's
 own logic (accent islands draw content in `colors.base`). For the fill:
 module `fill` > zone `fill` > bar-wide settings.
 
+Built-in defaults: `battery`, `settings`, `search`, `time` and `help` ship with
+their palette role fill enabled (`fill: "on"`); `"default"` on them returns to
+that built-in fill, while `"off"` forces a transparent island. The rest follow
+the bar-wide settings unless overridden.
+
+Built-in accents (accent islands that recolor with the palette, like
+wifi/bluetooth): `settings` = mauve, `search` = sapphire, `time` = teal,
+`battery` = green (red/green dynamic while low/charging), `help` = peach. An
+empty `accent` clears the default.
+
 The `icon` override applies to every module that renders a single glyph
 (fixed or state-driven): `help`, `search`, `settings`, `update`, `keyboard`,
 `wifi`, `bluetooth`, `volume`, `battery`, `weather`, `focus` and `recording`.
