@@ -2,8 +2,8 @@ import QtQuick
 import QtQuick.Controls
 import Quickshell
 import Quickshell.Io
-import ".."
-import "../WindowRegistry.js" as LayoutMath
+import "../core"
+import "../core/WindowRegistry.js" as LayoutMath
 import "BarLayout.js" as BarLayout
 import "Colors.qml"
 import "edit"

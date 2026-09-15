@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell
+import "../core"
 import Quickshell.Io
 
 // ============================================================================
@@ -153,15 +154,10 @@ Item {
         return valid(r.borderInactive) ? r.borderInactive.toLowerCase() : root.hexOf(root.color8);
     }
 
-    // Push the effective border colors to Hyprland LIVE (no window restart)
-    // using `hyprctl eval` with the Lua config API. Only touches the border
-    // option; nothing else is modified.
+    // Push the effective border colors to the compositor LIVE (no window
+    // restart) through the core adapter. Only touches the border option.
     function syncWindowBorders() {
-        const a = root.borderHex("active").slice(1);
-        const i = root.borderHex("inactive").slice(1);
-        const lua = 'hl.config({ general = { col = { active_border = "rgba(' + a + 'ee)", inactive_border = "rgba(' + i + 'aa)" } } })';
-        const cmd = "hyprctl eval '" + lua + "' 2>/dev/null";
-        Quickshell.execDetached(["bash", "-c", cmd]);
+        Compositor.setWindowBorderColors(root.borderHex("active").slice(1), root.borderHex("inactive").slice(1));
         // Keep the SDDM login theme in sync with the active palette (local file
         // always regenerates; the sudo copy to /usr/share silently no-ops when
         // passwordless sudo is unavailable).

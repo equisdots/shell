@@ -18,8 +18,8 @@ import Qt.labs.folderlistmodel
 import QtMultimedia
 import Quickshell
 import Quickshell.Io
-import "../../"
-import "../../dock"
+import "../../core"
+import "../bar"
 import "lib/constants.js" as C
 import "components"
 import "components/grid"

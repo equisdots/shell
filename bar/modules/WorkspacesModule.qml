@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell
+import "../../core"
 import ".."
 
 // Workspaces — the centerpiece. A horizontal row of workspace pills (top/bottom
@@ -213,7 +214,7 @@ ModulePill {
                 id: wsMouse
                 hoverEnabled: true
                 anchors.fill: parent
-                onClicked: Quickshell.execDetached(["bash", "-c", "~/.config/hypr/scripts/qs_manager.sh " + wsPill.wsName])
+                onClicked: Compositor.switchWorkspace(wsPill.wsName)
             }
         }
     }

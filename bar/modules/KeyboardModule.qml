@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell
+import "../../core"
 import ".."
 
 // Keyboard layout — purple accent island. Compact (vertical bar): icon only.
@@ -9,7 +10,7 @@ ModulePill {
     accentRole: "color5"
     accentActive: true
 
-    onClicked: Quickshell.execDetached(["hyprctl", "switchxkblayout", "main", "next"])
+    onClicked: Compositor.cycleKeyboardLayout()
 
     Row {
         visible: mod.horizontal

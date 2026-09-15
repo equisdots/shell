@@ -9,7 +9,7 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
-import "../.."
+import "../../core"
 
 Item {
     id: root

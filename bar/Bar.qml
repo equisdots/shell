@@ -5,8 +5,8 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Services.SystemTray
-import ".."
-import "../WindowRegistry.js" as LayoutMath
+import "../core"
+import "../core/WindowRegistry.js" as LayoutMath
 import "BarLayout.js" as BarLayout
 
 // ============================================================================
@@ -875,7 +875,7 @@ Variants {
             // ================================================================
             Process {
                 id: wsDaemon
-                command: ["bash", "-c", "~/.config/hypr/scripts/workspaces.sh"]
+                command: Compositor.workspacesCommand
                 running: true
             }
             Process {
@@ -979,7 +979,7 @@ Variants {
             }
             Process {
                 id: kbPoller; running: true
-                command: ["bash", "-c", "~/.config/hypr/scripts/quickshell/watchers/kb_fetch.sh"]
+                command: Compositor.keyboardCommand
                 stdout: StdioCollector {
                     onStreamFinished: {
                         let txt = this.text.trim();
@@ -1116,8 +1116,7 @@ Variants {
             // ================================================================
             Process {
                 id: focusPoller
-                command: ["bash", "-c",
-                    "hyprctl activewindow -j 2>/dev/null | jq -r 'if (.class != null and .class != \"\" and .address != null and .address != \"\") then (.class + \"\\n\" + .title) else empty end' 2>/dev/null"]
+                command: Compositor.focusCommand
                 stdout: StdioCollector {
                     onStreamFinished: {
                         let line = this.text.trim();
