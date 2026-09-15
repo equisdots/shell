@@ -96,8 +96,10 @@ Pure functions in `bar/BarLayout.js` return a new bar object ready for
   `setModuleCursor(bar, id, v)` -> per-module view options.
 
 The clock typewriter renders per character and only replays the characters that
-change (seconds every second, minutes and hours on their change), with an
-optional blinking cursor; enable it from the Modules page (clock card) or with
+change (seconds every second, minutes and hours on their change). The cursor
+rests after the text, travels to the character being typed and returns to its
+position (typewriter carriage), blinking while idle; `cursor` toggles it.
+Enable the effect from the Modules page (clock card) or with
 `setModuleEffect(bar, "time", "typewriter")`.
 - `moduleConfig(bar, id)` -> effective per-module config (defaults + values).
 
