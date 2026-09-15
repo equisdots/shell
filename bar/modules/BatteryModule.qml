@@ -7,6 +7,7 @@ import ".."
 // Compact (vertical): icon only.
 ModulePill {
     id: mod
+    moduleId: "battery"
 
     accentColor: bar.batDynamicColor
     accentActive: true
@@ -19,7 +20,7 @@ ModulePill {
 
         Text {
             anchors.verticalCenter: parent.verticalCenter
-            text: bar.isDesktop ? "" : bar.batIcon
+            text: mod.glyph(bar.isDesktop ? "" : bar.batIcon)
             font.family: bar.fontFamily
             font.pixelSize: bar.isDesktop ? bar.s(18) : bar.s(16)
             color: mod.contentColor
@@ -37,7 +38,7 @@ ModulePill {
 
     Text {
         visible: mod.compact
-        text: bar.isDesktop ? "" : bar.batIcon
+        text: mod.glyph(bar.isDesktop ? "" : bar.batIcon)
         font.family: bar.fontFamily
         font.pixelSize: bar.s(20)
         color: mod.contentColor

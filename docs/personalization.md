@@ -51,11 +51,17 @@ Precedence for the content color: module `color` > `iconColor` > the module's
 own logic (accent islands draw content in `colors.base`). For the fill:
 module `fill` > zone `fill` > bar-wide settings.
 
-The `icon` override applies to modules with a fixed glyph, which call
-`mod.glyph("<default>")` in their component: `help`, `search`, `settings`,
-`update` and `keyboard` today. Modules whose icon changes with state (wifi,
-battery, volume, ...) keep their state icons; wiring `glyph()` into any other
-module is a one-line change.
+The `icon` override applies to every module that renders a single glyph
+(fixed or state-driven): `help`, `search`, `settings`, `update`, `keyboard`,
+`wifi`, `bluetooth`, `volume`, `battery`, `weather`, `focus` and `recording`.
+The override replaces the glyph in all states (for example a fixed wifi glyph
+for on/off/ethernet). Components call `mod.glyph("<default>")`; wiring it into
+any other module is a one-line change.
+
+Not overridable today (they do not render a single configurable glyph):
+`tray` (per-app icons), `sysmon` (cpu + ram glyphs), `media` (album art and
+transport controls), `workspaces` (numbers/app icons; use
+`workspacesMarker` / `workspacesMarkerText`) and `time` / `date` (text).
 
 ## Programmatic API
 
