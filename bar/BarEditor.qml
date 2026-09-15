@@ -549,12 +549,9 @@ Item {
     // (navItemMap + mapToItem) con scroll-follow por contentY.
     property string currentPage: "s_general"
 
-    // El panel se ensancha SOLO en la página Guide (el popup embebido está
-    // diseñado a 1160px); Main sigue estos targets en vivo y anima el morph
-    // al cambiar de página (y vuelve a 1120 en el resto).
-    property real targetMasterWidth: root.currentPage === "d_guide"
-        ? Math.min(root.s(1440), Screen.width - root.s(40))
-        : root.s(1120)
+    // Panel width: doubled (2 x 1120) with a screen margin cap so it always
+    // fits; Main follows this target live and animates the morph.
+    property real targetMasterWidth: Math.min(root.s(2240), Screen.width - root.s(40))
     property real targetMasterHeight: root.s(760)
     property var navGroups: [
         { id: "desktop", label: "Desktop", items: [
@@ -571,6 +568,7 @@ Item {
             { id: "d_style",      icon: "󰏘", label: "Style",      engine: "bar" },
             { id: "d_palette",    icon: "✦", label: "Palette" },
             { id: "d_zones",      icon: "󰮯", label: "Zones",      engine: "bar" },
+            { id: "d_modules",    icon: "󰍜", label: "Modules" },
             { id: "d_workspaces", icon: "󰠰", label: "Workspaces" },
             { id: "d_classic",       icon: "󰹑", label: "Classic Bar",   engine: "classic" }
         ] },
@@ -664,6 +662,7 @@ Item {
             "d_style":      "editor/BarStylePage.qml",
             "d_palette":    "editor/PalettePage.qml",
             "d_zones":      "editor/ZonesPage.qml",
+            "d_modules":    "editor/ModulesPage.qml",
             "d_workspaces": "editor/WorkspacesPage.qml",
             "d_classic":       "editor/ClassicBarPage.qml",
             "d_launcher":   "editor/LauncherPage.qml",
