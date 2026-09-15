@@ -465,8 +465,8 @@ Item {
                                             bar: root.bar
                                             label: "Occupied fill"
                                             value: card.cfg.colors.occupied !== undefined ? card.cfg.colors.occupied : ""
-                                            swatch: root.slotSwatch(card.cfg.colors.occupied, "surface0")
-                                            placeholder: "default: surface0"
+                                            swatch: root.slotSwatch(card.cfg.colors.occupied, "color5")
+                                            placeholder: "default: color5"
                                             fieldWidth: 100
                                             onEdited: (text) => root.bar.applyBar(BarLayout.setModuleColorSlot(root.bar.bar, modelData.id, "occupied", text))
                                         }

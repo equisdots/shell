@@ -29,7 +29,7 @@ ModulePill {
     }
     readonly property color wsActiveText: mod.slotColor("activeText", "crust")
     // Per-workspace fill/marker color slots (personalization; role or #hex).
-    readonly property color slotOccupied: mod.slotColor("occupied", "surface0")
+    readonly property color slotOccupied: mod.slotColor("occupied", "color5")
     readonly property color slotEmpty: mod.slotColor("empty", "base")
     readonly property color slotHover: mod.slotColor("hover", "surface1")
     readonly property color slotMarker: mod.slotColor("marker", "text")

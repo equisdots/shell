@@ -143,7 +143,7 @@ API (`core/Notifications.js`): `normalize(raw)`, `layout(raw, scale)`,
 |---|---|---|
 | `active` | `workspaceActive` (palette role, else `mauve`) | Active workspace fill |
 | `activeText` | `crust` | Content on the active workspace |
-| `occupied` | `surface0` | Occupied workspace fill |
+| `occupied` | `color5` (the palette tone used by the keyboard island) | Occupied workspace fill |
 | `empty` | `base` | Empty workspace fill |
 | `hover` | `surface1` | Hover fill |
 | `marker` | `text` | Marker/icons of occupied workspaces |
