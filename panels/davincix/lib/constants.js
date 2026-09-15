@@ -29,3 +29,9 @@ var FILTER_ORDER = ["All", "Video", "Favorites", "Red", "Orange", "Yellow", "Gre
 var ORIENTATIONS = ["horizontal", "vertical"];
 var SHAPES = ["rect", "square", "circle"];
 var SLIDESHOW_INTERVAL = 300;
+
+// Fuentes de búsqueda (proveedor del kernel + etiqueta del selector).
+var SEARCH_SOURCES = [
+    { id: "ddg", label: "DDG" },
+    { id: "wallhaven", label: "WH" }
+];

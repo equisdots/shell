@@ -139,7 +139,7 @@ Row {
     Rectangle {
         id: searchBox
         height: ctx.s(44)
-        width: ctx.currentFilter === "Search" ? ctx.s(360) : ctx.s(44)
+        width: ctx.currentFilter === "Search" ? ctx.s(440) : ctx.s(44)
         radius: ctx.s(13)
         clip: true
         anchors.verticalCenter: parent.verticalCenter
@@ -198,9 +198,72 @@ Row {
             }
         }
 
+        // Fuente de búsqueda: segmented compacto (mismo lenguaje visual que
+        // los chips de filtros: surface2 activo + borde theme.text).
+        Item {
+            id: sourceWrap
+            anchors.left: searchIcon.right
+            anchors.verticalCenter: parent.verticalCenter
+            visible: ctx.currentFilter === "Search"
+            width: visible ? sourceRow.implicitWidth + ctx.s(6) : 0
+            height: ctx.s(26)
+            clip: true
+
+            Row {
+                id: sourceRow
+                anchors.left: parent.left
+                anchors.leftMargin: ctx.s(6)
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: ctx.s(4)
+
+                Repeater {
+                    model: ctx.searchSources
+
+                    delegate: Rectangle {
+                        width: sourceLabel.implicitWidth + ctx.s(14)
+                        height: ctx.s(26)
+                        radius: ctx.s(9)
+
+                        color: ctx.searchSource === modelData.id
+                            ? theme.surface2
+                            : (sourceMouse.containsMouse ? theme.surface1 : "transparent")
+                        border.color: ctx.searchSource === modelData.id
+                            ? theme.text
+                            : theme.surface1
+                        border.width: 1
+
+                        Behavior on color { ColorAnimation { duration: 150 } }
+                        Behavior on border.color { ColorAnimation { duration: 150 } }
+
+                        Text {
+                            id: sourceLabel
+                            anchors.centerIn: parent
+                            text: modelData.label
+                            font.family: "Hack Nerd Font"
+                            font.pixelSize: ctx.s(11)
+                            font.bold: ctx.searchSource === modelData.id
+                            color: ctx.searchSource === modelData.id
+                                ? theme.text
+                                : Qt.rgba(theme.text.r, theme.text.g, theme.text.b, 0.7)
+                        }
+
+                        MouseArea {
+                            id: sourceMouse
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            enabled: !ctx.isApplying
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: ctx.searchSource = modelData.id
+                        }
+                    }
+                }
+            }
+        }
+
         TextInput {
             id: searchInput
-            anchors.left: searchIcon.right
+            anchors.left: sourceWrap.right
+            anchors.leftMargin: ctx.s(6)
             anchors.right: submitBtn.left
             anchors.rightMargin: ctx.s(8)
             anchors.verticalCenter: parent.verticalCenter

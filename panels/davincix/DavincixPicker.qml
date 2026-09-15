@@ -382,7 +382,7 @@ Item {
         if (!window.hasSearched || window.searchQuery === "") return;
         window.isSearchPaused = false;
         let cli = window.cliPath();
-        Quickshell.execDetached([cli, "search", "--continue", window.searchQuery]);
+        Quickshell.execDetached([cli, "search", "--continue", "--source", window.searchSource, window.searchQuery]);
     }
 
     onWidgetArgChanged: {
@@ -519,7 +519,7 @@ Item {
 
         // The CLI stops the previous search, clears its cache and starts the new one.
         let cli = window.cliPath();
-        Quickshell.execDetached([cli, "search", window.searchQuery]);
+        Quickshell.execDetached([cli, "search", "--source", window.searchSource, window.searchQuery]);
     }
 
     readonly property string homeDir: "file://" + Quickshell.env("HOME")
@@ -539,6 +539,10 @@ Item {
     readonly property var shapeOrder: C.SHAPES
     property bool slideshowOn: false
     property var favoriteNames: []
+
+    // Search provider (kernel providers/: ddg | wallhaven).
+    property string searchSource: "ddg"
+    readonly property var searchSources: C.SEARCH_SOURCES
 
     // ── Delete confirmation state ────────────────────────────────────────────
     property bool confirmOpen: false
