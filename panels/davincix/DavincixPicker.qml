@@ -260,7 +260,7 @@ Item {
         if (window.currentFilter === "Search") {
             if (!window.hasSearched) return "Type something to search...";
             if (window.isSearchPaused) return "Search Paused";
-            if (window.visibleItemCount === 0) return "Searching DDG (FHD+)...";
+            if (window.visibleItemCount === 0) return "Searching " + window.sourceLabel(window.searchSource) + " (FHD+)...";
             return "Generating thumbnails...";
         }
 
@@ -547,6 +547,13 @@ Item {
     readonly property var activeSearchSources: window.searchSources.filter(function(s) {
         return s.kind === window.searchKind;
     })
+
+    function sourceLabel(id) {
+        for (let i = 0; i < window.searchSources.length; i++) {
+            if (window.searchSources[i].id === id) return window.searchSources[i].label;
+        }
+        return String(id).toUpperCase();
+    }
 
     function sourceIsOfKind(id, kind) {
         for (let i = 0; i < window.searchSources.length; i++) {
