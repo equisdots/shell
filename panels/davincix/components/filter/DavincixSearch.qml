@@ -427,4 +427,39 @@ Row {
             }
         }
     }
+
+    // API keys de proveedores (tuerca): despliega el panel de keys.
+    Rectangle {
+        id: keysBtn
+        width: ctx.s(44)
+        height: ctx.s(44)
+        radius: ctx.s(13)
+        anchors.verticalCenter: parent.verticalCenter
+
+        color: ctx.keysPanelOpen ? theme.surface2 : (kMouse.containsMouse ? theme.surface1 : "transparent")
+        border.color: ctx.keysPanelOpen ? theme.text : theme.surface1
+        border.width: ctx.keysPanelOpen ? ctx.s(2) : 1
+
+        Behavior on color { ColorAnimation { duration: 250 } }
+        Behavior on border.color { ColorAnimation { duration: 250 } }
+
+        Text {
+            anchors.centerIn: parent
+            text: "\uF013"  // fa-cog
+            font.family: "Hack Nerd Font"
+            font.pixelSize: ctx.s(15)
+            color: (kMouse.containsMouse || ctx.keysPanelOpen)
+                ? theme.text
+                : Qt.rgba(theme.text.r, theme.text.g, theme.text.b, 0.7)
+        }
+
+        MouseArea {
+            id: kMouse
+            anchors.fill: parent
+            hoverEnabled: true
+            enabled: !ctx.isApplying
+            cursorShape: Qt.PointingHandCursor
+            onClicked: ctx.toggleKeysPanel()
+        }
+    }
 }

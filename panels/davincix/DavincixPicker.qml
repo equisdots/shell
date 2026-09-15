@@ -142,6 +142,45 @@ Item {
         }
     }
 
+    // API keys: el kernel es la fuente (keys list → NAME|label|where|0-1).
+    Process {
+        id: keysListProc
+        command: []
+        running: false
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                let rows = [];
+                let lines = this.text.trim().split("\n");
+                for (let i = 0; i < lines.length; i++) {
+                    let p = lines[i].split("|");
+                    if (p.length >= 4) {
+                        rows.push({ name: p[0], label: p[1], where: p[2], set: p[3] === "1" });
+                    }
+                }
+                window.providerKeys = rows;
+            }
+        }
+    }
+
+    Timer { id: keysRefreshTimer; interval: 400; onTriggered: window.refreshProviderKeys() }
+
+    function refreshProviderKeys() {
+        keysListProc.command = [window.cliPath(), "keys", "list"];
+        keysListProc.running = true;
+    }
+
+    function saveProviderKey(name, value) {
+        if (!name || value.trim() === "") return;
+        Quickshell.execDetached([window.cliPath(), "keys", "set", name, value.trim()]);
+        keysRefreshTimer.restart();
+    }
+
+    function toggleKeysPanel() {
+        window.keysPanelOpen = !window.keysPanelOpen;
+        if (window.keysPanelOpen) window.refreshProviderKeys();
+    }
+
     function getMonitorOutputs() {
         if (monitorModel.count <= 1) return "all";
 
@@ -544,6 +583,10 @@ Item {
     property string searchSource: "ddg"
     property string searchKind: "image"   // image | video
     readonly property var searchSources: C.SEARCH_SOURCES
+
+    // API keys de proveedores (panel de la tuerca; fuente: kernel `keys list`).
+    property bool keysPanelOpen: false
+    property var providerKeys: []
     readonly property var activeSearchSources: window.searchSources.filter(function(s) {
         return s.kind === window.searchKind;
     })
@@ -847,18 +890,18 @@ Item {
 
     Shortcut {
         sequence: "Left"
-        enabled: !window.isScrollingBlocked && !window.isApplying && !window.confirmOpen
+        enabled: !window.isScrollingBlocked && !window.isApplying && !window.confirmOpen && !window.keysPanelOpen
         onActivated: window.stepToNextValidIndex(-1)
     }
     Shortcut {
         sequence: "Right"
-        enabled: !window.isScrollingBlocked && !window.isApplying && !window.confirmOpen
+        enabled: !window.isScrollingBlocked && !window.isApplying && !window.confirmOpen && !window.keysPanelOpen
         onActivated: window.stepToNextValidIndex(1)
     }
 
     Shortcut {
         sequence: "Return"
-        enabled: !window.searchInputFocused && !window.isScrollingBlocked && !window.isApplying && !window.confirmOpen
+        enabled: !window.searchInputFocused && !window.isScrollingBlocked && !window.isApplying && !window.confirmOpen && !window.keysPanelOpen
         onActivated: {
             let targetModel = window.getModelForFilter(window.currentFilter);
             if (grid.view.currentIndex >= 0 && grid.view.currentIndex < targetModel.count) {
@@ -873,13 +916,13 @@ Item {
 
     Shortcut {
         sequence: "Delete"
-        enabled: !window.isApplying && !window.confirmOpen && !window.searchInputFocused
+        enabled: !window.isApplying && !window.confirmOpen && !window.keysPanelOpen && !window.searchInputFocused
         onActivated: window.requestDelete()
     }
 
-    Shortcut { sequence: "Escape"; enabled: !window.isApplying && !window.confirmOpen; onActivated: { if (window.currentFilter === "Search") { window.currentFilter = "All"; } } }
-    Shortcut { sequence: "Tab"; enabled: !window.isApplying && !window.confirmOpen; onActivated: window.cycleFilter(1) }
-    Shortcut { sequence: "Backtab"; enabled: !window.isApplying && !window.confirmOpen; onActivated: window.cycleFilter(-1) }
+    Shortcut { sequence: "Escape"; enabled: !window.isApplying && !window.confirmOpen && !window.keysPanelOpen; onActivated: { if (window.currentFilter === "Search") { window.currentFilter = "All"; } } }
+    Shortcut { sequence: "Tab"; enabled: !window.isApplying && !window.confirmOpen && !window.keysPanelOpen; onActivated: window.cycleFilter(1) }
+    Shortcut { sequence: "Backtab"; enabled: !window.isApplying && !window.confirmOpen && !window.keysPanelOpen; onActivated: window.cycleFilter(-1) }
 
     ListModel { id: localProxyModel }
     ListModel { id: searchProxyModel }
@@ -1079,6 +1122,17 @@ Item {
         message: window.confirmTarget !== "" ? window.getCleanName(window.confirmTarget) : ""
         onConfirmed: window.confirmDelete()
         onDismissed: window.cancelDelete()
+    }
+
+    SearchKeysPanel {
+        id: keysPanel
+        ctx: window
+        theme: _theme
+        open: window.keysPanelOpen
+        keys: window.providerKeys
+        topOffset: filterBar.y + filterBar.height + window.s(10)
+        onSaveRequested: (name, value) => window.saveProviderKey(name, value)
+        onClosed: window.keysPanelOpen = false
     }
 
     Component.onCompleted: {
