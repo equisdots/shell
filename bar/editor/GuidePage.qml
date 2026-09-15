@@ -21,7 +21,7 @@ Item {
     Loader {
         id: guideLoader
         anchors.fill: parent
-        source: "../guide/GuidePopup.qml"
+        source: "../popups/guide/GuidePopup.qml"
         onLoaded: {
             // El guide espera que su contenedor le dé tamaño (en Main.qml lo
             // hace el StackView); aquí se lo da el Loader.

@@ -17,7 +17,7 @@ From xlinux, these popups are opened by bar modules and belong here:
 | `applauncher/` | `SearchModule` (SUPER+D) |
 | `battery/` | `BatteryModule` (SUPER+B) |
 | `calendar/` | `CalendarModule` (SUPER+S) |
-| `guide/` | `HelpModule` (SUPER+H) |
+| `guide/` | `HelpModule` (SUPER+H) — ported |
 | `music/` | `MediaModule` (SUPER+M) |
 | `network/` | `WifiModule` / `BluetoothModule` (SUPER+N) |
 | `system-monitor/` | `SysmonModule` |
