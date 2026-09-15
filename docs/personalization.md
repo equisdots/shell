@@ -49,6 +49,9 @@ Every field is optional:
 | `color` | Content color: a `colors.*` role name or a `#hex` string |
 | `fill` | Island fill: `"default"` / `"on"` / `"off"` (booleans accepted) |
 | `accent` | Accent role override (e.g. `"green"`), turning the island into an accent island like wifi/bluetooth |
+| `size` | Font pixel size override (0 = module default) |
+| `effect` | Per-module view effect: `""` (none) or `"typewriter"` (clock) |
+| `cursor` | Blinking cursor for the typewriter effect (`true`/`false`) |
 
 Precedence for the content color: module `color` > `iconColor` > the module's
 own logic (accent islands draw content in `colors.base`). For the fill:
@@ -88,6 +91,14 @@ Pure functions in `bar/BarLayout.js` return a new bar object ready for
   `setModuleAccent(bar, id, role)` -> per-module values.
 - `setGlobalIconColor(bar, color)` -> bar-wide icon color.
 - `setTimeFormat(bar, fmt)` -> zones-engine clock format.
+- `setDateFormat(bar, fmt)` -> zones-engine date format.
+- `setModuleSize(bar, id, px)` / `setModuleEffect(bar, id, v)` /
+  `setModuleCursor(bar, id, v)` -> per-module view options.
+
+The clock typewriter renders per character and only replays the characters that
+change (seconds every second, minutes and hours on their change), with an
+optional blinking cursor; enable it from the Modules page (clock card) or with
+`setModuleEffect(bar, "time", "typewriter")`.
 - `moduleConfig(bar, id)` -> effective per-module config (defaults + values).
 
 Note: the zones engine implements this surface today. The classic engine

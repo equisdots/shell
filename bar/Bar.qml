@@ -134,7 +134,8 @@ Variants {
             // Clock format used while the classic engine is active (classicbar.timeFormat).
             property string classicTimeFormat: ""
             // Zones-engine clock format (bar.timeFormat); the classic engine uses classicTimeFormat.
-            property string timeFormat: "HH:mm:ss" 
+            property string timeFormat: "HH:mm:ss"
+            property string dateFormat: "dddd, MMMM dd" 
             // Tracks the last applied orientation: an axis change (horizontal ↔
             // vertical) remounts the zones in-process (Phase D3) so every module
             // re-reads bar.orientation at creation — no full shell reload.
@@ -498,6 +499,7 @@ Variants {
                 barWindow.borderColor = barConfig.borderColor;
                 barWindow.fontFamily = barConfig.font || "Hack Nerd Font";
                 barWindow.timeFormat = (typeof barConfig.timeFormat === "string" && barConfig.timeFormat !== "") ? barConfig.timeFormat : "HH:mm:ss";
+                barWindow.dateFormat = (typeof barConfig.dateFormat === "string" && barConfig.dateFormat !== "") ? barConfig.dateFormat : "dddd, MMMM dd";
                 barWindow.zones = barConfig.zones;
                 applyPosition();
             }
@@ -1183,7 +1185,7 @@ Variants {
                     let d = new Date();
                     let fmt = barWindow.classicMode && barWindow.classicTimeFormat !== "" ? barWindow.classicTimeFormat : barWindow.timeFormat;
                     barWindow.timeStr = Qt.formatDateTime(d, fmt);
-                    barWindow.fullDateStr = Qt.formatDateTime(d, "dddd, MMMM dd");
+                    barWindow.fullDateStr = Qt.formatDateTime(d, barWindow.dateFormat);
                     if (barWindow.typeInIndex >= barWindow.fullDateStr.length) {
                         barWindow.typeInIndex = barWindow.fullDateStr.length;
                     }

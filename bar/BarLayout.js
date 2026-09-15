@@ -148,6 +148,13 @@ function setTimeFormat(bar, fmt) {
     return out;
 }
 
+// Date format for the zones engine (Qt.formatDateTime pattern).
+function setDateFormat(bar, fmt) {
+    let out = cloneBar(bar);
+    out.dateFormat = (typeof fmt === "string" && fmt.trim() !== "") ? fmt.trim() : "dddd, MMMM dd";
+    return out;
+}
+
 // --- module personalization API ----------------------------------------------
 // Per-module customization, keyed by module id. User values live in the bar
 // config under "modules"; every field is optional:
@@ -174,7 +181,10 @@ function defaultModuleConfig(id) {
     return {
         icon: "", color: "",
         accent: DEFAULT_MODULE_ACCENTS[id] !== undefined ? DEFAULT_MODULE_ACCENTS[id] : "",
-        fill: (DEFAULT_FILLED_MODULES.indexOf(id) !== -1) ? "on" : "default"
+        fill: (DEFAULT_FILLED_MODULES.indexOf(id) !== -1) ? "on" : "default",
+        size: 0,          // font px override (0 = module default)
+        effect: "",       // per-module view effect ("typewriter" for the clock)
+        cursor: true      // blinking cursor for the typewriter effect
     };
 }
 
@@ -190,6 +200,9 @@ function normalizeModuleConfig(v, id) {
         out.fill = (mode === "default") ? out.fill : mode;
     }
     if (typeof v.accent === "string") out.accent = v.accent;  // "" clears the default accent
+    if (typeof v.size === "number" && v.size >= 0) out.size = Math.round(v.size);
+    if (typeof v.effect === "string") out.effect = v.effect;
+    if (v.cursor !== undefined) out.cursor = v.cursor === true;
     return out;
 }
 
@@ -212,6 +225,9 @@ function setModuleColor(bar, id, color) { return setModuleValue(bar, id, "color"
 function setModuleFill(bar, id, mode)   { return setModuleValue(bar, id, "fill", mode); }
 function setModuleAccent(bar, id, role) { return setModuleValue(bar, id, "accent", role); }
 function setGlobalIconColor(bar, color) { let out = cloneBar(bar); out.iconColor = color; return out; }
+function setModuleSize(bar, id, px)   { return setModuleValue(bar, id, "size", px); }
+function setModuleEffect(bar, id, v) { return setModuleValue(bar, id, "effect", v); }
+function setModuleCursor(bar, id, v) { return setModuleValue(bar, id, "cursor", v); }
 
 // --- defaults -------------------------------------------------------------------
 function defaultZone(id, align, modules) {
@@ -274,6 +290,7 @@ function defaultBar() {
         borderInactive: "",
         font: "Hack Nerd Font",
         timeFormat: "HH:mm:ss",
+        dateFormat: "dddd, MMMM dd",
         // How EMPTY workspaces render in the Workspaces module:
         // "number" (default), "dot", "letter" or "custom" (the character set in
         // workspacesMarkerText, e.g. a Japanese glyph). Occupied workspaces
@@ -317,6 +334,7 @@ function normalizeBar(raw) {
         borderInactive: (typeof raw.borderInactive === "string") ? raw.borderInactive : def.borderInactive,
         font: (typeof raw.font === "string" && raw.font.trim() !== "") ? raw.font : def.font,
         timeFormat: (typeof raw.timeFormat === "string" && raw.timeFormat.trim() !== "") ? raw.timeFormat : def.timeFormat,
+        dateFormat: (typeof raw.dateFormat === "string" && raw.dateFormat.trim() !== "") ? raw.dateFormat : def.dateFormat,
         zones: []
     };
 

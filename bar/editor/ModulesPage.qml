@@ -276,16 +276,91 @@ Item {
                                         }
                                     }
 
-                                    // Reloj: formato del engine de zonas (Qt.formatDateTime).
-                                    FieldCard {
-                                        width: cardCol.width
+                                    // Reloj: formato + tamaño.
+                                    Row {
+                                        width: parent.width
                                         visible: modelData.id === "time"
-                                        bar: root.bar
-                                        label: "Clock format"
-                                        value: root.bar.bar.timeFormat !== undefined ? root.bar.bar.timeFormat : ""
-                                        placeholder: "default: HH:mm:ss (HH:mm, h:mm a...)"
-                                        fieldWidth: 170
-                                        onEdited: (text) => root.bar.applyBar(BarLayout.setTimeFormat(root.bar.bar, text))
+                                        spacing: bar.s(8)
+
+                                        FieldCard {
+                                            width: (cardCol.width - bar.s(8)) / 2
+                                            bar: root.bar
+                                            label: "Clock format"
+                                            value: root.bar.bar.timeFormat !== undefined ? root.bar.bar.timeFormat : ""
+                                            placeholder: "default: HH:mm:ss"
+                                            fieldWidth: 130
+                                            onEdited: (text) => root.bar.applyBar(BarLayout.setTimeFormat(root.bar.bar, text))
+                                        }
+
+                                        FieldCard {
+                                            width: (cardCol.width - bar.s(8)) / 2
+                                            bar: root.bar
+                                            label: "Size"
+                                            value: card.cfg.size > 0 ? String(card.cfg.size) : ""
+                                            placeholder: "default: 16"
+                                            fieldWidth: 90
+                                            onEdited: (text) => root.bar.applyBar(BarLayout.setModuleSize(root.bar.bar, modelData.id, parseInt(text) || 0))
+                                        }
+                                    }
+
+                                    // Reloj: efecto typewriter + cursor.
+                                    Row {
+                                        width: parent.width
+                                        visible: modelData.id === "time"
+                                        spacing: bar.s(6)
+
+                                        EditorButton {
+                                            bar: root.bar
+                                            compact: true
+                                            label: "No effect"
+                                            active: card.cfg.effect !== "typewriter"
+                                            onActivated: root.bar.applyBar(BarLayout.setModuleEffect(root.bar.bar, modelData.id, ""))
+                                        }
+
+                                        EditorButton {
+                                            bar: root.bar
+                                            compact: true
+                                            label: "Typewriter"
+                                            accentRole: "mauve"
+                                            active: card.cfg.effect === "typewriter"
+                                            onActivated: root.bar.applyBar(BarLayout.setModuleEffect(root.bar.bar, modelData.id, "typewriter"))
+                                        }
+
+                                        EditorButton {
+                                            bar: root.bar
+                                            compact: true
+                                            label: "Cursor"
+                                            accentRole: "sapphire"
+                                            active: card.cfg.cursor
+                                            onActivated: root.bar.applyBar(BarLayout.setModuleCursor(root.bar.bar, modelData.id, !card.cfg.cursor))
+                                        }
+                                    }
+
+                                    // Fecha: formato + tamaño.
+                                    Row {
+                                        width: parent.width
+                                        visible: modelData.id === "date"
+                                        spacing: bar.s(8)
+
+                                        FieldCard {
+                                            width: (cardCol.width - bar.s(8)) / 2
+                                            bar: root.bar
+                                            label: "Date format"
+                                            value: root.bar.bar.dateFormat !== undefined ? root.bar.bar.dateFormat : ""
+                                            placeholder: "default: dddd, MMMM dd"
+                                            fieldWidth: 130
+                                            onEdited: (text) => root.bar.applyBar(BarLayout.setDateFormat(root.bar.bar, text))
+                                        }
+
+                                        FieldCard {
+                                            width: (cardCol.width - bar.s(8)) / 2
+                                            bar: root.bar
+                                            label: "Size"
+                                            value: card.cfg.size > 0 ? String(card.cfg.size) : ""
+                                            placeholder: "default: 11"
+                                            fieldWidth: 90
+                                            onEdited: (text) => root.bar.applyBar(BarLayout.setModuleSize(root.bar.bar, modelData.id, parseInt(text) || 0))
+                                        }
                                     }
                                 }
                             }
