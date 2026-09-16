@@ -6,9 +6,11 @@ import Quickshell.Io
 import "../../../core"
 
 // ═══════════════════════════════════════════════════════════════════════════
-// GuidePage (About) — equisdots: brand header, live system + stack info
-// (sysinfo.sh), timex/customization summary, action buttons and repo cards.
-// Same card language as the Modules page; palette-driven.
+// GuidePage (About) — equisdots.
+//
+// Minimalist, symmetric layout: flat surfaces (no borders), a 3x2 stat grid,
+// a 2x3 grid of equal-height info cards and a single-column repo list, so no
+// row is left with uneven empty space. Palette-driven, accent used sparingly.
 // ═══════════════════════════════════════════════════════════════════════════
 Item {
     id: root
@@ -58,52 +60,53 @@ Item {
 
     Timer { id: copiedTimer; interval: 1600; onTriggered: root.copiedFlash = false }
 
-    // ── Summary strip (stack + customization, not duplicating the cards) ──
-    readonly property var chips: [
-        { k: "stack_ver", prefix: "equisdots " },
-        { k: "hypr_ver", prefix: "Hyprland " },
-        { k: "qs_ver", prefix: "Quickshell " },
-        { k: "palette", prefix: "palette " },
-        { k: "bar_engine", prefix: "bar " },
-        { k: "timex_provider", prefix: "timex " }
+    // ── Stat grid (3 x 2, uniform tiles) ──────────────────────────────────
+    readonly property var stats: [
+        { label: "Stack", k: "stack_ver" },
+        { label: "Hyprland", k: "hypr_ver" },
+        { label: "Quickshell", k: "qs_ver" },
+        { label: "Palette", k: "palette" },
+        { label: "Bar engine", k: "bar_engine" },
+        { label: "Timex", k: "timex_provider" }
     ]
 
+    // ── Info cards (2 x 3, equal height) ──────────────────────────────────
     readonly property var sections: [
-        { title: "System", role: "mauve", rows: [
+        { title: "System", rows: [
             { k: "os", label: "OS" },
             { k: "host", label: "Host" },
             { k: "kernel", label: "Kernel" },
             { k: "uptime", label: "Uptime" },
             { k: "boot", label: "Boot" }
         ] },
-        { title: "Session", role: "blue", rows: [
+        { title: "Session", rows: [
             { k: "user", label: "User" },
             { k: "shell", label: "Shell" },
             { k: "iface", label: "Interface" },
             { k: "ip", label: "IP" },
             { k: "ssid", label: "SSID" }
         ] },
-        { title: "Hardware", role: "green", rows: [
+        { title: "Hardware", rows: [
             { k: "cpu", label: "CPU" },
             { k: "gpu", label: "GPU" },
             { k: "memory", label: "Memory" },
             { k: "disk", label: "Disk" },
             { k: "battery", label: "Battery" }
         ] },
-        { title: "Display", role: "peach", rows: [
+        { title: "Display", rows: [
             { k: "res", label: "Resolution" },
             { k: "refresh", label: "Refresh" },
             { k: "monitors", label: "Monitors" },
             { k: "scale", label: "Scale" }
         ] },
-        { title: "Timex", role: "yellow", rows: [
+        { title: "Timex", rows: [
             { k: "timex_provider", label: "Provider" },
             { k: "timex_city", label: "City" },
             { k: "timex_unit", label: "Unit" },
             { k: "timex_updated", label: "Updated" },
             { k: "timex_error", label: "Error", opt: true }
         ] },
-        { title: "Customization", role: "pink", rows: [
+        { title: "Customization", rows: [
             { k: "palette", label: "Palette" },
             { k: "bar_engine", label: "Bar engine" },
             { k: "gtk_theme", label: "GTK theme" },
@@ -111,50 +114,54 @@ Item {
         ] }
     ]
 
+    readonly property int maxSectionRows: {
+        let m = 0;
+        for (let i = 0; i < sections.length; i++) m = Math.max(m, sections[i].rows.length);
+        return m;
+    }
+
     readonly property var repos: [
-        { label: "shell", icon: "󰍜", role: "mauve", url: "https://github.com/equisdots/shell" },
-        { label: "hyprland", icon: "󰣇", role: "blue", url: "https://github.com/equisdots/hyprland" },
-        { label: "timex", icon: "󰖐", role: "yellow", url: "https://github.com/equisdots/timex" },
-        { label: "dots", icon: "󰒓", role: "green", url: "https://github.com/equisdots/dots" },
-        { label: "palettes", icon: "✦", role: "peach", url: "https://github.com/equisdots/palettes" },
-        { label: "davincix", icon: "󰹑", role: "teal", url: "https://github.com/equisdots/davincix" },
-        { label: "theme-sync", icon: "󰏘", role: "pink", url: "https://github.com/equisdots/theme-sync" }
+        { label: "shell", icon: "󰍜", url: "https://github.com/equisdots/shell" },
+        { label: "hyprland", icon: "󰣇", url: "https://github.com/equisdots/hyprland" },
+        { label: "timex", icon: "󰖐", url: "https://github.com/equisdots/timex" },
+        { label: "dots", icon: "󰒓", url: "https://github.com/equisdots/dots" },
+        { label: "palettes", icon: "✦", url: "https://github.com/equisdots/palettes" },
+        { label: "davincix", icon: "󰹑", url: "https://github.com/equisdots/davincix" },
+        { label: "theme-sync", icon: "󰏘", url: "https://github.com/equisdots/theme-sync" }
     ]
 
-    // Small pill button used by the action row.
-    component ActionChip: Rectangle {
-        id: chip
+    // Flat action button (no borders).
+    component ActionButton: Rectangle {
+        id: action
         property string icon: ""
         property string label: ""
         signal clicked()
-        height: root.bar.s(30)
-        radius: root.bar.s(15)
-        width: chipRow.implicitWidth + root.bar.s(26)
-        color: chipMa.containsMouse ? Qt.alpha(root.bar.colors.mauve, 0.16) : Qt.alpha(root.bar.colors.surface0, 0.5)
-        border.width: 1
-        border.color: chipMa.containsMouse ? root.bar.colors.mauve : root.bar.colors.surface1
+        Layout.fillWidth: true
+        height: root.bar.s(32)
+        radius: root.bar.s(10)
+        color: actionMa.containsMouse ? Qt.alpha(root.bar.colors.surface1, 0.5) : Qt.alpha(root.bar.colors.surface0, 0.35)
         Behavior on color { ColorAnimation { duration: 120 } }
         Row {
-            id: chipRow
             anchors.centerIn: parent
             spacing: root.bar.s(7)
             Text {
-                text: chip.icon
+                text: action.icon
                 font.family: "Hack Nerd Font"; font.pixelSize: root.bar.s(13)
-                color: chipMa.containsMouse ? root.bar.colors.mauve : root.bar.colors.subtext0
+                color: root.bar.colors.subtext0
                 anchors.verticalCenter: parent.verticalCenter
             }
             Text {
-                text: chip.label
+                text: action.label
                 font.family: "Hack Nerd Font"; font.pixelSize: root.bar.s(11)
-                color: root.bar.colors.text
+                color: actionMa.containsMouse ? root.bar.colors.text : root.bar.colors.subtext0
                 anchors.verticalCenter: parent.verticalCenter
+                Behavior on color { ColorAnimation { duration: 120 } }
             }
         }
         MouseArea {
-            id: chipMa
+            id: actionMa
             anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
-            onClicked: chip.clicked()
+            onClicked: action.clicked()
         }
     }
 
@@ -172,9 +179,9 @@ Item {
                 boundsBehavior: Flickable.StopAtBounds
                 contentHeight: pageCol.height + bar.s(16)
                 ScrollBar.vertical: ScrollBar {
-                    width: bar.s(4)
+                    width: bar.s(3)
                     policy: ScrollBar.AsNeeded
-                    contentItem: Rectangle { radius: bar.s(2); color: bar.colors.surface2; opacity: parent.active ? 1 : 0.45 }
+                    contentItem: Rectangle { radius: bar.s(2); color: bar.colors.surface2; opacity: parent.active ? 0.8 : 0.35 }
                     background: Item {}
                 }
 
@@ -182,73 +189,85 @@ Item {
                     id: pageCol
                     x: bar.s(8); y: bar.s(8)
                     width: pageFlick.width - bar.s(16)
-                    spacing: bar.s(14)
+                    spacing: bar.s(12)
 
-                    // ── Brand header ───────────────────────────────────────
+                    // ── Header ─────────────────────────────────────────────
                     Column {
                         width: parent.width
-                        spacing: bar.s(10)
-                        topPadding: bar.s(4)
+                        spacing: bar.s(8)
+                        topPadding: bar.s(2)
                         Row {
-                            spacing: bar.s(7)
-                            Rectangle { width: bar.s(10); height: bar.s(10); radius: bar.s(5); color: bar.colors.mauve }
-                            Rectangle { width: bar.s(10); height: bar.s(10); radius: bar.s(5); color: bar.colors.blue }
-                            Rectangle { width: bar.s(10); height: bar.s(10); radius: bar.s(5); color: bar.colors.green }
+                            spacing: bar.s(6)
+                            Rectangle { width: bar.s(8); height: bar.s(8); radius: bar.s(4); color: bar.colors.mauve }
+                            Rectangle { width: bar.s(8); height: bar.s(8); radius: bar.s(4); color: bar.colors.blue }
+                            Rectangle { width: bar.s(8); height: bar.s(8); radius: bar.s(4); color: bar.colors.green }
                         }
                         Row {
                             spacing: 0
                             Text {
                                 text: "equis"
-                                font.family: "Hack Nerd Font"
-                                font.weight: Font.Black
-                                font.pixelSize: bar.s(42)
+                                font.family: "Hack Nerd Font"; font.weight: Font.Black
+                                font.pixelSize: bar.s(38)
                                 color: bar.colors.text
                             }
                             Text {
                                 text: "dots"
-                                font.family: "Hack Nerd Font"
-                                font.weight: Font.Black
-                                font.pixelSize: bar.s(42)
+                                font.family: "Hack Nerd Font"; font.weight: Font.Black
+                                font.pixelSize: bar.s(38)
                                 color: bar.colors.mauve
                             }
                         }
                         Text {
                             text: "shell · hyprland · timex · palettes · davincix · theme-sync"
-                            font.family: "Hack Nerd Font"
-                            font.pixelSize: bar.s(13)
+                            font.family: "Hack Nerd Font"; font.pixelSize: bar.s(12)
                             color: bar.colors.subtext0
                         }
-                        Flow {
-                            width: parent.width
-                            spacing: bar.s(8)
-                            Repeater {
-                                model: root.chips
-                                delegate: Rectangle {
-                                    required property var modelData
-                                    height: bar.s(32)
-                                    radius: bar.s(16)
-                                    width: chipText.implicitWidth + bar.s(26)
-                                    color: Qt.alpha(bar.colors.surface0, 0.5)
-                                    border.width: 1
-                                    border.color: bar.colors.surface1
+                    }
+
+                    // ── Stat tiles (3 x 2, uniform) ────────────────────────
+                    GridLayout {
+                        width: parent.width
+                        columns: 3
+                        columnSpacing: bar.s(10)
+                        rowSpacing: bar.s(10)
+                        Repeater {
+                            model: root.stats
+                            delegate: Rectangle {
+                                required property var modelData
+                                Layout.fillWidth: true
+                                height: bar.s(58)
+                                radius: bar.s(12)
+                                color: Qt.alpha(bar.colors.surface0, 0.35)
+                                Column {
+                                    anchors.left: parent.left
+                                    anchors.right: parent.right
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    anchors.leftMargin: bar.s(14)
+                                    anchors.rightMargin: bar.s(10)
+                                    spacing: bar.s(3)
                                     Text {
-                                        id: chipText
-                                        anchors.centerIn: parent
-                                        text: modelData.prefix + root.val(modelData.k)
-                                        font.family: "Hack Nerd Font"
-                                        font.pixelSize: bar.s(12)
-                                        color: bar.colors.subtext0
+                                        text: modelData.label
+                                        font.family: "Hack Nerd Font"; font.pixelSize: bar.s(10)
+                                        color: Qt.alpha(bar.colors.subtext0, 0.75)
+                                    }
+                                    Text {
+                                        width: parent.width
+                                        text: root.val(modelData.k)
+                                        font.family: "Hack Nerd Font"; font.weight: Font.Bold
+                                        font.pixelSize: bar.s(15)
+                                        color: bar.colors.text
+                                        elide: Text.ElideRight
                                     }
                                 }
                             }
                         }
                     }
 
-                    // ── Action row ─────────────────────────────────────────
-                    Flow {
+                    // ── Actions (one row, equal width) ─────────────────────
+                    RowLayout {
                         width: parent.width
-                        spacing: bar.s(8)
-                        ActionChip {
+                        spacing: bar.s(10)
+                        ActionButton {
                             icon: "󰆏"; label: root.copiedFlash ? "Copied!" : "Copy debug info"
                             onClicked: {
                                 Quickshell.execDetached(["bash", "-c", "bash '" + root.infoScript + "' | wl-copy"]);
@@ -256,42 +275,40 @@ Item {
                                 copiedTimer.restart();
                             }
                         }
-                        ActionChip {
+                        ActionButton {
                             icon: "󰒓"; label: "Run doctor"
                             onClicked: { root.doctorOut = "Running…"; doctorProc.running = false; doctorProc.running = true; }
                         }
-                        ActionChip {
+                        ActionButton {
                             icon: "󰚰"; label: "Updates"
                             onClicked: Quickshell.execDetached(["bash", Quickshell.env("HOME") + "/.config/hypr/scripts/qs_manager.sh", "toggle", "updater"])
                         }
-                        ActionChip {
+                        ActionButton {
                             icon: "󰈙"; label: "Docs"
                             onClicked: Quickshell.execDetached(["xdg-open", "https://github.com/equisdots"])
                         }
-                        ActionChip {
+                        ActionButton {
                             icon: "󰈂"; label: "Report issue"
                             onClicked: Quickshell.execDetached(["xdg-open", "https://github.com/equisdots/shell/issues/new"])
                         }
                     }
 
-                    // ── Doctor output ──────────────────────────────────────
+                    // ── Doctor output (flat) ───────────────────────────────
                     Rectangle {
                         width: parent.width
                         visible: root.doctorOut !== ""
-                        height: visible ? doctorCol.implicitHeight + bar.s(34) : 0
-                        radius: bar.s(18)
-                        color: Qt.alpha(bar.colors.surface0, 0.4)
-                        border.width: 1
-                        border.color: bar.colors.surface1
+                        height: visible ? doctorCol.implicitHeight + bar.s(28) : 0
+                        radius: bar.s(12)
+                        color: Qt.alpha(bar.colors.surface0, 0.35)
                         Column {
                             id: doctorCol
-                            x: bar.s(18); y: bar.s(14)
-                            width: parent.width - bar.s(60)
-                            spacing: bar.s(8)
+                            x: bar.s(16); y: bar.s(12)
+                            width: parent.width - bar.s(52)
+                            spacing: bar.s(6)
                             Text {
                                 text: "dots doctor"
-                                font.family: "Hack Nerd Font"; font.weight: Font.Black; font.pixelSize: bar.s(14)
-                                color: bar.colors.green
+                                font.family: "Hack Nerd Font"; font.weight: Font.Bold; font.pixelSize: bar.s(12)
+                                color: bar.colors.subtext1
                             }
                             Text {
                                 width: parent.width
@@ -303,81 +320,71 @@ Item {
                         }
                         MouseArea {
                             anchors.right: parent.right; anchors.top: parent.top
-                            width: bar.s(30); height: bar.s(30)
+                            width: bar.s(28); height: bar.s(28)
                             cursorShape: Qt.PointingHandCursor
                             onClicked: root.doctorOut = ""
                             Text {
                                 anchors.centerIn: parent; text: "󰅖"
-                                font.family: "Hack Nerd Font"; font.pixelSize: bar.s(14)
-                                color: bar.colors.subtext0
+                                font.family: "Hack Nerd Font"; font.pixelSize: bar.s(13)
+                                color: Qt.alpha(bar.colors.subtext0, 0.8)
                             }
                         }
                     }
 
-                    // ── Sections (grid 2 columnas, alto por contenido) ─────
+                    // ── Info cards (2 x 3, all the same height) ────────────
                     GridLayout {
                         width: parent.width
                         columns: 2
-                        columnSpacing: bar.s(12)
-                        rowSpacing: bar.s(12)
+                        columnSpacing: bar.s(10)
+                        rowSpacing: bar.s(10)
                         Repeater {
                             model: root.sections
                             delegate: Rectangle {
-                                id: secCard
                                 required property var modelData
-                                readonly property color accent: bar.colors[modelData.role] || bar.colors.mauve
                                 Layout.fillWidth: true
-                                Layout.alignment: Qt.AlignTop
-                                radius: bar.s(18)
-                                color: Qt.alpha(bar.colors.surface0, 0.4)
-                                border.width: 1
-                                border.color: bar.colors.surface1
-                                implicitHeight: secCol.implicitHeight + bar.s(34)
-                                height: implicitHeight
+                                radius: bar.s(12)
+                                color: Qt.alpha(bar.colors.surface0, 0.35)
+                                height: bar.s(52 + 24 * root.maxSectionRows)
                                 Column {
-                                    id: secCol
-                                    x: bar.s(22); y: bar.s(17)
-                                    width: parent.width - bar.s(38)
-                                    spacing: bar.s(9)
+                                    x: bar.s(16); y: bar.s(14)
+                                    width: parent.width - bar.s(32)
+                                    spacing: bar.s(6)
                                     Row {
-                                        spacing: bar.s(8)
+                                        spacing: bar.s(7)
                                         Rectangle {
-                                            width: bar.s(9); height: bar.s(9); radius: bar.s(2)
+                                            width: bar.s(6); height: bar.s(6); radius: bar.s(3)
                                             anchors.verticalCenter: parent.verticalCenter
-                                            color: secCard.accent
+                                            color: Qt.alpha(bar.colors.mauve, 0.9)
                                         }
                                         Text {
-                                            text: secCard.modelData.title
-                                            font.family: "Hack Nerd Font"
-                                            font.weight: Font.Black
-                                            font.pixelSize: bar.s(16)
-                                            color: secCard.accent
+                                            text: modelData.title
+                                            font.family: "Hack Nerd Font"; font.weight: Font.Bold
+                                            font.pixelSize: bar.s(13)
+                                            color: bar.colors.subtext1
                                         }
                                     }
-                                    Rectangle { width: parent.width; height: 1; color: Qt.alpha(secCard.accent, 0.35) }
                                     Repeater {
-                                        model: secCard.modelData.rows
+                                        model: modelData.rows
                                         delegate: Row {
                                             required property var modelData
                                             visible: !modelData.opt || root.val(modelData.k) !== "—"
-                                            width: secCol.width
+                                            height: bar.s(22)
                                             spacing: bar.s(10)
                                             Text {
-                                                width: bar.s(78)
+                                                width: bar.s(80)
+                                                anchors.verticalCenter: parent.verticalCenter
                                                 text: modelData.label
-                                                font.family: "Hack Nerd Font"
-                                                font.weight: Font.Bold
-                                                font.pixelSize: bar.s(13)
-                                                color: bar.colors.subtext0
-                                                topPadding: bar.s(1)
+                                                font.family: "Hack Nerd Font"; font.pixelSize: bar.s(12)
+                                                color: Qt.alpha(bar.colors.subtext0, 0.8)
+                                                elide: Text.ElideRight
                                             }
                                             Text {
-                                                width: secCol.width - bar.s(88)
+                                                width: parent.width - bar.s(90)
+                                                anchors.verticalCenter: parent.verticalCenter
                                                 text: root.val(modelData.k)
-                                                font.family: "Hack Nerd Font"
-                                                font.pixelSize: bar.s(13)
+                                                font.family: "Hack Nerd Font"; font.pixelSize: bar.s(12)
                                                 color: bar.colors.text
-                                                wrapMode: Text.WordWrap
+                                                elide: Text.ElideRight
                                             }
                                         }
                                     }
@@ -386,93 +393,90 @@ Item {
                         }
                     }
 
-                    // ── Repositorios (grid 3 columnas, ancho completo) ────
+                    // ── Repositories (single column, uniform rows) ─────────
                     Text {
-                        topPadding: bar.s(14)
+                        topPadding: bar.s(4)
                         text: "Repositories"
-                        font.family: "Hack Nerd Font"
-                        font.weight: Font.Black
-                        font.pixelSize: bar.s(16)
-                        color: bar.colors.text
+                        font.family: "Hack Nerd Font"; font.weight: Font.Bold
+                        font.pixelSize: bar.s(13)
+                        color: bar.colors.subtext1
                     }
-                    GridLayout {
+                    Rectangle {
                         width: parent.width
-                        columns: 3
-                        columnSpacing: bar.s(12)
-                        rowSpacing: bar.s(12)
-                        Repeater {
-                            model: root.repos
-                            delegate: Rectangle {
-                                id: repoCard
-                                required property var modelData
-                                readonly property color accent: bar.colors[modelData.role] || bar.colors.mauve
-                                readonly property string rev: (root.tick, root.info["repo_" + modelData.label] || "")
-                                Layout.fillWidth: true
-                                height: bar.s(80)
-                                radius: bar.s(16)
-                                color: repoHover.containsMouse ? Qt.alpha(accent, 0.16) : Qt.alpha(bar.colors.surface0, 0.4)
-                                border.width: 1
-                                border.color: repoHover.containsMouse ? accent : bar.colors.surface1
-                                Behavior on color { ColorAnimation { duration: 120 } }
-                                Rectangle {
-                                    width: bar.s(42); height: bar.s(42); radius: bar.s(12)
-                                    anchors.left: parent.left
-                                    anchors.leftMargin: bar.s(12)
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    color: Qt.alpha(repoCard.accent, 0.18)
-                                    Text {
-                                        anchors.centerIn: parent
-                                        text: repoCard.modelData.icon
-                                        font.family: "Hack Nerd Font"
-                                        font.pixelSize: bar.s(20)
-                                        color: repoCard.accent
+                        radius: bar.s(12)
+                        color: Qt.alpha(bar.colors.surface0, 0.35)
+                        height: repoCol.implicitHeight + bar.s(12)
+                        Column {
+                            id: repoCol
+                            x: bar.s(6); y: bar.s(6)
+                            width: parent.width - bar.s(12)
+                            Repeater {
+                                model: root.repos
+                                delegate: Rectangle {
+                                    required property var modelData
+                                    width: repoCol.width
+                                    height: bar.s(40)
+                                    radius: bar.s(9)
+                                    color: repoMa.containsMouse ? Qt.alpha(bar.colors.surface1, 0.45) : "transparent"
+                                    Behavior on color { ColorAnimation { duration: 120 } }
+                                    RowLayout {
+                                        anchors.left: parent.left
+                                        anchors.right: parent.right
+                                        anchors.leftMargin: bar.s(10)
+                                        anchors.rightMargin: bar.s(12)
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        spacing: bar.s(10)
+                                        Text {
+                                            text: modelData.icon
+                                            font.family: "Hack Nerd Font"; font.pixelSize: bar.s(15)
+                                            color: bar.colors.subtext0
+                                            Layout.alignment: Qt.AlignVCenter
+                                        }
+                                        Text {
+                                            text: "equisdots/" + modelData.label
+                                            font.family: "Hack Nerd Font"; font.pixelSize: bar.s(13)
+                                            color: bar.colors.text
+                                            Layout.alignment: Qt.AlignVCenter
+                                        }
+                                        Item { Layout.fillWidth: true }
+                                        Text {
+                                            text: {
+                                                root.tick;
+                                                let rev = root.info["repo_" + modelData.label];
+                                                return (rev !== undefined && rev !== "") ? rev : "not via dots";
+                                            }
+                                            font.family: "Hack Nerd Font"; font.pixelSize: bar.s(11)
+                                            color: Qt.alpha(bar.colors.subtext0, 0.8)
+                                            Layout.alignment: Qt.AlignVCenter
+                                        }
+                                        Text {
+                                            text: "󰏌"
+                                            font.family: "Hack Nerd Font"; font.pixelSize: bar.s(12)
+                                            color: repoMa.containsMouse ? bar.colors.mauve : Qt.alpha(bar.colors.subtext0, 0.55)
+                                            Layout.alignment: Qt.AlignVCenter
+                                            Behavior on color { ColorAnimation { duration: 120 } }
+                                        }
                                     }
-                                }
-                                Column {
-                                    anchors.left: parent.left
-                                    anchors.leftMargin: bar.s(64)
-                                    anchors.right: parent.right
-                                    anchors.rightMargin: bar.s(8)
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    spacing: bar.s(2)
-                                    Text {
-                                        width: parent.width
-                                        text: repoCard.rev !== "" ? repoCard.rev : "not installed via dots"
-                                        font.family: "Hack Nerd Font"
-                                        font.pixelSize: bar.s(11)
-                                        color: repoCard.rev !== "" ? bar.colors.subtext0 : Qt.alpha(bar.colors.subtext0, 0.6)
-                                        elide: Text.ElideRight
+                                    MouseArea {
+                                        id: repoMa
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: Quickshell.execDetached(["xdg-open", modelData.url])
                                     }
-                                    Text {
-                                        width: parent.width
-                                        text: "equisdots/" + repoCard.modelData.label
-                                        font.family: "Hack Nerd Font"
-                                        font.weight: Font.Black
-                                        font.pixelSize: bar.s(16)
-                                        color: bar.colors.text
-                                        elide: Text.ElideRight
-                                    }
-                                }
-                                MouseArea {
-                                    id: repoHover
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: Quickshell.execDetached(["xdg-open", repoCard.modelData.url])
                                 }
                             }
                         }
                     }
 
-                    // ── Footer (licencia + créditos) ───────────────────────
+                    // ── Footer ─────────────────────────────────────────────
                     Text {
-                        topPadding: bar.s(10)
-                        bottomPadding: bar.s(6)
+                        topPadding: bar.s(6)
+                        bottomPadding: bar.s(4)
                         width: parent.width
                         text: "MIT licensed · built with Quickshell · wallpaper daemon: xwww (fork of awww) · base16 palettes"
-                        font.family: "Hack Nerd Font"
-                        font.pixelSize: bar.s(11)
-                        color: Qt.alpha(bar.colors.subtext0, 0.8)
+                        font.family: "Hack Nerd Font"; font.pixelSize: bar.s(10)
+                        color: Qt.alpha(bar.colors.subtext0, 0.7)
                         horizontalAlignment: Text.AlignHCenter
                         wrapMode: Text.WordWrap
                     }
