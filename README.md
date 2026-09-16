@@ -46,7 +46,8 @@ Known pending:
 | `core/scripts/watchers/` | Data-fetcher scripts the bar polls |
 | `ui/bar/` | Bar host, engines, modules, `Colors.qml`, `edit/` + `editor/`, `popups/` |
 | `ui/panels/` | Standalone widgets (davincix, clipboard, focustime, ...) |
-| `ui/lock/`, `ui/notifications/`, `ui/widgets/` | Lock, notification layer, floating widgets |
+| `Lock.qml` (root) | PAM session lock (alternate entry point) |
+| `ui/notifications/`, `ui/widgets/` | Notification layer, floating widgets |
 | `ui/settings/tabs/` | Shared settings tabs (host API) |
 
 ## Docs

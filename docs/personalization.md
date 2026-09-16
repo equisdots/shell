@@ -167,6 +167,14 @@ Weather → *Timex layout*): `forecastEnabled`, `forecastPosition`
 `clockScale`. The settings tab writes them inside the same `timex` object as
 `provider`/`city`/`unit`.
 
+The `lock` section configures the lock screen (`Lock.qml`, the alternate
+entry point at the repo root launched by `lock.sh`):
+`revealDurationMs`, `clockPollMs`, `batteryPollMs`, `wallpaperBlur` (0–1),
+`wallpaperDim` (0–0.85, base-color overlay), `showClock`, `showBattery`,
+`showPower` and `clockScale` (0.6–1.6). It always follows the active palette
+and the current wallpaper (the davincix cache that xwww updates when a
+wallpaper is applied).
+
 Each section mirrors the subsystem's defaults (sizes, timeouts, poll rates,
 booleans). API: `defaults(section)`, `normalize(section, raw)`,
 `value(section, raw, key)`, `setOption(section, raw, key, value)`,

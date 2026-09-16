@@ -4,6 +4,8 @@
 
 ```
 Shell.qml                  entry (imports ./ui, ./ui/bar, ./ui/widgets)
+Lock.qml                   alternate entry: PAM session lock (WlSessionLock,
+                           launched by lock.sh; imports core/ + ui/bar)
 ├── core/                  services and contracts (no visuals)
 │   ├── Config.qml         settings.json (rawSettings + setSetting/updateJsonBulk)
 │   ├── Caching.qml        paths: cacheDir, stateDir, runDir, getCacheDir/getRunDir
@@ -35,7 +37,6 @@ Shell.qml                  entry (imports ./ui, ./ui/bar, ./ui/widgets)
     ├── notifications/     NotificationPopups
     ├── settings/tabs/     shared tabs (General, Keybind, Monitors, Startup,
     │                      Weather) with the `host` contract
-    ├── lock/Lock.qml
     └── widgets/           floating widget system (faces, redactor, loader)
 ```
 

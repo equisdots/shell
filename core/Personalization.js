@@ -17,11 +17,12 @@ var SECTIONS = {
         revealDurationMs: 300,
         clockPollMs: 1000,
         batteryPollMs: 5000,
-        weatherPollMs: 900000,
-        keyboardPollMs: 150,
-        carouselItemWidth: 400,
-        carouselGapWidth: 220,
-        clockWidth: 170
+        wallpaperBlur: 1.0,   // 0 = off
+        wallpaperDim: 0.45,   // base-color overlay opacity on the wallpaper
+        showClock: true,      // clock below the password field
+        showBattery: true,    // battery chip in the corner (laptops)
+        showPower: true,      // power off / reboot row
+        clockScale: 1.0       // 0.6 – 1.6
     },
     "battery": {
         popupWidth: 801,

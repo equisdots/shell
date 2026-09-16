@@ -17,7 +17,7 @@ Windows mounted by `Shell.qml`:
   OSD-like surfaces).
 - **`ui/widgets/Widgets.qml`** — the desktop-widget system (one `WidgetLoader`
   per screen, Bottom-layer windows). See `docs/desktop-widgets.md`.
-- **`ui/lock/Lock.qml`** — PAM session lock (`WlSessionLock`).
+- **`Lock.qml`** (repo root, alternate entry) — PAM session lock (`WlSessionLock`).
 - **`ui/ScreenshotOverlay.qml`** — region selection, recording controls, QR
   scan, magnifier.
 
@@ -56,7 +56,7 @@ dispatch through `qs_manager.sh` → `Main.qml` → `core/WindowRegistry.js`:
 | Quick Actions | `ui/panels/quickactions/` (`DrawAction.qml`, `SystemUsage.qml`, `Timer.qml`) | (internal) | Varies |
 | Bar Editor | `ui/bar/BarEditor.qml` | SUPER + SHIFT + S / D | Center |
 | Widget Redactor | `ui/widgets/WidgetRedactor.qml` | SUPER + SHIFT + W | Center |
-| Lock | `ui/lock/Lock.qml` | SUPER + L (`lock.sh`) | Fullscreen |
+| Lock | `Lock.qml` | SUPER + L (`lock.sh`) | Fullscreen |
 
 Widget geometry is defined in `core/WindowRegistry.js` (`getLayout()` +
 `positionLayout()`), with responsive scaling based on screen size and the user
