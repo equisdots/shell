@@ -6,9 +6,9 @@ import Quickshell.Io
 import "../../../core"
 
 // ═══════════════════════════════════════════════════════════════════════════
-// GuidePage (About) — equisdots: brand header, system information from the
-// machine itself (sysinfo.sh) in uniform cards, and repo cards. Same card
-// language as the Modules page; palette-driven.
+// GuidePage (About) — equisdots: brand header, live system + stack info
+// (sysinfo.sh), timex/customization summary, action buttons and repo cards.
+// Same card language as the Modules page; palette-driven.
 // ═══════════════════════════════════════════════════════════════════════════
 Item {
     id: root
@@ -16,10 +16,19 @@ Item {
     property var bar: null
     property var info: ({})
     property int tick: 0
+    property string doctorOut: ""
+    property bool copiedFlash: false
+    property string infoScript: Quickshell.env("HOME") + "/.config/hypr/scripts/quickshell/ui/bar/popups/guide/sysinfo.sh"
+
+    function val(key) {
+        root.tick;
+        let v = root.info[key];
+        return (v !== undefined && v !== null && String(v).trim() !== "") ? String(v) : "—";
+    }
 
     Process {
         id: sysinfoProc
-        command: ["bash", Quickshell.env("HOME") + "/.config/hypr/scripts/quickshell/ui/bar/popups/guide/sysinfo.sh"]
+        command: ["bash", root.infoScript]
         running: true
         stdout: StdioCollector {
             onStreamFinished: {
@@ -35,48 +44,119 @@ Item {
         }
     }
 
+    Process {
+        id: doctorProc
+        command: ["bash", "-c",
+            "D=\"$HOME/.local/share/equisdots/dots/dots\"; " +
+            "if [ -x \"$D\" ]; then bash \"$D\" doctor 2>&1; " +
+            "else echo 'dots is not installed (run: dots system && dots install)'; fi"]
+        running: false
+        stdout: StdioCollector {
+            onStreamFinished: root.doctorOut = this.text.trim() !== "" ? this.text.trim() : "no output"
+        }
+    }
+
+    Timer { id: copiedTimer; interval: 1600; onTriggered: root.copiedFlash = false }
+
+    // ── Summary strip (stack + customization, not duplicating the cards) ──
+    readonly property var chips: [
+        { k: "stack_ver", prefix: "equisdots " },
+        { k: "hypr_ver", prefix: "Hyprland " },
+        { k: "qs_ver", prefix: "Quickshell " },
+        { k: "palette", prefix: "palette " },
+        { k: "bar_engine", prefix: "bar " },
+        { k: "timex_provider", prefix: "timex " }
+    ]
+
     readonly property var sections: [
         { title: "System", role: "mauve", rows: [
             { k: "os", label: "OS" },
             { k: "host", label: "Host" },
             { k: "kernel", label: "Kernel" },
-            { k: "wm", label: "WM" }
+            { k: "uptime", label: "Uptime" },
+            { k: "boot", label: "Boot" }
         ] },
         { title: "Session", role: "blue", rows: [
             { k: "user", label: "User" },
             { k: "shell", label: "Shell" },
-            { k: "uptime", label: "Uptime" }
+            { k: "iface", label: "Interface" },
+            { k: "ip", label: "IP" },
+            { k: "ssid", label: "SSID" }
         ] },
         { title: "Hardware", role: "green", rows: [
             { k: "cpu", label: "CPU" },
             { k: "gpu", label: "GPU" },
             { k: "memory", label: "Memory" },
-            { k: "disk", label: "Disk" }
+            { k: "disk", label: "Disk" },
+            { k: "battery", label: "Battery" }
         ] },
         { title: "Display", role: "peach", rows: [
             { k: "res", label: "Resolution" },
             { k: "refresh", label: "Refresh" },
             { k: "monitors", label: "Monitors" },
             { k: "scale", label: "Scale" }
+        ] },
+        { title: "Timex", role: "yellow", rows: [
+            { k: "timex_provider", label: "Provider" },
+            { k: "timex_city", label: "City" },
+            { k: "timex_unit", label: "Unit" },
+            { k: "timex_updated", label: "Updated" },
+            { k: "timex_error", label: "Error", opt: true }
+        ] },
+        { title: "Customization", role: "pink", rows: [
+            { k: "palette", label: "Palette" },
+            { k: "bar_engine", label: "Bar engine" },
+            { k: "gtk_theme", label: "GTK theme" },
+            { k: "stack_date", label: "Stack date" }
         ] }
-    ]
-
-    readonly property var chips: [
-        { k: "os", label: "OS" },
-        { k: "host", label: "Host" },
-        { k: "kernel", label: "Kernel" },
-        { k: "wm", label: "WM" },
-        { k: "cpu", label: "CPU" }
     ]
 
     readonly property var repos: [
         { label: "shell", icon: "󰍜", role: "mauve", url: "https://github.com/equisdots/shell" },
         { label: "hyprland", icon: "󰣇", role: "blue", url: "https://github.com/equisdots/hyprland" },
+        { label: "timex", icon: "󰖐", role: "yellow", url: "https://github.com/equisdots/timex" },
         { label: "dots", icon: "󰒓", role: "green", url: "https://github.com/equisdots/dots" },
         { label: "palettes", icon: "✦", role: "peach", url: "https://github.com/equisdots/palettes" },
         { label: "davincix", icon: "󰹑", role: "teal", url: "https://github.com/equisdots/davincix" },
         { label: "theme-sync", icon: "󰏘", role: "pink", url: "https://github.com/equisdots/theme-sync" }
     ]
+
+    // Small pill button used by the action row.
+    component ActionChip: Rectangle {
+        id: chip
+        property string icon: ""
+        property string label: ""
+        signal clicked()
+        height: root.bar.s(30)
+        radius: root.bar.s(15)
+        width: chipRow.implicitWidth + root.bar.s(26)
+        color: chipMa.containsMouse ? Qt.alpha(root.bar.colors.mauve, 0.16) : Qt.alpha(root.bar.colors.surface0, 0.5)
+        border.width: 1
+        border.color: chipMa.containsMouse ? root.bar.colors.mauve : root.bar.colors.surface1
+        Behavior on color { ColorAnimation { duration: 120 } }
+        Row {
+            id: chipRow
+            anchors.centerIn: parent
+            spacing: root.bar.s(7)
+            Text {
+                text: chip.icon
+                font.family: "Hack Nerd Font"; font.pixelSize: root.bar.s(13)
+                color: chipMa.containsMouse ? root.bar.colors.mauve : root.bar.colors.subtext0
+                anchors.verticalCenter: parent.verticalCenter
+            }
+            Text {
+                text: chip.label
+                font.family: "Hack Nerd Font"; font.pixelSize: root.bar.s(11)
+                color: root.bar.colors.text
+                anchors.verticalCenter: parent.verticalCenter
+            }
+        }
+        MouseArea {
+            id: chipMa
+            anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+            onClicked: chip.clicked()
+        }
+    }
 
     Loader { id: body; anchors.fill: parent; active: root.bar !== null; sourceComponent: pageBody }
 
@@ -104,7 +184,7 @@ Item {
                     width: pageFlick.width - bar.s(16)
                     spacing: bar.s(14)
 
-                    // ── Brand header (apilado: sin solapes posibles) ───────
+                    // ── Brand header ───────────────────────────────────────
                     Column {
                         width: parent.width
                         spacing: bar.s(10)
@@ -133,7 +213,7 @@ Item {
                             }
                         }
                         Text {
-                            text: "shell · hyprland · palettes · davincix · theme-sync"
+                            text: "shell · hyprland · timex · palettes · davincix · theme-sync"
                             font.family: "Hack Nerd Font"
                             font.pixelSize: bar.s(13)
                             color: bar.colors.subtext0
@@ -154,7 +234,7 @@ Item {
                                     Text {
                                         id: chipText
                                         anchors.centerIn: parent
-                                        text: modelData.label + ": " + (root.info[modelData.k] || "…")
+                                        text: modelData.prefix + root.val(modelData.k)
                                         font.family: "Hack Nerd Font"
                                         font.pixelSize: bar.s(12)
                                         color: bar.colors.subtext0
@@ -164,7 +244,77 @@ Item {
                         }
                     }
 
-                    // ── Secciones (grid 2 columnas, estilo Modules) ────────
+                    // ── Action row ─────────────────────────────────────────
+                    Flow {
+                        width: parent.width
+                        spacing: bar.s(8)
+                        ActionChip {
+                            icon: "󰆏"; label: root.copiedFlash ? "Copied!" : "Copy debug info"
+                            onClicked: {
+                                Quickshell.execDetached(["bash", "-c", "bash '" + root.infoScript + "' | wl-copy"]);
+                                root.copiedFlash = true;
+                                copiedTimer.restart();
+                            }
+                        }
+                        ActionChip {
+                            icon: "󰒓"; label: "Run doctor"
+                            onClicked: { root.doctorOut = "Running…"; doctorProc.running = false; doctorProc.running = true; }
+                        }
+                        ActionChip {
+                            icon: "󰚰"; label: "Updates"
+                            onClicked: Quickshell.execDetached(["bash", Quickshell.env("HOME") + "/.config/hypr/scripts/qs_manager.sh", "toggle", "updater"])
+                        }
+                        ActionChip {
+                            icon: "󰈙"; label: "Docs"
+                            onClicked: Quickshell.execDetached(["xdg-open", "https://github.com/equisdots"])
+                        }
+                        ActionChip {
+                            icon: "󰈂"; label: "Report issue"
+                            onClicked: Quickshell.execDetached(["xdg-open", "https://github.com/equisdots/shell/issues/new"])
+                        }
+                    }
+
+                    // ── Doctor output ──────────────────────────────────────
+                    Rectangle {
+                        width: parent.width
+                        visible: root.doctorOut !== ""
+                        height: visible ? doctorCol.implicitHeight + bar.s(34) : 0
+                        radius: bar.s(18)
+                        color: Qt.alpha(bar.colors.surface0, 0.4)
+                        border.width: 1
+                        border.color: bar.colors.surface1
+                        Column {
+                            id: doctorCol
+                            x: bar.s(18); y: bar.s(14)
+                            width: parent.width - bar.s(60)
+                            spacing: bar.s(8)
+                            Text {
+                                text: "dots doctor"
+                                font.family: "Hack Nerd Font"; font.weight: Font.Black; font.pixelSize: bar.s(14)
+                                color: bar.colors.green
+                            }
+                            Text {
+                                width: parent.width
+                                text: root.doctorOut
+                                font.family: "Hack Nerd Font"; font.pixelSize: bar.s(11)
+                                color: bar.colors.subtext0
+                                wrapMode: Text.WrapAnywhere
+                            }
+                        }
+                        MouseArea {
+                            anchors.right: parent.right; anchors.top: parent.top
+                            width: bar.s(30); height: bar.s(30)
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: root.doctorOut = ""
+                            Text {
+                                anchors.centerIn: parent; text: "󰅖"
+                                font.family: "Hack Nerd Font"; font.pixelSize: bar.s(14)
+                                color: bar.colors.subtext0
+                            }
+                        }
+                    }
+
+                    // ── Sections (grid 2 columnas, alto por contenido) ─────
                     GridLayout {
                         width: parent.width
                         columns: 2
@@ -182,7 +332,8 @@ Item {
                                 color: Qt.alpha(bar.colors.surface0, 0.4)
                                 border.width: 1
                                 border.color: bar.colors.surface1
-                                height: bar.s(184)
+                                implicitHeight: secCol.implicitHeight + bar.s(34)
+                                height: implicitHeight
                                 Column {
                                     id: secCol
                                     x: bar.s(22); y: bar.s(17)
@@ -208,6 +359,7 @@ Item {
                                         model: secCard.modelData.rows
                                         delegate: Row {
                                             required property var modelData
+                                            visible: !modelData.opt || root.val(modelData.k) !== "—"
                                             width: secCol.width
                                             spacing: bar.s(10)
                                             Text {
@@ -221,7 +373,7 @@ Item {
                                             }
                                             Text {
                                                 width: secCol.width - bar.s(88)
-                                                text: (root.tick, root.info[modelData.k] || "…")
+                                                text: root.val(modelData.k)
                                                 font.family: "Hack Nerd Font"
                                                 font.pixelSize: bar.s(13)
                                                 color: bar.colors.text
@@ -254,6 +406,7 @@ Item {
                                 id: repoCard
                                 required property var modelData
                                 readonly property color accent: bar.colors[modelData.role] || bar.colors.mauve
+                                readonly property string rev: (root.tick, root.info["repo_" + modelData.label] || "")
                                 Layout.fillWidth: true
                                 height: bar.s(80)
                                 radius: bar.s(16)
@@ -284,15 +437,15 @@ Item {
                                     spacing: bar.s(2)
                                     Text {
                                         width: parent.width
-                                        text: "equisdots/" + repoCard.modelData.label
+                                        text: repoCard.rev !== "" ? repoCard.rev : "not installed via dots"
                                         font.family: "Hack Nerd Font"
-                                        font.pixelSize: bar.s(12)
-                                        color: bar.colors.subtext0
+                                        font.pixelSize: bar.s(11)
+                                        color: repoCard.rev !== "" ? bar.colors.subtext0 : Qt.alpha(bar.colors.subtext0, 0.6)
                                         elide: Text.ElideRight
                                     }
                                     Text {
                                         width: parent.width
-                                        text: repoCard.modelData.label
+                                        text: "equisdots/" + repoCard.modelData.label
                                         font.family: "Hack Nerd Font"
                                         font.weight: Font.Black
                                         font.pixelSize: bar.s(16)
@@ -309,6 +462,19 @@ Item {
                                 }
                             }
                         }
+                    }
+
+                    // ── Footer (licencia + créditos) ───────────────────────
+                    Text {
+                        topPadding: bar.s(10)
+                        bottomPadding: bar.s(6)
+                        width: parent.width
+                        text: "MIT licensed · built with Quickshell · wallpaper daemon: xwww (fork of awww) · base16 palettes"
+                        font.family: "Hack Nerd Font"
+                        font.pixelSize: bar.s(11)
+                        color: Qt.alpha(bar.colors.subtext0, 0.8)
+                        horizontalAlignment: Text.AlignHCenter
+                        wrapMode: Text.WordWrap
                     }
                 }
             }

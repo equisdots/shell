@@ -79,7 +79,7 @@ var ENGINES = [
       description: "Zone bar: islands in start / center / end zones, module DnD and per-zone backgrounds.",
       capabilities: { zones: true, autohide: false, distinctPills: false, fillStyle: false, hotSwitch: true } },
     { id: "classic", label: "ClassicBar", icon: "\u{f0e51}", accentRole: "blue",
-      description: "Classicantium bar: left / center / right sections, autohide, distinct pills and fill styles.",
+      description: "Classic bar: left / center / right sections, autohide, distinct pills and fill styles.",
       capabilities: { zones: false, autohide: true, distinctPills: true, fillStyle: true, hotSwitch: true } }
 ];
 function engines() {
@@ -865,11 +865,11 @@ function flatten(bar) {
 }
 
 // --- classicbar: classic left/center/right engine (Phase D4-E1a, pure) --------------
-// The classic classicantinum-style bar lives under settings.json's top-level
+// The classic reference-style bar lives under settings.json's top-level
 // "classicbar" key; the zone-based "bar" engine above stays untouched. A classicbar
 // has three sections (left/center/right) whose lists hold loose module ids and
 // arrays ("groups"): a group is ONE visual pill hosting several modules (the
-// counterpart of classicantinum's center pill ["timedate", "info", "weather"]).
+// counterpart of reference's center pill ["timedate", "info", "weather"]).
 // Every function here is pure: it returns fresh objects and never mutates its
 // inputs.
 
@@ -893,17 +893,17 @@ function classicTokenModules(id) {
 // exactly ONE group of three (the timeless pill), while left/right mix loose
 // ids with a single system group on the right.
 //
-// Visual keys (Phase R1, classicantium BarTab parity):
-//   distinctPills  — bool, default false (classicantium Bar.qml:93-96 reads
+// Visual keys (Phase R1, reference BarTab parity):
+//   distinctPills  — bool, default false (reference Bar.qml:93-96 reads
 //                    bar.distinctPills with the same default; only meaningful
 //                    for the solid/fill strip — see ClassicBar.qml).
 //   thickness      — px (24-120) or null = "inherit the host bar thickness"
 //                    (null is the DEFAULT: the classic bar keeps the band size
 //                    the user's bar engine has; an explicit number overrides
-//                    it). classicantium has no knob (Bar.qml:244 fixes barHeight
+//                    it). reference has no knob (Bar.qml:244 fixes barHeight
 //                    at s(40)); the knob exists here because hyprland's bar
 //                    thickness is user-tunable and the engines share a window.
-//   opacity        — percent 20-100 (default 100, like classicantium BarTab's
+//   opacity        — percent 20-100 (default 100, like reference BarTab's
 //                    bar.opacity default 100, BarTab.qml:33-49). Drives the
 //                    strip alpha (opacity/100); upstream range is 1-100 but we
 //                    clamp at 20 so the strip never becomes unreadable.
@@ -917,8 +917,8 @@ function classicbarDefaults() {
         distinctPills: false,
         roundness: 0.6,          // island/strip/group corner radius knob (0..1)
         timeFormat: "HH:mm:ss",  // clock island format (classic engine)
-        thickness: 40,           // classicantium band s(40) parity; null = inherit bar thickness
-        opacity: 100,          // opaque strip (classicantium default)
+        thickness: 40,           // reference band s(40) parity; null = inherit bar thickness
+        opacity: 100,          // opaque strip (reference default)
         modules: {
             left: ["help", "search", "settings", "media"],
             center: [["time", "date", "weather"]],

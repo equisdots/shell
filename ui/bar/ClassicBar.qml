@@ -5,7 +5,7 @@ import "BarLayout.js" as BarLayout
 // ============================================================================
 // ClassicBar — the classic left/center/right bar engine (Phase D4-E1b + R1).
 //
-// Renders the "classicantinum-style" bar on top of the EXISTING bar host
+// Renders the "reference-style" bar on top of the EXISTING bar host
 // (bar/Bar.qml): modules are the same topbar/modules/*.qml islands, the
 // contract injected per slot is the standard one (bar, colors, zoneReady,
 // slotIndex, effectiveBorderWidth/Color, unified) and all data comes from the
@@ -22,44 +22,44 @@ import "BarLayout.js" as BarLayout
 // thickness/opacity) are applied by the HOST via applyClassicVisuals() — ClassicBar
 // never touches settings and never writes the "bar" key.
 //
-// ── Phase R1: classicantium visual-parity map (values + upstream citations) ─────
-// The classic engine's geometry mirrors classicantium's Bar.qml/TopBar.qml with
+// ── Phase R1: reference visual-parity map (values + upstream citations) ─────
+// The classic engine's geometry mirrors reference's Bar.qml/TopBar.qml with
 // our own scaler/role vocabulary (bar.s(), colors.*):
 //
 //   band cross size  = bar.barHeight/bar.barWidth of the HOST window, i.e.
-//                      s(classicbar.thickness ?? bar.thickness) — classicantium's
+//                      s(classicbar.thickness ?? bar.thickness) — reference's
 //                      fixed barHeight s(40) (Bar.qml:244).
 //   edge breathing   = host margins: s(4) off the screen edge in every
 //                      non-fill state, 0 in fill (Bar.qml:265-270), applied
 //                      by the host (edgeGap override + fill margin rules).
-//   strip radius     = solid: bar.s(8)*roundness — classicantium's strip uses
+//   strip radius     = solid: bar.s(8)*roundness — reference's strip uses
 //                      the theme borderRadius (8 raw, ThemeBackend.qml:10);
 //                      fill: bar.s(12)*roundness on the far-side corners with
 //                      the screen-edge side flat (Bar.qml:245 cornerRadius
 //                      s(12) + the fill corner canvases, TopBar.qml:513-615).
 //   unit chrome      = groups and, with distinctPills on a flat strip, loose
-//                      modules get a subtle raised segment. Classicantium paints
+//                      modules get a subtle raised segment. Reference paints
 //                      groupBg over the FULL bar height (TopBar.qml:617-679,
 //                      height barHeight, y centered) in modular (base tone)
 //                      and hides it on plain solid/fill (visible only when
 //                      distinctPills, TopBar.qml:655) — same rule here. The
 //                      s(3) cross inset of the distinct slabs equals
-//                      classicantium's barHeight-6 pills (TopBar.qml:629).
+//                      reference's barHeight-6 pills (TopBar.qml:629).
 //   group members    = unified:true pills with 0 spacing; every island is
-//                      centered on its own band lane (classicantium positions
+//                      centered on its own band lane (reference positions
 //                      every widget through getModuleY, TopBar.qml:450-459).
-//   item spacing     = s(2) on the strip / s(8) in modular (classicantium uses
+//   item spacing     = s(2) on the strip / s(8) in modular (reference uses
 //                      a flat s(2) gap, TopBar.qml:237; modular keeps the
 //                      bar's island air — deliberate difference).
 //   hide sliver      = s(4), the clickable edge tab (Bar.qml:275-276
 //                      activeMaskHeight s(4) while hidden).
 //
-// Distinct pills semantics (classicantium Bar.qml:93-96 + TopBar module
+// Distinct pills semantics (reference Bar.qml:93-96 + TopBar module
 // plumbing): a per-unit background that only makes sense ON a flat strip —
 // classicbar.distinctPills renders loose modules and groups as individually
 // visible slabs there; in modular it does nothing (islands carry their own
 // fill). Tones are the hyprland raised-on-strip role (colors.surface1 at
-// 0.55) instead of classicantium's Qt.darker(surface0,1.15) — our palette
+// 0.55) instead of reference's Qt.darker(surface0,1.15) — our palette
 // equivalent of "slightly lighter than the strip".
 // ============================================================================
 
@@ -91,11 +91,11 @@ Item {
     readonly property bool distinctPills: classicConfig.distinctPills === true
     readonly property bool autohideOn: classicConfig.autohide === true
     readonly property int pad: bar.s(6)
-    // classicantium spacing: s(2) between adjacent units on the strip
+    // reference spacing: s(2) between adjacent units on the strip
     // (TopBar.qml:237 gap s(2)); modular keeps the bar island air (s(8),
     // deliberate difference — see the header map).
     readonly property int itemGap: stripShown ? bar.s(2) : bar.s(8)
-    // Themed corner radii. Classicantium derives them from its theme
+    // Themed corner radii. Reference derives them from its theme
     // (ThemeBackend.borderRadius = 8 raw) and the fixed window cornerRadius
     // s(12) (Bar.qml:245); our equivalent scales the shared roundness knob:
     readonly property real effRoundness: typeof bar.roundness === "number" ? bar.roundness : 1
@@ -107,7 +107,7 @@ Item {
     // The bar is flush against its screen edge (fill always, autohide keeps a
     // flush s(4) reveal sliver): the edge-side corners then go flat.
     readonly property bool edgeFlush: bar.classicEdgeFlush === true
-    // Cross-axis inset of the distinct unit slabs: classicantium shrinks each
+    // Cross-axis inset of the distinct unit slabs: reference shrinks each
     // pill to barHeight-6 (TopBar.qml:629), i.e. s(3) per side.
     readonly property int unitInset: bar.s(3)
 
@@ -127,7 +127,7 @@ Item {
     // bar.classicAutohideRevealed), so this file only writes it. Hiding slides
     // the band out of the window along the cross axis, leaving exactly
     // bar.s(4) inside — the tab sliver, flush at the screen edge (the host
-    // zeroes the edge margin while autohide is on; classicantium keeps an s(4)
+    // zeroes the edge margin while autohide is on; reference keeps an s(4)
     // clickable sliver at the edge too — Bar.qml:275-276). Modular has no
     // strip, but the same magnitude still clears every island (they are
     // centered and never reach the last s(4) of the frame; only fullHeight
@@ -160,11 +160,11 @@ Item {
 
         // --- strip rectangle (solid/fill styles) -----------------------------
         // Base color at the bar opacity (bar.barOpacity = classicbar.opacity/100,
-        // applied by the host). Corner rules (classicantium parity):
+        // applied by the host). Corner rules (reference parity):
         //   • solid: rectRadius all around (the strip floats s(4) off the
         //     screen edge, so every corner is rounded);
         //   • fill: the screen-edge side stays flat, the far-side corners use
-        //     fillCornerRadius (classicantium paints those with corner canvases,
+        //     fillCornerRadius (reference paints those with corner canvases,
         //     TopBar.qml:513-615);
         //   • autohide: the strip is flush while revealed, so its edge-side
         //     corners are flat too (same rule as fill).
@@ -256,7 +256,7 @@ Item {
         // Group entry (modelData.isGroup === true): one chrome rectangle
         // (the "group pill") hosting one module per id with unified:true and
         // 0 spacing. Slot lanes span the FULL band cross extent and every
-        // island is centered on its own lane, exactly like classicantium
+        // island is centered on its own lane, exactly like reference
         // positions widgets individually (TopBar.qml getModuleY) — a row of
         // mixed-height islands never top-aligns.
         //

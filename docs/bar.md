@@ -7,7 +7,7 @@ interchangeable engines** on any screen edge (`top` / `bottom` / `left` /
 - **`bar`** (zones engine, default) — islands grouped into data-driven zones
   (`start` / `center` / `end`) with module drag & drop and per-zone backgrounds.
 - **`classic`** (`ui/bar/ClassicBar.qml`) — left/center/right sections, autohide,
-  distinct pills and fill styles (classicantium geometry).
+  distinct pills and fill styles (classic bar geometry).
 
 Both engines share the palette, the 18 modules and the Bar Editor. Every key
 below lives under the top-level `bar` object unless stated otherwise.
@@ -355,26 +355,26 @@ axis flips.
 
 ---
 
-## 9. Classic engine — deliberate differences vs Serpantium
+## 9. Classic engine — deliberate design decisions
 
-The classic engine reproduces Serpantium's bar geometry with the equisdots
+The classic engine reproduces a proven classic bar geometry with the equisdots
 vocabulary (`bar.s()` scaling, `colors.*` roles, shared modules). Documented
 deliberate differences:
 
 - **Islands keep the bar capsule language** (full capsule ends, translucent
-  `surface0` fills, accent solid pills) instead of Serpantium's `base`-colored
+  `surface0` fills, accent solid pills) instead of the classic `base`-colored
   rounded rects — "classic bar geometry + equisdots islands".
 - **Vertical bars** keep the bar minimum cross size of `s(70)` because the
   shared compact modules need the width; `classicbar.thickness` only widens a
   vertical bar beyond that.
 - **Group chrome tones** use the unified-zone `colors.surface0` (modular) and
-  `colors.surface1` @ 0.55 (strip) instead of Serpantium's derived tones.
+  `colors.surface1` @ 0.55 (strip) instead of derived tones.
 - **Opacity** only fades the strip (solid/fill); modular island fills keep
   their own translucency.
 - **Solid strip radius** derives from the roundness knob and the strip can take
   a 1px border via the bar border keys.
 - Modules are equisdots-native (time+date separate islands, weather island,
-  tray, update island…), not Serpantium's combined widgets.
+  tray, update island…), not combined legacy widgets.
 
 ---
 

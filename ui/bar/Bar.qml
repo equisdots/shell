@@ -331,11 +331,11 @@ Variants {
                 if (f.pillSolid !== undefined) barWindow.pillSolid = f.pillSolid;
                 if (f.barBg !== undefined) barWindow.barBg = f.barBg;
                 if (f.edgeGap !== undefined) barWindow.edgeGap = f.edgeGap;
-                // Distinct pills (classicantium BarTab, shown for modular + solid):
+                // Distinct pills (reference BarTab, shown for modular + solid):
                 // island fills become SOLID so each pill reads clearly even in
                 // modular; on the strip the ClassicBar draws the raised slabs.
                 if (barWindow.classicConfig.distinctPills === true) barWindow.pillSolid = true;
-                // Classicantium corners follow the theme radius; ours is a knob
+                // Reference corners follow the theme radius; ours is a knob
                 // (classicbar.roundness) mapped onto the shared pillRadius() so
                 // islands/strip/groups stay in sync. Restored on engine exit.
                 barWindow.roundness = (typeof barWindow.classicConfig.roundness === "number")
@@ -354,10 +354,10 @@ Variants {
                     barWindow.orientation = (barWindow.position === "top" || barWindow.position === "bottom") ? "horizontal" : "vertical";
                 }
                 barWindow.accentTintMode = barWindow.classicConfig.style !== "modular";
-                // ---- Phase R1: classicbar visual keys (classicantium BarTab parity) ----
+                // ---- Phase R1: classicbar visual keys (reference BarTab parity) ----
                 // These live on the host while the classic engine renders and are
                 // restored by syncBarConfig() when the engine leaves "classic":
-                //   • edgeGap: classicantium floats its bar s(4) off the screen edge
+                //   • edgeGap: reference floats its bar s(4) off the screen edge
                 //     in every non-fill style (Bar.qml:265-270 margins s(4)); the
                 //     bar's default 8px edge breathing would read differently on
                 //     the classic bar. Style flags may still force 0 (fill).
@@ -527,7 +527,7 @@ Variants {
             // The bar margins offset the whole surface from the anchored edges:
             // the screen-edge side carries edgeGap, the other sides s(4). While
             // the classic engine is active the values above are overridden:
-            //   • fill:        EVERY margin is 0 — classicantium's fill reaches all
+            //   • fill:        EVERY margin is 0 — reference's fill reaches all
             //                  four screen edges (Bar.qml:265-270 margins 0 when
             //                  isFill). WidthPercent is forced to 100 so the
             //                  strip truly spans the whole screen.
@@ -535,9 +535,9 @@ Variants {
             //                  that ClassicBar leaves after the hide translate sits
             //                  flush at the very screen edge;
             //   • edge side:   s(4) in every other classic state (applyClassicVisuals
-            //                  overrides edgeGap to 4 — classicantium margins s(4));
+            //                  overrides edgeGap to 4 — reference margins s(4));
             //   • cross sides (left/right on top/bottom bars and vice versa)
-            //                  keep their s(4) — identical to classicantium.
+            //                  keep their s(4) — identical to reference.
             // Everything restores itself on the way back to the bar engine
             // because the expressions below fall through to the bar formula.
             margins {

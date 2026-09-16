@@ -6,7 +6,7 @@ import "../BarLayout.js" as BarLayout
 import "../../../core"
 
 // ═══════════════════════════════════════════════════════════════════════════
-// GeneralPage — BarEditor tab: engine switcher (bar / classicantinum).
+// GeneralPage — BarEditor tab: engine switcher (bar / classic).
 //
 // Fase 5 (look Guide): título s(24) Black + grid de OptionCards (template
 // cards GP:1276-1302); sin filas con cajita decorativa. Con engine classic se
