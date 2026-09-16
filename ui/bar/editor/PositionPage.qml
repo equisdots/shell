@@ -127,10 +127,17 @@ Item {
                             Rectangle {
                                 id: barMock
                                 readonly property bool vertical: posPreview.activePos === "left" || posPreview.activePos === "right"
+                                // Grosor real del engine activo, escalado a la miniatura
+                                readonly property real mockThick: {
+                                    let t = (bar.engine === "classic")
+                                        ? (bar.classic.thickness || 36)
+                                        : (bar.bar.thickness || 36);
+                                    return Math.max(bar.s(6), Math.min(bar.s(20), Math.round(bar.s(t) * 0.28)));
+                                }
                                 x: posPreview.activePos === "right" ? parent.width - width : 0
                                 y: posPreview.activePos === "bottom" ? parent.height - height : 0
-                                width: vertical ? bar.s(10) : parent.width
-                                height: vertical ? parent.height : bar.s(10)
+                                width: vertical ? mockThick : parent.width
+                                height: vertical ? parent.height : mockThick
                                 radius: bar.s(4)
                                 color: Qt.alpha(bar.colors.mauve, 0.85)
                                 border.width: 1

@@ -650,6 +650,7 @@ Item {
             "s_startup":  "../settings/tabs/StartupTab.qml",
             // Páginas del editor (bar = root)
             "d_engine":     "editor/GeneralPage.qml",
+            "d_widgets":    "editor/WidgetsPage.qml",
             "d_position":   "editor/PositionPage.qml",
             "d_style":      "editor/BarStylePage.qml",
             "d_palette":    "editor/PalettePage.qml",
@@ -676,6 +677,7 @@ Item {
             "s_monitors": sMonitorsLoader,
             "s_startup":  sStartupLoader,
             "d_engine":     dEngineLoader,
+            "d_widgets":    dWidgetsLoader,
             "d_position":   dPositionLoader,
             "d_style":      dStyleLoader,
             "d_palette":    dPaletteLoader,
@@ -1588,6 +1590,16 @@ Item {
                     scale: 0.95 + (0.05 * root.introContent)
                     transform: Translate { y: s(20) * (1.0 - root.introContent) }
 
+                    Loader {
+                        id: dWidgetsLoader
+                        anchors.fill: parent
+                        visible: root.currentPage === "d_widgets"
+                        opacity: visible ? 1.0 : 0.0
+                        property real slideY: visible ? 0 : root.s(10)
+                        Behavior on slideY { NumberAnimation { duration: 250; easing.type: Easing.OutQuart } }
+                        transform: Translate { y: dWidgetsLoader.slideY }
+                        Behavior on opacity { NumberAnimation { duration: 250 } }
+                    }
                     Loader {
                         id: dEngineLoader
                         anchors.fill: parent

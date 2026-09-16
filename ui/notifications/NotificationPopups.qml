@@ -7,8 +7,9 @@ import Quickshell.Wayland
 import Quickshell.Io
 import "../../core"
 import "../bar"
-import "../../core" as Registry
-import "../../core" as Notifications
+import "../../core"
+import "../../core/WindowRegistry.js" as Registry
+import "../../core/Notifications.js" as Notifications
 
 PanelWindow {
     id: popupWindow
