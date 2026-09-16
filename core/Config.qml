@@ -2,7 +2,6 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import "TopbarLayout.js" as TopbarLayout
 
 Item {
     id: config
@@ -18,12 +17,10 @@ Item {
     readonly property string cacheDir: paths.cacheDir
     
     readonly property string settingsJsonPath: hyprDir + "/settings.json"
-    readonly property string weatherEnvPath: qsScriptsDir + "/calendar/.env"
 
     // State Tracking
     property bool dataReady: false
     property var rawSettings: ({})
-    property var rawEnvs: ({})
 
     // =========================================================================
     // Generic Utilities (Use these in ANY widget!)
@@ -71,44 +68,10 @@ Item {
         for (let key in dataObj) rawSettings[key] = dataObj[key];
     }
 
-    // --- Env Operations ---
-    function getEnv(key, fallbackValue) {
-        return rawEnvs.hasOwnProperty(key) ? rawEnvs[key] : fallbackValue;
-    }
-
-    function updateEnvBulk(filePath, envDict) {
-        let cmds = [`mkdir -p "$(dirname '${filePath}')"`, `touch '${filePath}'`];
-        for (let key in envDict) {
-            rawEnvs[key] = envDict[key];
-            let safeVal = envDict[key].toString().replace(/'/g, "'\\''");
-            cmds.push(`if grep -q "^${key}=" '${filePath}'; then ` +
-                      `sed -i "s|^${key}=.*|${key}='${safeVal}'|" '${filePath}'; ` +
-                      `else echo "${key}='${safeVal}'" >> '${filePath}'; fi`);
-        }
-        sh(cmds.join(" && "));
-    }
-
     // =========================================================================
-    // Legacy Specific Properties (Bound to Settings.qml)
+    // General scalars (bound to the General tab)
     // =========================================================================
     property real uiScale: 1.0
-    property bool openGuideAtStartup: true
-    property bool topbarHelpIcon: true
-    property real topbarRoundness: 1.0
-    property bool topbarPillBg: true
-    property bool topbarPillSolid: false
-    property bool topbarUnifyLeft: false
-    property bool topbarUnifyCenter: false
-    property bool topbarUnifyRight: false
-    property string topbarBorderMode: "unified"
-    property real topbarBorderWidth: 0
-    property string topbarBorderColor: "surface1"
-    property real topbarBorderWidthLeft: 0
-    property string topbarBorderColorLeft: "surface1"
-    property real topbarBorderWidthCenter: 0
-    property string topbarBorderColorCenter: "surface1"
-    property real topbarBorderWidthRight: 0
-    property string topbarBorderColorRight: "surface1"
     property real appScale: 1.0
     // ── Persist General-tab scalars when they change ───────────────────
     // The tab edits these properties directly; without this hook the values
@@ -132,18 +95,11 @@ Item {
     property string language: ""
     property string kbOptions: "grp:alt_shift_toggle"
 
-    property string weatherUnit: "metric"
-    property string weatherApiKey: ""
-    property string weatherCityId: ""
-
     property var keybindsData: []
     signal keybindsLoaded()
 
     property var startupData: []
     signal startupLoaded()
-
-    property var topbarLayout: TopbarLayout.defaultLayout()
-    signal topbarLayoutLoaded()
 
     // =========================================================================
     // Settings Save Functions
@@ -151,8 +107,6 @@ Item {
     function saveAppSettings() {
         let configObj = {
             "uiScale": config.uiScale,
-            "openGuideAtStartup": config.openGuideAtStartup,
-            "topbarHelpIcon": config.topbarHelpIcon,
             "appScale": config.appScale,
             "wallpaperDir": config.wallpaperDir,
             "language": config.language,
@@ -167,18 +121,6 @@ Item {
             sh(`qs -p "${qsScriptsDir}/Shell.qml" ipc call topbar queueReload`);
             config.initialWorkspaceCount = config.workspaceCount;
         }
-    }
-
-    function saveWeatherConfig() {
-        let envs = {
-            "OPENWEATHER_KEY": config.weatherApiKey,
-            "OPENWEATHER_CITY_ID": config.weatherCityId,
-            "OPENWEATHER_UNIT": config.weatherUnit
-        };
-        
-        config.updateEnvBulk(config.weatherEnvPath, envs);
-        sh(`rm -rf "${paths.getCacheDir('weather')}"`);
-        sh("notify-send 'Weather' 'API configuration saved successfully!'");
     }
 
     function saveAllKeybinds(bindsArray) {
@@ -265,81 +207,6 @@ Item {
         lines.push("");
         config.sh("mkdir -p ~/.config/hypr/config && cat > ~/.config/hypr/config/user-startup.lua << 'LUAEOF'\n" + lines.join("\n") + "LUAEOF\nhyprctl reload");
         sh("notify-send 'Quickshell' 'Startup entries saved!'");
-    }
-
-    function saveTopbarRoundness(value) {
-        config.topbarRoundness = value;
-        config.setSetting("topbarRoundness", value);
-    }
-
-    function saveTopbarPillBg(value) {
-        config.topbarPillBg = value;
-        config.setSetting("topbarPillBg", value);
-    }
-
-    function saveTopbarPillSolid(value) {
-        config.topbarPillSolid = value;
-        config.setSetting("topbarPillSolid", value);
-    }
-
-    function saveTopbarUnifyLeft(value) {
-        config.topbarUnifyLeft = value;
-        config.setSetting("topbarUnifyLeft", value);
-    }
-    function saveTopbarUnifyCenter(value) {
-        config.topbarUnifyCenter = value;
-        config.setSetting("topbarUnifyCenter", value);
-    }
-    function saveTopbarUnifyRight(value) {
-        config.topbarUnifyRight = value;
-        config.setSetting("topbarUnifyRight", value);
-    }
-
-    function saveTopbarBorderWidth(value) {
-        config.topbarBorderWidth = value;
-        config.setSetting("topbarBorderWidth", value);
-    }
-
-    function saveTopbarBorderColor(value) {
-        config.topbarBorderColor = value;
-        config.setSetting("topbarBorderColor", value);
-    }
-
-    function saveTopbarBorderMode(value) {
-        config.topbarBorderMode = value;
-        config.setSetting("topbarBorderMode", value);
-    }
-
-    function saveTopbarBorderWidthLeft(value) {
-        config.topbarBorderWidthLeft = value;
-        config.setSetting("topbarBorderWidthLeft", value);
-    }
-    function saveTopbarBorderColorLeft(value) {
-        config.topbarBorderColorLeft = value;
-        config.setSetting("topbarBorderColorLeft", value);
-    }
-    function saveTopbarBorderWidthCenter(value) {
-        config.topbarBorderWidthCenter = value;
-        config.setSetting("topbarBorderWidthCenter", value);
-    }
-    function saveTopbarBorderColorCenter(value) {
-        config.topbarBorderColorCenter = value;
-        config.setSetting("topbarBorderColorCenter", value);
-    }
-    function saveTopbarBorderWidthRight(value) {
-        config.topbarBorderWidthRight = value;
-        config.setSetting("topbarBorderWidthRight", value);
-    }
-    function saveTopbarBorderColorRight(value) {
-        config.topbarBorderColorRight = value;
-        config.setSetting("topbarBorderColorRight", value);
-    }
-
-    // No notification here on purpose: the topbar tab edits live and the bar
-    // itself is the feedback, so a toast per keystroke would only be noise.
-    function saveTopbarLayout(layoutObj) {
-        config.topbarLayout = TopbarLayout.normalize(layoutObj);
-        config.setSetting("topbar", config.topbarLayout);
     }
 
     // =========================================================================
@@ -673,31 +540,6 @@ Item {
     // =========================================================================
     Component.onCompleted: {
         settingsReader.running = true;
-        envReader.running = true;
-    }
-
-    Process {
-        id: envReader
-        command: ["bash", "-c", `cat "${config.weatherEnvPath}" 2>/dev/null || echo ''`]
-        running: false
-        stdout: StdioCollector {
-            onStreamFinished: {
-                let lines = this.text ? this.text.trim().split('\n') : [];
-                for (let line of lines) {
-                    line = line.trim();
-                    let parts = line.split("=");
-                    if (parts.length >= 2) {
-                        let key = parts[0].trim();
-                        let val = parts.slice(1).join("=").replace(/^['"]|['"]$/g, '').trim();
-                        config.rawEnvs[key] = val;
-                        
-                        if (key === "OPENWEATHER_KEY") config.weatherApiKey = val;
-                        else if (key === "OPENWEATHER_CITY_ID") config.weatherCityId = val;
-                        else if (key === "OPENWEATHER_UNIT") config.weatherUnit = val;
-                    }
-                }
-            }
-        }
     }
 
     Process {
@@ -712,23 +554,6 @@ Item {
                         
                         // Map explicitly defined properties
                         if (config.rawSettings.uiScale !== undefined) config.uiScale = config.rawSettings.uiScale;
-                        if (config.rawSettings.openGuideAtStartup !== undefined) config.openGuideAtStartup = config.rawSettings.openGuideAtStartup;
-                        if (config.rawSettings.topbarHelpIcon !== undefined) config.topbarHelpIcon = config.rawSettings.topbarHelpIcon;
-                        if (config.rawSettings.topbarRoundness !== undefined) config.topbarRoundness = config.rawSettings.topbarRoundness;
-                        if (config.rawSettings.topbarPillBg !== undefined) config.topbarPillBg = config.rawSettings.topbarPillBg;
-                        if (config.rawSettings.topbarPillSolid !== undefined) config.topbarPillSolid = config.rawSettings.topbarPillSolid;
-                        if (config.rawSettings.topbarUnifyLeft !== undefined) config.topbarUnifyLeft = config.rawSettings.topbarUnifyLeft;
-                        if (config.rawSettings.topbarUnifyCenter !== undefined) config.topbarUnifyCenter = config.rawSettings.topbarUnifyCenter;
-                        if (config.rawSettings.topbarUnifyRight !== undefined) config.topbarUnifyRight = config.rawSettings.topbarUnifyRight;
-                        if (config.rawSettings.topbarBorderMode !== undefined) config.topbarBorderMode = config.rawSettings.topbarBorderMode;
-                        if (config.rawSettings.topbarBorderWidth !== undefined) config.topbarBorderWidth = config.rawSettings.topbarBorderWidth;
-                        if (config.rawSettings.topbarBorderColor !== undefined) config.topbarBorderColor = config.rawSettings.topbarBorderColor;
-                        if (config.rawSettings.topbarBorderWidthLeft !== undefined) config.topbarBorderWidthLeft = config.rawSettings.topbarBorderWidthLeft;
-                        if (config.rawSettings.topbarBorderColorLeft !== undefined) config.topbarBorderColorLeft = config.rawSettings.topbarBorderColorLeft;
-                        if (config.rawSettings.topbarBorderWidthCenter !== undefined) config.topbarBorderWidthCenter = config.rawSettings.topbarBorderWidthCenter;
-                        if (config.rawSettings.topbarBorderColorCenter !== undefined) config.topbarBorderColorCenter = config.rawSettings.topbarBorderColorCenter;
-                        if (config.rawSettings.topbarBorderWidthRight !== undefined) config.topbarBorderWidthRight = config.rawSettings.topbarBorderWidthRight;
-                        if (config.rawSettings.topbarBorderColorRight !== undefined) config.topbarBorderColorRight = config.rawSettings.topbarBorderColorRight;
                         if (config.rawSettings.appScale !== undefined) config.appScale = config.rawSettings.appScale;
                         if (config.rawSettings.wallpaperDir !== undefined) config.wallpaperDir = config.rawSettings.wallpaperDir;
                         if (config.rawSettings.language !== undefined && config.rawSettings.language !== "") config.language = config.rawSettings.language;
@@ -766,15 +591,11 @@ Item {
                         } else {
                             config.startupData = [];
                         }
-
-                        // Map Topbar layout
-                        config.topbarLayout = TopbarLayout.normalize(config.rawSettings.topbar);
                     } else {
                         config.saveAppSettings();
                         config.keybindsData = [];
                         config.saveAllKeybinds([]);
                         config.startupData = [];
-                        config.topbarLayout = TopbarLayout.defaultLayout();
                     }
                 } catch (e) {
                     console.log("Error parsing global settings:", e);
@@ -784,11 +605,9 @@ Item {
                     config.rawSettings = {};
                     config.keybindsData = [];
                     config.startupData = [];
-                    config.topbarLayout = TopbarLayout.defaultLayout();
                 }
                 config.keybindsLoaded();
                 config.startupLoaded();
-                config.topbarLayoutLoaded();
                 config.dataReady = true;
             }
         }

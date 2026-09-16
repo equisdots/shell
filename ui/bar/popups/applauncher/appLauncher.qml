@@ -29,19 +29,19 @@ Item {
     // lcfg: configuración normalizada (posición, ancho, nº de apps, margen y
     // anti-solape con la barra). Es reactiva a Config y sobrescribible en tests.
     property var lcfg: LauncherLayout.normalize(Config.rawSettings.launcher || ({}))
-    property var dockCfg: Config.rawSettings.dock || ({})
+    property var barCfg: Config.rawSettings.bar || ({})
     // Misma escala que el resto del widget (Scaler con currentWidth=Screen.width).
     readonly property real layoutScale: scaler.baseScale
     // Tamaño del panel para el nº de apps actual (crece/decrece al filtrar).
     property var panelSize: LauncherLayout.panelSize(lcfg, layoutScale, appModel.count)
     // Caja en pantalla (x/y/w/h) + dirección de entrada de la intro.
     property var geo: LauncherLayout.geometry(lcfg, Screen.width, Screen.height,
-                                              panelSize.w, panelSize.h, layoutScale, dockCfg)
+                                              panelSize.w, panelSize.h, layoutScale, barCfg)
 
     // Main lee targetMaster* al abrir el widget; para que el panel siga
     // creciendo/decreciendo EN VIVO (filtrar) y la posición se recalcule,
     // empujamos la caja al master cuando cambia (mismo patrón que
-    // CalendarPopup; guard por si el widget se carga aislado en tests).
+    // TimexPopup; guard por si el widget se carga aislado en tests).
     property real targetMasterWidth: geo.w
     property real targetMasterHeight: geo.h
     property real targetMasterX: geo.x

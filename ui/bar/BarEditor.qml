@@ -93,7 +93,7 @@ Item {
     function applyActiveMode() {
         if (root.activeMode === "") return;
         let map = {
-            "general": "s_general", "weather": "s_weather", "keyboard": "s_keyboard",
+            "general": "s_general", "weather": "s_timex", "keyboard": "s_keyboard",
             "monitors": "s_monitors", "startup": "s_startup", "topbar": "d_engine",
             "bar": "d_engine", "engine": "d_engine", "launcher": "d_launcher",
             "hyprland": "d_hyprland", "idle": "d_idle", "gpu": "d_gpu",
@@ -295,7 +295,7 @@ Item {
         if (root._animDirty) {
             root._animDirty = false;
             Quickshell.execDetached(["bash",
-                Quickshell.env("HOME") + "/.config/hypr/scripts/quickshell/dock/editor/persist-hypr.sh",
+                Quickshell.env("HOME") + "/.config/hypr/scripts/quickshell/ui/bar/editor/persist-hypr.sh",
                 "animations",
                 root.animationsCfg.enabled ? "1" : "0",
                 Number(root.animationsCfg.speed).toFixed(1)
@@ -304,7 +304,7 @@ Item {
         if (root._inputDirty) {
             root._inputDirty = false;
             Quickshell.execDetached(["bash",
-                Quickshell.env("HOME") + "/.config/hypr/scripts/quickshell/dock/editor/persist-hypr.sh",
+                Quickshell.env("HOME") + "/.config/hypr/scripts/quickshell/ui/bar/editor/persist-hypr.sh",
                 "input",
                 String(root.inputCfg.sensitivity),
                 String(root.inputCfg.accelProfile),
@@ -546,7 +546,7 @@ Item {
     // Grupos colapsables definidos en core/EditorNav.js (Shell, Bar, Theme,
     // Behavior, System): orden, visibilidad y estado vienen de settings.editor.
     // currentPage usa ids prefijados:
-    // s_* = settings/tabs/*.qml (host = settingsHost) · d_* = bar/editor/*.qml
+    // s_* = settings/tabs/*.qml + ui/timex (host = settingsHost) · d_* = bar/editor/*.qml
     // (bar = root). La píldora mauve sigue al item activo por su POSICIÓN REAL
     // (navItemMap + mapToItem) con scroll-follow por contentY.
     property string currentPage: "s_general"
@@ -644,7 +644,7 @@ Item {
         let map = {
             // Tabs compartidas de settings (host = settingsHost)
             "s_general":  "../settings/tabs/GeneralTab.qml",
-            "s_weather":  "../settings/tabs/WeatherTab.qml",
+            "s_timex":  "../timex/TimexTab.qml",
             "s_keyboard": "../settings/tabs/KeybindTab.qml",
             "s_monitors": "../settings/tabs/MonitorsTab.qml",
             "s_startup":  "../settings/tabs/StartupTab.qml",
@@ -672,7 +672,7 @@ Item {
     function pageLoader(id) {
         let map = {
             "s_general":  sGeneralLoader,
-            "s_weather":  sWeatherLoader,
+            "s_timex":  sWeatherLoader,
             "s_keyboard": sKeyboardLoader,
             "s_monitors": sMonitorsLoader,
             "s_startup":  sStartupLoader,
@@ -735,7 +735,7 @@ Item {
 
 
     // ════ LIVE PALETTE EDITOR (Phase T) ════
-    // Edits the ACTIVE palette file (bar/palettes/<slug>.json): validated hex
+    // Edits the ACTIVE palette file (dock/palettes/<slug>.json): validated hex
     // commits are debounced (~250 ms, grouped) and written atomically with jq
     // (tmp + mv, unknown keys preserved). First edit snapshots the file to
     // ~/.local/state/quickshell/palette_backup/<slug>.json; Reset restores it.
@@ -901,7 +901,7 @@ Item {
     }
 
     // ════ CREADOR DE PALETAS (8 colores base) ════
-    // Genera bar/palettes/<slug>.json con la estructura de las paletas
+    // Genera dock/palettes/<slug>.json con la estructura de las paletas
     // existentes (base16 0-15, background/foreground, roles) + entrada en
     // index.json, y aplica la nueva paleta (applyBar), lo que dispara el
     // resto del sync. El draft vive en el root para sobrevivir a los cambios
@@ -1779,7 +1779,7 @@ Item {
                     Loader {
                         id: sWeatherLoader
                         anchors.fill: parent
-                        visible: root.currentPage === "s_weather"
+                        visible: root.currentPage === "s_timex"
                         opacity: visible ? 1.0 : 0.0
                         property real slideY: visible ? 0 : root.s(10)
                         Behavior on slideY { NumberAnimation { duration: 250; easing.type: Easing.OutQuart } }

@@ -217,9 +217,11 @@ Item {
             return;
         }
         root.lastSettingsJson = txt;
-        let dock = (parsed.dock && typeof parsed.dock === "object") ? parsed.dock : {};
-        if (dock.font) root.fontFamily = String(dock.font);
-        let want = dock.palette ? String(dock.palette).toLowerCase() : "x";
+        // Canonical key: "bar" (pre-0.2 "dock"/"topbar" configs are migrated
+        // once by BarLayout.getBar(); readers never need a second key).
+        let bar = (parsed.bar && typeof parsed.bar === "object") ? parsed.bar : {};
+        if (bar.font) root.fontFamily = String(bar.font);
+        let want = bar.palette ? String(bar.palette).toLowerCase() : "x";
         want = want.replace(/[^a-zA-Z0-9_-]/g, "");
         if (!want) want = "x";
         if (root.paletteName !== want) {

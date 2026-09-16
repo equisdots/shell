@@ -8,7 +8,7 @@ import "../../../core"
 // Icon sits at the top of the diamond, temperature at the bottom; the
 // containers counter-rotate so glyphs and digits stay upright (geometry port
 // of ClassicBar WeatherFaceRound). Reads the shared weather cache exactly
-// like WeatherFaceCompact (QS_CACHE_WEATHER env var honoured).
+// like WeatherFaceCompact (QS_CACHE_TIMEX env var honoured).
 // ============================================================================
 
 Item {
@@ -30,16 +30,16 @@ Item {
     property real pillRadius: root.pillWidth / 2
     property real iconHorizontalOffset: -12
 
-    // Env override helper: QS_CACHE_WEATHER points at the weather cache
+    // Env override helper: QS_CACHE_TIMEX points at the weather cache
     // DIRECTORY (weather.sh writes weather.json into it); default matches
-    // the script: ~/.cache/quickshell/weather.
+    // the script: ~/.cache/quickshell/timex.
     function envOr(name, fallback) {
         let v = Quickshell.env(name);
         return v !== "" ? v : fallback;
     }
 
-    readonly property string weatherFilePath: root.envOr("QS_CACHE_WEATHER",
-        Quickshell.env("HOME") + "/.cache/quickshell/weather") + "/weather.json"
+    readonly property string weatherFilePath: root.envOr("QS_CACHE_TIMEX",
+        Quickshell.env("HOME") + "/.cache/quickshell/timex") + "/weather.json"
 
     property var weatherData: null
 

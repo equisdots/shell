@@ -6,8 +6,8 @@ import Quickshell.Io
 // ============================================================================
 // Colors — Matugen-free palette system.
 //
-// Loads a named palette from bar/palettes/<slug>.json (base-16 from
-// bar/palettes/*.json + optional explicit "roles" overrides) and derives the
+// Loads a named palette from dock/palettes/<slug>.json (base-16 from
+// dock/palettes/*.json + optional explicit "roles" overrides) and derives the
 // semantic roles the UI uses (base, surface0/1/2, text, subtext, overlay,
 // and the accent set). Every module reads from `colors.<role>` so swapping
 // the active palette never touches module code.
@@ -16,7 +16,7 @@ import Quickshell.Io
 // (case-insensitive, falls back to "x").
 //
 // The active palette FILE is watched too (Phase T: the BarEditor live base16
-// editor rewrites bar/palettes/<slug>.json atomically), so palette edits made
+// editor rewrites dock/palettes/<slug>.json atomically), so palette edits made
 // in the editor re-apply to every running Colors instance in real time through
 // the same paletteApplied -> syncWindowBorders() chain the palette switcher
 // uses. The watcher targets the palettes DIRECTORY (atomic tmp+mv writes

@@ -504,14 +504,6 @@ Variants {
                 applyPosition();
             }
 
-            // Legacy aliases so pre-ModulePill modules keep working unchanged.
-            property real topbarRoundness: roundness
-            property bool topbarPillBg: pillBg
-            property bool topbarPillSolid: pillSolid
-            onRoundnessChanged: topbarRoundness = roundness
-            onPillBgChanged: topbarPillBg = pillBg
-            onPillSolidChanged: topbarPillSolid = pillSolid
-
             // ================================================================
             // GEOMETRY
             // ================================================================
@@ -715,9 +707,6 @@ Variants {
                             if (parsed.uiScale !== undefined && barWindow.uiScale !== parsed.uiScale) {
                                 barWindow.uiScale = parsed.uiScale;
                             }
-                            if (parsed.topbarHelpIcon !== undefined && barWindow.showHelpIcon !== parsed.topbarHelpIcon) {
-                                barWindow.showHelpIcon = parsed.topbarHelpIcon;
-                            }
                             if (parsed.workspaceCount !== undefined && barWindow.workspaceCount !== parsed.workspaceCount) {
                                 barWindow.workspaceCount = parsed.workspaceCount;
                                 wsDaemon.running = false;
@@ -766,7 +755,6 @@ Variants {
             // ================================================================
             // SYSTEM STATE
             // ================================================================
-            property bool showHelpIcon: true
             property bool isRecording: false
             property bool updateAvailable: false
             property bool forceUpdateShow: false
@@ -1002,7 +990,7 @@ Variants {
 
             Process {
                 id: audioPoller; running: true
-                command: ["bash", "-c", "~/.config/hypr/scripts/quickshell/watchers/audio_fetch.sh"]
+                command: ["bash", "-c", "~/.config/hypr/scripts/quickshell/core/scripts/watchers/audio_fetch.sh"]
                 stdout: StdioCollector {
                     onStreamFinished: {
                         let txt = this.text.trim();
@@ -1023,7 +1011,7 @@ Variants {
 
             Process {
                 id: networkPoller; running: true
-                command: ["bash", "-c", "~/.config/hypr/scripts/quickshell/watchers/network_fetch.sh"]
+                command: ["bash", "-c", "~/.config/hypr/scripts/quickshell/core/scripts/watchers/network_fetch.sh"]
                 stdout: StdioCollector {
                     onStreamFinished: {
                         let txt = this.text.trim();
@@ -1043,7 +1031,7 @@ Variants {
 
             Process {
                 id: btPoller; running: true
-                command: ["bash", "-c", "~/.config/hypr/scripts/quickshell/watchers/bt_fetch.sh"]
+                command: ["bash", "-c", "~/.config/hypr/scripts/quickshell/core/scripts/watchers/bt_fetch.sh"]
                 stdout: StdioCollector {
                     onStreamFinished: {
                         let txt = this.text.trim();
@@ -1062,7 +1050,7 @@ Variants {
 
             Process {
                 id: batteryPoller; running: true
-                command: ["bash", "-c", "~/.config/hypr/scripts/quickshell/watchers/battery_fetch.sh"]
+                command: ["bash", "-c", "~/.config/hypr/scripts/quickshell/core/scripts/watchers/battery_fetch.sh"]
                 stdout: StdioCollector {
                     onStreamFinished: {
                         let txt = this.text.trim();

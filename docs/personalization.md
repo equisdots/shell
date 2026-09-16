@@ -158,7 +158,14 @@ override); the generic `colors` map is normalized by `moduleConfig`.
 Ported subsystems without a dedicated module expose their options through
 `core/Personalization.js`, one settings section per subsystem:
 
-`lock`, `battery`, `volume`, `music`, `network`, `calendar`, `updater`, `applauncher`, `system-monitor`, `clipboard`, `focustime`, `quicknotes`, `idle`, `file-search`, `rss-reader`, `scale`, `window-controls`, `widgets`
+`lock`, `battery`, `volume`, `music`, `network`, `calendar`, `updater`, `applauncher`, `system-monitor`, `clipboard`, `focustime`, `quicknotes`, `idle`, `file-search`, `rss-reader`, `scale`, `window-controls`, `widgets`, `timex`
+
+The `timex` section drives the calendar popup's timex UI (Settings → Shell →
+Weather → *Timex layout*): `forecastEnabled`, `forecastPosition`
+(`below`/`above`), `forecastSize`, `forecastGap`, `forecastHours`,
+`forecastShowTime/Icon/Temp`, `forecastOrder` (CSV of `time,icon,temp`) and
+`clockScale`. The settings tab writes them inside the same `timex` object as
+`provider`/`city`/`unit`.
 
 Each section mirrors the subsystem's defaults (sizes, timeouts, poll rates,
 booleans). API: `defaults(section)`, `normalize(section, raw)`,

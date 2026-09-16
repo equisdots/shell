@@ -13,7 +13,6 @@ Shell.qml                  entry (imports ./ui, ./ui/bar, ./ui/widgets)
 │   ├── Notifications.js   notification options API
 │   ├── Personalization.js option tables for every subsystem
 │   ├── EditorNav.js       Settings panel groups/pages model
-│   ├── TopbarLayout.js    legacy layout helpers
 │   ├── Theme.qml / SysData.qml / Cava.qml / WidgetSync.qml
 │   └── scripts/watchers/  data_fetchers (executable, feed the bar)
 └── ui/                    everything visible
@@ -25,8 +24,11 @@ Shell.qml                  entry (imports ./ui, ./ui/bar, ./ui/widgets)
     │   ├── modules/       18 bar modules
     │   ├── editor/        BarEditor pages (lazy Loaders in BarEditor.qml)
     │   ├── edit/          editor controls (FieldCard, ToggleCard, ...)
-    │   └── popups/        applauncher, battery, calendar, guide, music,
-    │                      network, system-monitor, updater, volume
+    │   └── popups/        applauncher, battery, guide, music, network,
+    │                      system-monitor, updater, volume (bar-triggered)
+    ├── timex/             timex subsystem UI: TimexPopup (clock + calendar +
+    │                      hourly forecast + day panel) and TimexTab (settings;
+    │                      sources live in the equisdots/timex repo)
     ├── panels/            clipboard, davincix, file-search, focustime, idle,
     │                      quickactions, quicknotes, rss-reader, scale,
     │                      window-controls

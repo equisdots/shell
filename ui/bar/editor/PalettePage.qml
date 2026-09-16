@@ -586,7 +586,7 @@ Item {
                 EditLabel {
                     bar: root.bar
                     width: parent.width
-                    text: "Removes bar/palettes/" + bar.activeSlug() + ".json, its index.json entry and the session snapshot. This cannot be undone."
+                    text: "Removes dock/palettes/" + bar.activeSlug() + ".json, its index.json entry and the session snapshot. This cannot be undone."
                     font.pixelSize: bar.s(12)
                     color: bar.colors.subtext0
                     wrapMode: Text.WordWrap

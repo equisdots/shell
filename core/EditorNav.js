@@ -22,7 +22,7 @@ var GROUPS = [
         icon: "󰒓",
         items: [
             { id: "s_general",  icon: "󰒓", label: "General" },
-            { id: "s_weather",  icon: "󰖐", label: "Weather" },
+            { id: "s_timex",  icon: "󰖐", label: "Timex" },
             { id: "s_keyboard", icon: "󰌌", label: "Keyboard" },
             { id: "s_monitors", icon: "󰍹", label: "Monitors" },
             { id: "s_startup",  icon: "󰐥", label: "Startup" }

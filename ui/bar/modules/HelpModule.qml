@@ -13,7 +13,6 @@ ModulePill {
     padH: bar.s(6)
     idleRole: "text"
     hoverRole: "teal"
-    showState: bar.showHelpIcon
 
     onClicked: Quickshell.execDetached(["bash", "-c", "~/.config/hypr/scripts/qs_manager.sh toggle guide"])
 

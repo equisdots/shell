@@ -151,10 +151,12 @@ Item {
             if (box === 6) return s(520);
             return s(640);
         }
-        if (page === "s_weather") {
+        if (page === "s_timex") {
             if (box === 1) return s(140);
-            if (box === 2) return s(240);
-            if (box === 3) return s(340);
+            if (box === 2) return s(270);
+            if (box === 4) return s(390);
+            if (box === 5) return s(520);
+            if (box === 6) return s(680);
             return 0;
         }
         if (page === "s_startup") return box * s(56) + s(20);
@@ -164,7 +166,7 @@ Item {
     function pageLabel(id) {
         switch (id) {
         case "s_general": return "General";
-        case "s_weather": return "Weather";
+        case "s_timex": return "Timex";
         case "s_keyboard": return "Keyboard";
         case "s_monitors": return "Monitors";
         case "s_startup": return "Startup";

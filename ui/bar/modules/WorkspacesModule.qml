@@ -146,10 +146,10 @@ ModulePill {
             radius: bar.pillRadius(mod.compact ? bar.pillWidth : bar.s(36))
 
             color: stateLabel === "active" ? "transparent"
-                : (bar.topbarPillBg
-                    ? (isHovered ? Qt.rgba(mod.slotHover.r, mod.slotHover.g, mod.slotHover.b, bar.topbarPillSolid ? 1.0 : 0.6)
-                        : (stateLabel === "occupied" ? Qt.rgba(mod.slotOccupied.r, mod.slotOccupied.g, mod.slotOccupied.b, bar.topbarPillSolid ? 1.0 : 0.4)
-                            : Qt.rgba(mod.slotEmpty.r, mod.slotEmpty.g, mod.slotEmpty.b, bar.topbarPillSolid ? 1.0 : 0.4)))
+                : (bar.pillBg
+                    ? (isHovered ? Qt.rgba(mod.slotHover.r, mod.slotHover.g, mod.slotHover.b, bar.pillSolid ? 1.0 : 0.6)
+                        : (stateLabel === "occupied" ? Qt.rgba(mod.slotOccupied.r, mod.slotOccupied.g, mod.slotOccupied.b, bar.pillSolid ? 1.0 : 0.4)
+                            : Qt.rgba(mod.slotEmpty.r, mod.slotEmpty.g, mod.slotEmpty.b, bar.pillSolid ? 1.0 : 0.4)))
                     : (isHovered ? Qt.rgba(mod.slotHover.r, mod.slotHover.g, mod.slotHover.b, 0.2)
                         : Qt.rgba(mod.slotOccupied.r, mod.slotOccupied.g, mod.slotOccupied.b, 0.3)))
 

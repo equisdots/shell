@@ -8,8 +8,8 @@ import "../../../core"
 // WeatherFaceFull — large weather card: current glyph + temperature +
 // "feels like" + the next 4 hourly forecasts (time/temp/icon/hex).
 //
-// Reads the shared weather cache (~/.cache/quickshell/weather/weather.json,
-// directory overridable with QS_CACHE_WEATHER, written by calendar/weather.sh)
+// Reads the shared weather cache (~/.cache/quickshell/timex/weather.json,
+// directory overridable with QS_CACHE_TIMEX, written by the timex engine (timex.sh))
 // every 150 s with `cat`; forecast slots that may be missing (feels_like,
 // hourly) fall back gracefully to current_temp / empty state.
 //
@@ -43,16 +43,16 @@ Item {
     property real forecastIcon: Math.max(22, Math.min(32, baseRef * 0.14))
     property real forecastTime: Math.max(9, Math.min(13, baseRef * 0.05))
 
-    // Env override helper: QS_CACHE_WEATHER points at the weather cache
+    // Env override helper: QS_CACHE_TIMEX points at the weather cache
     // DIRECTORY (weather.sh writes weather.json into it); default matches
-    // the script: ~/.cache/quickshell/weather.
+    // the script: ~/.cache/quickshell/timex.
     function envOr(name, fallback) {
         let v = Quickshell.env(name);
         return v !== "" ? v : fallback;
     }
 
-    readonly property string weatherFilePath: root.envOr("QS_CACHE_WEATHER",
-        Quickshell.env("HOME") + "/.cache/quickshell/weather") + "/weather.json"
+    readonly property string weatherFilePath: root.envOr("QS_CACHE_TIMEX",
+        Quickshell.env("HOME") + "/.cache/quickshell/timex") + "/weather.json"
 
     property var weatherData: null
 

@@ -141,7 +141,7 @@ Item {
 
     Process {
         id: versionReader
-        command: ["bash", "-c", "source ~/.local/state/xshell-version 2>/dev/null && echo $LOCAL_VERSION || echo 'Unknown'"]
+        command: ["bash", "-c", "source ~/.local/state/equisdots-version 2>/dev/null && echo $LOCAL_VERSION || echo 'Unknown'"]
         running: true
         stdout: StdioCollector {
             onStreamFinished: {
@@ -160,7 +160,7 @@ Item {
         command: ["bash", "-c",
             "C=\"$HOME/.cache/quickshell/updater/manifest.json\"; " +
             "S=\"$HOME/.cache/quickshell/updater/manifest_check\"; " +
-            "U=\"https://raw.githubusercontent.com/xscriptor-colors/hyprland/main/updates.json\"; " +
+            "U=\"https://raw.githubusercontent.com/equisdots/hyprland/main/updates.json\"; " +
             "if [ -f \"$C\" ] && [ \"$(cat \"$S\" 2>/dev/null)\" = \"$(date +%Y-%m)\" ] && jq -e '.version' \"$C\" >/dev/null 2>&1; then cat \"$C\"; " +
             "else mkdir -p \"$(dirname \"$C\")\"; T=\"$C.tmp.$$\"; if curl -fsSL -m 8 \"$U\" -o \"$T\"; then mv \"$T\" \"$C\"; date +%Y-%m > \"$S\"; fi; [ -f \"$C\" ] && cat \"$C\"; fi | jq -r '.version // empty'"
         ]
@@ -415,7 +415,7 @@ Item {
                             Layout.alignment: Qt.AlignVCenter
                             spacing: root.s(2)
                             Text { 
-                                text: "xshell"
+                                text: "equisdots"
                                 font.family: "Hack Nerd Font"
                                 font.weight: Font.Black
                                 font.pixelSize: root.s(15)
@@ -605,7 +605,7 @@ Item {
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
-                            let cmd = "if command -v kitty >/dev/null 2>&1; then kitty --hold bash -c 'eval \"$(curl -fsSL https://raw.githubusercontent.com/xscriptor-colors/hyprland/main/install.sh)\"'; else ${TERM:-xterm} -hold -e bash -c 'eval \"$(curl -fsSL https://raw.githubusercontent.com/xscriptor-colors/hyprland/main/install.sh)\"'; fi";
+                            let cmd = "if command -v kitty >/dev/null 2>&1; then kitty --hold bash -c 'eval \"$(curl -fsSL https://raw.githubusercontent.com/equisdots/hyprland/main/install.sh)\"'; else ${TERM:-xterm} -hold -e bash -c 'eval \"$(curl -fsSL https://raw.githubusercontent.com/equisdots/hyprland/main/install.sh)\"'; fi";
                             Quickshell.execDetached(["bash", "-c", cmd]);
                         }
                     }
@@ -963,7 +963,7 @@ Item {
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
-                            onClicked: Quickshell.execDetached(["xdg-open", "https://github.com/xscriptor-colors/hyprland/tree/main"]) 
+                            onClicked: Quickshell.execDetached(["xdg-open", "https://github.com/equisdots/hyprland/tree/main"]) 
                         }
                     }
 
@@ -1264,7 +1264,7 @@ Item {
                         }
                     }
 
-                    Text { text: "xscriptor-colors ships 12 fixed palettes (dock/palettes). Choosing one in the bar regenerates every target below in real time — bar, borders, kitty, starship, VS Code, SDDM and Neovim all stay in sync:"; font.family: "Hack Nerd Font"; font.pixelSize: root.s(13); color: root.subtext0; Layout.fillWidth: true; wrapMode: Text.WordWrap; Layout.alignment: Qt.AlignVCenter }
+                    Text { text: "equisdots ships 12 fixed palettes (dock/palettes). Choosing one in the bar regenerates every target below in real time — bar, borders, kitty, starship, VS Code, SDDM and Neovim all stay in sync:"; font.family: "Hack Nerd Font"; font.pixelSize: root.s(13); color: root.subtext0; Layout.fillWidth: true; wrapMode: Text.WordWrap; Layout.alignment: Qt.AlignVCenter }
 
                     GridLayout {
                         Layout.fillWidth: true
@@ -1333,7 +1333,7 @@ Item {
                     Repeater {
                         model: [
                             { name: "X Config", icon: "X", color: "blue", url: "https://github.com/xlnux" },
-                            { name: "Hyprland Config", icon: "󰣇", color: "mauve", url: "https://github.com/xscriptor-colors/hyprland" },
+                            { name: "Hyprland Config", icon: "󰣇", color: "mauve", url: "https://github.com/equisdots/hyprland" },
                             { name: "Wallpapers", icon: "", color: "peach", url: "https://github.com/xscriptor-colors/xww" }
                         ]
 

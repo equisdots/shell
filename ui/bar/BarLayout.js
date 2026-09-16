@@ -526,6 +526,9 @@ function migrateFromTopbar(raw) {
 // Main entry: raw = parsed settings.json. Returns a complete bar config.
 function getBar(raw) {
     if (raw && typeof raw.bar === "object" && raw.bar !== null) return normalizeBar(raw.bar);
+    // Single migration point for pre-0.2 configs: the zones used to live under
+    // "dock" (the even older "topbar" shape is converted by migrateFromTopbar).
+    if (raw && typeof raw.dock === "object" && raw.dock !== null) return normalizeBar(raw.dock);
     let migrated = migrateFromTopbar(raw);
     return migrated ? normalizeBar(migrated) : defaultBar();
 }

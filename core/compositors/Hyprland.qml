@@ -12,7 +12,7 @@ QtObject {
     id: backend
 
     readonly property var workspacesCommand: ["bash", "-c", "~/.config/hypr/scripts/workspaces.sh"]
-    readonly property var keyboardCommand: ["bash", "-c", "~/.config/hypr/scripts/quickshell/watchers/kb_fetch.sh"]
+    readonly property var keyboardCommand: ["bash", "-c", "~/.config/hypr/scripts/quickshell/core/scripts/watchers/kb_fetch.sh"]
 
     readonly property var focusCommand: ["bash", "-c",
         "hyprctl activewindow -j 2>/dev/null | jq -r 'if (.class != null and .class != \"\" and .address != null and .address != \"\") then (.class + \"\\n\" + .title) else empty end' 2>/dev/null"]

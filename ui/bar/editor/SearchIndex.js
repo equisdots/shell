@@ -2,7 +2,7 @@
 // SearchIndex.js — índice puro del buscador global del panel Settings.
 //
 // Migrado de settings/SettingsPopup.qml: el MISMO array de 12 cards (con
-// `page` en vez de `tab`, mapeo 0→s_general · 1→s_weather · 2→s_keyboard ·
+// `page` en vez de `tab`, mapeo 0→s_general · 1→s_timex · 2→s_keyboard ·
 // 4→s_startup), el matcher label+desc y el matcher de keybinds.
 // Añade pageEntries(): los ajustes de las páginas del editor (d_*) para que el
 // buscador también los alcance, con una `y` aproximada de scroll (px lógicos;
@@ -14,17 +14,19 @@
 // ── Cards de las tabs compartidas de settings (12, mismo orden que el popup) ──
 function cards() {
     return [
-        { page: "s_general", boxIndex: 0, label: "Guide on startup", desc: "Launch on login", icon: "󰑊", color: "peach" },
-        { page: "s_general", boxIndex: 1, label: "Help icon", desc: "Show button in topbar", icon: "󰋖", color: "blue" },
-        { page: "s_general", boxIndex: 2, label: "UI Scale", desc: "Base size scalar", icon: "󰁦", color: "sapphire" },
-        { page: "s_general", boxIndex: 3, label: "Keyboard layouts", desc: "Matches hyprland.conf", icon: "󰌌", color: "green" },
-        { page: "s_general", boxIndex: 4, label: "Layout shortcut", desc: "Toggle combination", icon: "󰯍", color: "teal" },
-        { page: "s_general", boxIndex: 5, label: "Wallpaper directory", desc: "Absolute source path", icon: "󰋩", color: "mauve" },
-        { page: "s_general", boxIndex: 6, label: "Workspaces", desc: "Static count in topbar", icon: "󰽿", color: "red" },
-        { page: "s_weather", boxIndex: 1, label: "API Key", desc: "OpenWeather API key", icon: "󰌆", color: "blue" },
-        { page: "s_weather", boxIndex: 2, label: "City ID", desc: "OpenWeather city ID", icon: "󰖐", color: "blue" },
-        { page: "s_weather", boxIndex: 3, label: "Temperature Unit", desc: "Celsius / Fahrenheit / K", icon: "󰔄", color: "blue" },
-        { page: "s_general", boxIndex: 7, label: "App scale", desc: "Scale GTK / Electron apps", icon: "", color: "sapphire" }
+        { page: "s_general", boxIndex: 0, label: "UI Scale", desc: "Base size scalar", icon: "󰁦", color: "sapphire" },
+        { page: "s_general", boxIndex: 1, label: "Keyboard layouts", desc: "Matches hyprland.conf", icon: "󰌌", color: "green" },
+        { page: "s_general", boxIndex: 2, label: "Layout shortcut", desc: "Toggle combination", icon: "󰯍", color: "teal" },
+        { page: "s_general", boxIndex: 3, label: "Wallpaper directory", desc: "Absolute source path", icon: "󰋩", color: "mauve" },
+        { page: "s_general", boxIndex: 4, label: "Workspaces", desc: "Static count in topbar", icon: "󰽿", color: "red" },
+        { page: "s_timex", boxIndex: 0, label: "Provider", desc: "Open-Meteo / wttr.in / OpenWeatherMap", icon: "󰖐", color: "blue" },
+        { page: "s_timex", boxIndex: 1, label: "City", desc: "City name or lat,lon", icon: "󰍎", color: "blue" },
+        { page: "s_timex", boxIndex: 2, label: "API key", desc: "Only for keyed providers", icon: "󰌆", color: "blue" },
+        { page: "s_timex", boxIndex: 3, label: "Temperature Unit", desc: "Celsius / Fahrenheit", icon: "󰔄", color: "blue" },
+        { page: "s_timex", boxIndex: 4, label: "Weather data", desc: "Snapshot, age and refresh", icon: "󰙦", color: "blue" },
+        { page: "s_timex", boxIndex: 5, label: "Timex layout", desc: "Forecast row and clock position/size", icon: "󰒓", color: "blue" },
+        { page: "s_timex", boxIndex: 6, label: "Calendar & panel", desc: "Month grid and day panel options", icon: "󰃭", color: "blue" },
+        { page: "s_general", boxIndex: 5, label: "App scale", desc: "Scale GTK / Electron apps", icon: "", color: "sapphire" }
     ];
 }
 

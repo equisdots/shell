@@ -372,155 +372,7 @@ Item {
             columnSpacing: root.s(10)
             rowSpacing: root.s(10)
 
-            // ── Box 0: Guide on startup ──────────────────────────────
-            Rectangle {
-                id: box0
-                Layout.fillHeight: true
-                Layout.fillWidth: true
-                Layout.preferredHeight: guideRow.implicitHeight + root.s(28)
-                radius: root.s(26)
-
-                property bool isActive: root.highlightedBox === 0
-                color: isActive ? root.peach : root.surface0
-                border.color: isActive ? root.peach : root.surface1
-                border.width: 1
-                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-
-                MouseArea { anchors.fill: parent; onClicked: root.highlightedBox = 0; z: -1 }
-
-                RowLayout {
-                    id: guideRow
-                    anchors.top: parent.top
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.margins: root.s(16)
-                    spacing: root.s(14)
-                    Item {
-                        Layout.preferredWidth: root.s(22)
-                        Layout.alignment: Qt.AlignVCenter
-                        Text {
-                            anchors.centerIn: parent
-                            text: "󰑊"
-                            font.family: "Hack Nerd Font"
-                            font.pixelSize: root.s(18)
-                            color: box0.isActive ? root.base : root.peach
-                            Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                        }
-                    }
-                    ColumnLayout {
-                        Layout.fillWidth: true
-                        Layout.alignment: Qt.AlignVCenter
-                        spacing: root.s(3)
-                        Text {
-                            text: "Guide on startup"
-                            font.family: "Inter"; font.weight: Font.Medium; font.pixelSize: root.s(14)
-                            color: box0.isActive ? root.base : root.text
-                            Layout.fillWidth: true
-                            Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                        }
-                        Text {
-                            text: "Launch on login"
-                            font.family: "Inter"; font.pixelSize: root.s(11)
-                            color: box0.isActive ? Qt.alpha(root.base, 0.75) : Qt.alpha(root.subtext0, 0.7)
-                            Layout.fillWidth: true
-                            Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                        }
-                    }
-                    Rectangle {
-                        Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
-                        Layout.preferredWidth: root.s(40)
-                        Layout.preferredHeight: root.s(22)
-                        radius: root.s(22)
-                        scale: toggle1Ma.containsMouse ? 1.05 : 1.0
-                        Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutBack } }
-                        color: Config.openGuideAtStartup
-                            ? (box0.isActive ? root.base : root.peach)
-                            : Qt.alpha(root.surface2, box0.isActive ? 0.4 : 1.0)
-                        Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                        Rectangle {
-                            width: root.s(16); height: root.s(16); radius: root.s(18)
-                            color: Config.openGuideAtStartup
-                                ? (box0.isActive ? root.peach : root.base)
-                                : (box0.isActive ? root.peach : root.surface0)
-                            y: root.s(3); x: Config.openGuideAtStartup ? root.s(21) : root.s(3)
-                            Behavior on x { NumberAnimation { duration: 250; easing.type: Easing.OutBack } }
-                            Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                        }
-                        MouseArea { id: toggle1Ma; anchors.fill: parent; hoverEnabled: true; onClicked: Config.openGuideAtStartup = !Config.openGuideAtStartup; cursorShape: Qt.PointingHandCursor }
-                    }
-                }
-            }
-
-            // ── Box 1: Help icon ─────────────────────────────────────
-            Rectangle {
-                id: box1
-                Layout.fillHeight: true
-                Layout.fillWidth: true
-                Layout.preferredHeight: helpIconRow.implicitHeight + root.s(28)
-                radius: root.s(26)
-
-                property bool isActive: root.highlightedBox === 1
-                color: isActive ? root.blue : root.surface0
-                border.color: isActive ? root.blue : root.surface1
-                border.width: 1
-                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-
-                MouseArea { anchors.fill: parent; onClicked: root.highlightedBox = 1; z: -1 }
-
-                RowLayout {
-                    id: helpIconRow
-                    anchors.top: parent.top
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.margins: root.s(16)
-                    spacing: root.s(14)
-                    Item {
-                        Layout.preferredWidth: root.s(22)
-                        Layout.alignment: Qt.AlignVCenter
-                        Text {
-                            anchors.centerIn: parent; text: "󰋖"
-                            font.family: "Hack Nerd Font"; font.pixelSize: root.s(18)
-                            color: box1.isActive ? root.base : root.blue
-                            Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                        }
-                    }
-                    ColumnLayout {
-                        Layout.fillWidth: true; Layout.alignment: Qt.AlignVCenter; spacing: root.s(3)
-                        Text {
-                            text: "Help icon"; font.family: "Inter"; font.weight: Font.Medium; font.pixelSize: root.s(14)
-                            color: box1.isActive ? root.base : root.text; Layout.fillWidth: true
-                            Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                        }
-                        Text {
-                            text: "Show button in topbar"; font.family: "Inter"; font.pixelSize: root.s(11)
-                            color: box1.isActive ? Qt.alpha(root.base, 0.75) : Qt.alpha(root.subtext0, 0.7); Layout.fillWidth: true
-                            Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                        }
-                    }
-                    Rectangle {
-                        Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
-                        Layout.preferredWidth: root.s(40); Layout.preferredHeight: root.s(22); radius: root.s(22)
-                        scale: toggle2Ma.containsMouse ? 1.05 : 1.0
-                        Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutBack } }
-                        color: Config.topbarHelpIcon
-                            ? (box1.isActive ? root.base : root.blue)
-                            : Qt.alpha(root.surface2, box1.isActive ? 0.4 : 1.0)
-                        Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                        Rectangle {
-                            width: root.s(16); height: root.s(16); radius: root.s(18)
-                            color: Config.topbarHelpIcon
-                                ? (box1.isActive ? root.blue : root.base)
-                                : (box1.isActive ? root.blue : root.surface0)
-                            y: root.s(3); x: Config.topbarHelpIcon ? root.s(21) : root.s(3)
-                            Behavior on x { NumberAnimation { duration: 250; easing.type: Easing.OutBack } }
-                            Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                        }
-                        MouseArea { id: toggle2Ma; anchors.fill: parent; hoverEnabled: true; onClicked: Config.topbarHelpIcon = !Config.topbarHelpIcon; cursorShape: Qt.PointingHandCursor }
-                    }
-                }
-            }
-
-            // ── Box 2: UI Scale ──────────────────────────────────────
+            // ── Box 0: UI Scale ──────────────────────────────────────
             Rectangle {
                 id: box2
                 Layout.fillHeight: true
@@ -528,13 +380,13 @@ Item {
                 Layout.preferredHeight: col2.implicitHeight + root.s(32)
                 radius: root.s(26)
 
-                property bool isActive: root.highlightedBox === 2
+                property bool isActive: root.highlightedBox === 0
                 color: isActive ? root.sapphire : root.surface0
                 border.color: isActive ? root.sapphire : root.surface1
                 border.width: 1
                 Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
 
-                MouseArea { anchors.fill: parent; onClicked: root.highlightedBox = 2; z: -1 }
+                MouseArea { anchors.fill: parent; onClicked: root.highlightedBox = 0; z: -1 }
 
                 ColumnLayout {
                     id: col2
@@ -611,7 +463,7 @@ Item {
                 }
             }
 
-            // ── Box 3: Keyboard layouts ──────────────────────────────
+            // ── Box 1: Keyboard layouts ──────────────────────────────
             Rectangle {
                 id: box3
                 Layout.fillHeight: true
@@ -619,13 +471,13 @@ Item {
                 Layout.preferredHeight: col3lang.implicitHeight + root.s(32)
                 radius: root.s(26)
 
-                property bool isActive: root.highlightedBox === 3
+                property bool isActive: root.highlightedBox === 1
                 color: isActive ? root.green : root.surface0
                 border.color: isActive ? root.green : root.surface1
                 border.width: 1
                 Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
 
-                MouseArea { anchors.fill: parent; onClicked: root.highlightedBox = 3; z: -1 }
+                MouseArea { anchors.fill: parent; onClicked: root.highlightedBox = 1; z: -1 }
 
                 ColumnLayout {
                     id: col3lang
@@ -780,7 +632,7 @@ Item {
                 }                       
             }
 
-            // ── Box 4: Layout shortcut ───────────────────────────────
+            // ── Box 2: Layout shortcut ───────────────────────────────
             Rectangle {
                 id: box4
                 Layout.fillHeight: true
@@ -788,13 +640,13 @@ Item {
                 Layout.preferredHeight: col4layout.implicitHeight + root.s(32)
                 radius: root.s(26)
 
-                property bool isActive: root.highlightedBox === 4
+                property bool isActive: root.highlightedBox === 2
                 color: isActive ? root.teal : root.surface0
                 border.color: isActive ? root.teal : root.surface1
                 border.width: 1
                 Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
 
-                MouseArea { anchors.fill: parent; onClicked: root.highlightedBox = 4; z: -1 }
+                MouseArea { anchors.fill: parent; onClicked: root.highlightedBox = 2; z: -1 }
 
                 ColumnLayout {
                     id: col4layout
@@ -903,7 +755,7 @@ Item {
                 }
             }
 
-            // ── Box 5: Wallpaper directory ───────────────────────────
+            // ── Box 3: Wallpaper directory ───────────────────────────
             Rectangle {
                 id: box5
                 Layout.fillHeight: true
@@ -911,13 +763,13 @@ Item {
                 Layout.preferredHeight: col5wp.implicitHeight + root.s(32)
                 radius: root.s(26)
 
-                property bool isActive: root.highlightedBox === 5
+                property bool isActive: root.highlightedBox === 3
                 color: isActive ? root.mauve : root.surface0
                 border.color: isActive ? root.mauve : root.surface1
                 border.width: 1
                 Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
 
-                MouseArea { anchors.fill: parent; onClicked: root.highlightedBox = 5; z: -1 }
+                MouseArea { anchors.fill: parent; onClicked: root.highlightedBox = 3; z: -1 }
 
                 ColumnLayout {
                     id: col5wp
@@ -1032,7 +884,7 @@ Item {
                 }
             }
 
-            // ── Box 6: Workspaces ────────────────────────────────────
+            // ── Box 4: Workspaces ────────────────────────────────────
             Rectangle {
                 id: box6
                 Layout.fillHeight: true
@@ -1040,13 +892,13 @@ Item {
                 Layout.preferredHeight: col6ws.implicitHeight + root.s(32)
                 radius: root.s(26)
 
-                property bool isActive: root.highlightedBox === 6
+                property bool isActive: root.highlightedBox === 4
                 color: isActive ? root.red : root.surface0
                 border.color: isActive ? root.red : root.surface1
                 border.width: 1
                 Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
 
-                MouseArea { anchors.fill: parent; onClicked: root.highlightedBox = 6; z: -1 }
+                MouseArea { anchors.fill: parent; onClicked: root.highlightedBox = 4; z: -1 }
 
                 ColumnLayout {
                     id: col6ws
@@ -1116,11 +968,11 @@ Item {
                 }
             }
 
-            // -- Box 7: App scale ------------------------------------
+            // -- Box 5: App scale ------------------------------------
             Rectangle {
                 id: box7
                 Layout.fillHeight: true
-                property bool isActive: root.highlightedBox === 7
+                property bool isActive: root.highlightedBox === 5
                 Layout.fillWidth: true
                 Layout.preferredHeight: appScaleRow.implicitHeight + root.s(28)
                 radius: root.s(26)
@@ -1129,7 +981,7 @@ Item {
                 border.width: 1
                 Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
 
-                MouseArea { anchors.fill: parent; onClicked: root.highlightedBox = 7; z: -1 }
+                MouseArea { anchors.fill: parent; onClicked: root.highlightedBox = 5; z: -1 }
 
                 RowLayout {
                     id: appScaleRow

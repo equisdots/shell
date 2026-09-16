@@ -6,9 +6,9 @@ import "../../../core"
 
 // ============================================================================
 // WeatherFaceCompact — compact weather chip: glyph + temperature.
-// Reads the cached weather.json written by calendar/weather.sh
-// (~/.cache/quickshell/weather/weather.json; directory overridable with the
-// QS_CACHE_WEATHER env var, same convention as the scripts) with a plain
+// Reads the cached weather.json written by the timex engine (timex.sh)
+// (~/.cache/quickshell/timex/weather.json; directory overridable with the
+// QS_CACHE_TIMEX env var, same convention as the scripts) with a plain
 // `cat` and refreshes every 150 s. No network calls; while no data is
 // available it shows a generic glyph and "--°".
 // ============================================================================
@@ -29,16 +29,16 @@ Item {
     property real dynMargin: Math.max(6, Math.min(16, Math.min(root.width, root.height) * 0.08))
     property real dynSpacing: Math.max(2, Math.min(8, Math.min(root.width, root.height) * 0.04))
 
-    // Env override helper: QS_CACHE_WEATHER points at the weather cache
+    // Env override helper: QS_CACHE_TIMEX points at the weather cache
     // DIRECTORY (weather.sh writes weather.json into it); default matches
-    // the script: ~/.cache/quickshell/weather.
+    // the script: ~/.cache/quickshell/timex.
     function envOr(name, fallback) {
         let v = Quickshell.env(name);
         return v !== "" ? v : fallback;
     }
 
-    readonly property string weatherFilePath: root.envOr("QS_CACHE_WEATHER",
-        Quickshell.env("HOME") + "/.cache/quickshell/weather") + "/weather.json"
+    readonly property string weatherFilePath: root.envOr("QS_CACHE_TIMEX",
+        Quickshell.env("HOME") + "/.cache/quickshell/timex") + "/weather.json"
 
     property var weatherData: null
 

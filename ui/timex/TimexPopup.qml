@@ -5,9 +5,9 @@ import QtCore
 import Quickshell
 import Quickshell.Io
 import QtQuick.Window
-import "../../../../core"
-import "../../../../core/Personalization.js" as Personalization
-import "../.."
+import "../../core"
+import "../../core/Personalization.js" as Personalization
+import "../bar"
 
 Item {
     id: window
@@ -105,6 +105,10 @@ Item {
     readonly property color red: _theme.red
 
     readonly property string scriptsDir: Quickshell.env("HOME") + "/.config/hypr/scripts/quickshell/ui/bar/popups/calendar"
+    // timex engine CLI (wrapper installed by dots; TIMEX_CLI overrides for tests).
+    readonly property string timexCli: Quickshell.env("TIMEX_CLI")
+        ? Quickshell.env("TIMEX_CLI")
+        : (Quickshell.env("HOME") + "/.local/bin/timex")
 
     // -------------------------------------------------------------------------
     // TIME OF DAY DYNAMIC COLORS
@@ -191,11 +195,6 @@ Item {
         NumberAnimation { target: window; property: "introSchedule"; to: 0; duration: 200; easing.type: Easing.InQuart }
     }
 
-    property real globalOrbitAngle: 0
-    NumberAnimation on globalOrbitAngle {
-        from: 0; to: Math.PI * 2; duration: 90000; loops: Animation.Infinite; running: true
-    }
-
     // -------------------------------------------------------------------------
     // STATE & TIME (WITH SECOND PULSE)
     // -------------------------------------------------------------------------
@@ -238,10 +237,36 @@ Item {
     property real weatherContentOpacity: 1.0
     property real weatherContentOffset: 0.0
     property int weatherAnimDirection: 1
-    
-    // New 3D Spin Properties
-    property real transitionSpin: 0.0
-    property real transitionScale: 1.0
+
+    // -------------------------------------------------------------------------
+    // TIMEX UI (Settings → Shell → Weather → Timex layout)
+    // -------------------------------------------------------------------------
+    readonly property var timexUi: (Config.rev, Personalization.normalize("timex", Config.rawSettings.timex))
+    readonly property int txGapPx: Math.round(Math.max(2, Math.min(40, timexUi.forecastGap)) * window.sf)
+    readonly property var txFields: {
+        let order = String(timexUi.forecastOrder || "time,icon,temp").split(",");
+        let out = [];
+        for (let i = 0; i < order.length; i++) {
+            let f = order[i].replace(/\s/g, "");
+            if (f !== "time" && f !== "icon" && f !== "temp") continue;
+            if (f === "time" && timexUi.forecastShowTime !== true) continue;
+            if (f === "icon" && timexUi.forecastShowIcon !== true) continue;
+            if (f === "temp" && timexUi.forecastShowTemp !== true) continue;
+            out.push(f);
+        }
+        return out.length > 0 ? out : ["icon"];
+    }
+    readonly property var panelGauges: {
+        let out = [];
+        if (timexUi.panelShowWind === true) out.push(0);
+        if (timexUi.panelShowHumidity === true) out.push(1);
+        if (timexUi.panelShowPop === true) out.push(2);
+        if (timexUi.panelShowFeels === true) out.push(3);
+        return out.length > 0 ? out : [0];
+    }
+    readonly property var calendarWeekdays: (timexUi.calendarWeekStart === "sunday")
+        ? ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"]
+        : ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
 
     // -------------------------------------------------------------------------
     // TEMPERATURE LOGIC 
@@ -285,27 +310,16 @@ Item {
         ParallelAnimation {
             NumberAnimation { target: window; property: "weatherContentOpacity"; to: 0.0; duration: 250; easing.type: Easing.InSine }
             NumberAnimation { target: window; property: "weatherContentOffset"; to: Math.round(-40 * window.sf) * weatherAnimDirection; duration: 250; easing.type: Easing.InSine }
-            
-            // Spin the 3D orbit out and scale it down for depth
-            NumberAnimation { target: window; property: "transitionSpin"; to: 180 * weatherAnimDirection; duration: 300; easing.type: Easing.InBack }
-            NumberAnimation { target: window; property: "transitionScale"; to: 0.8; duration: 300; easing.type: Easing.InCubic }
         }
         ScriptAction { 
             script: { 
                 window.weatherView = window.targetWeatherView; 
                 window.weatherContentOffset = Math.round(40 * window.sf) * weatherAnimDirection; // Move to opposite side while hidden
-                
-                // Reset the spin to the opposite side so it continues spinning into place seamlessly
-                window.transitionSpin = -180 * weatherAnimDirection;
             } 
         }
         ParallelAnimation {
             NumberAnimation { target: window; property: "weatherContentOpacity"; to: 1.0; duration: 450; easing.type: Easing.OutQuart }
             NumberAnimation { target: window; property: "weatherContentOffset"; to: 0.0; duration: 450; easing.type: Easing.OutQuart }
-            
-            // Snap the 3D orbit back to 0 degrees and restore full scale
-            NumberAnimation { target: window; property: "transitionSpin"; to: 0.0; duration: 600; easing.type: Easing.OutBack; easing.overshoot: 1.2 }
-            NumberAnimation { target: window; property: "transitionScale"; to: 1.0; duration: 500; easing.type: Easing.OutBack }
         }
     }
 
@@ -347,7 +361,7 @@ Item {
 
     Process {
         id: weatherPoller
-        command: ["bash", window.scriptsDir + "/weather.sh", "--json"]
+        command: [window.timexCli, "--json"]
         running: true
         stdout: StdioCollector {
             onStreamFinished: {
@@ -369,6 +383,8 @@ Item {
     // SCHEDULE DATA & CONDITIONAL RENDERING
     // -------------------------------------------------------------------------
     property bool scheduleModuleExists: false
+    // Diary manager is optional too: the "+" button shows only if the helper exists.
+    property bool diaryManagerExists: false
     property var scheduleData: { "header": "Loading Schedule...", "link": "", "lessons": [] }
 
     // Dynamic offset based on whether the schedule module exists
@@ -403,6 +419,18 @@ Item {
                 if (txt !== "") {
                     try { window.scheduleData = JSON.parse(txt); } catch(e) { console.log("Schedule Parse Error:", e); }
                 }
+            }
+        }
+    }
+
+    // Same guard for the diary helper: hide the button when it is missing.
+    Process {
+        id: diaryPathChecker
+        command: ["bash", "-c", "[ -f '" + window.scriptsDir + "/diary_manager.sh' ] && echo 1 || echo 0"]
+        running: true
+        stdout: StdioCollector {
+            onStreamFinished: {
+                window.diaryManagerExists = (this.text.trim() === "1");
             }
         }
     }
@@ -472,7 +500,9 @@ Item {
         window.targetMonthName = Qt.formatDateTime(d, "MMMM yyyy");
 
         let firstDay = new Date(targetYear, targetMonth, 1).getDay();
-        firstDay = (firstDay === 0) ? 6 : firstDay - 1; 
+        if (window.timexUi.calendarWeekStart !== "sunday") {
+            firstDay = (firstDay === 0) ? 6 : firstDay - 1; // Monday-first (default)
+        }
 
         let daysInMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
         let daysInPrevMonth = new Date(targetYear, targetMonth, 0).getDate();
@@ -533,14 +563,6 @@ Item {
                     NumberAnimation { to: 0; duration: 4000; easing.type: Easing.InOutSine }
                 }
 
-                property real orbitBreath: 1.0
-                SequentialAnimation on orbitBreath {
-                    loops: Animation.Infinite
-                    running: true
-                    NumberAnimation { to: 1.035; duration: 3500; easing.type: Easing.InOutSine }
-                    NumberAnimation { to: 1.0; duration: 3500; easing.type: Easing.InOutSine }
-                }
-
                 // 3D Perspective Wobble (Pitch, Yaw, Roll)
                 property real pitchBreath: 0
                 SequentialAnimation on pitchBreath {
@@ -571,46 +593,13 @@ Item {
                     Rotation { axis { x: 0; y: 0; z: 1 } angle: centralHub.rollBreath }
                 ]
 
-                // OPTIMIZATION: Moved scale property out of the onPaint function to prevent redrawing every frame.
-                // It now draws once, and scales using the GPU.
-                Canvas {
-                    id: orbitCanvas
-                    z: -10
-                    x: Math.round(-400 * window.sf)   // Widened to prevent clipping when scaled
-                    y: Math.round(-200 * window.sf)   // Heightened to prevent clipping when scaled
-                    width: Math.round(800 * window.sf)
-                    height: Math.round(400 * window.sf)
-                    opacity: 0.25
-
-                    scale: centralHub.orbitBreath
-
-                    onWidthChanged: requestPaint()
-
-                    onPaint: {
-                        var ctx = getContext("2d");
-                        ctx.clearRect(0, 0, width, height);
-                        ctx.beginPath();
-                        var currentRx = Math.round(320 * window.sf);
-                        var currentRy = Math.round(140 * window.sf);
-                        for (var i = 0; i <= Math.PI * 2; i += 0.05) {
-                            var xx = width/2 + Math.cos(i) * currentRx;
-                            var yy = height/2 + Math.sin(i) * currentRy;
-                            if (i === 0) ctx.moveTo(xx, yy); else ctx.lineTo(xx, yy);
-                        }
-                        ctx.strokeStyle = window.textAccent;
-                        ctx.lineWidth = Math.max(1, Math.round(1.5 * window.sf));
-                        ctx.setLineDash([Math.round(4 * window.sf), Math.round(10 * window.sf)]);
-                        ctx.stroke();
-                    }
-                    Behavior on opacity { NumberAnimation { duration: 1500 } }
-                }
-
                 // Core Clock
                 ColumnLayout {
+                    id: coreClock
                     anchors.centerIn: parent
                     spacing: 0
                     z: 0 
-                    scale: 0.95 + (0.05 * window.secondPulse) 
+                    scale: (0.95 + (0.05 * window.secondPulse)) * window.timexUi.clockScale
                     
                     RowLayout {
                         Layout.alignment: Qt.AlignHCenter
@@ -624,6 +613,7 @@ Item {
                             style: Text.Outline; styleColor: Qt.alpha(window.crust, 0.4)
                         }
                         Text {
+                            visible: window.timexUi.clockShowSeconds
                             text: Qt.formatTime(window.currentTime, ":ss")
                             font.family: "Hack Nerd Font"
                             font.weight: Font.Bold
@@ -638,6 +628,7 @@ Item {
                     }
 
                     Text {
+                        visible: window.timexUi.clockShowDate
                         Layout.alignment: Qt.AlignHCenter
                         text: Qt.formatDateTime(window.currentTime, "dddd, MMMM dd")
                         font.family: "Hack Nerd Font"
@@ -648,49 +639,34 @@ Item {
                     }
                 }
 
-                // TRUE 3D ORBITAL HOURLY FORECAST (Tied to Spin Transition)
-                Item {
-                    anchors.fill: parent
+                // HOURLY FORECAST — layout configurable (Settings → Weather → Timex layout)
+                Row {
+                    id: hourlyRow
+                    visible: window.timexUi.forecastEnabled && hourRepeater.count > 0
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    y: (window.timexUi.forecastPosition === "above")
+                        ? (coreClock.y - height - window.txGapPx)
+                        : (coreClock.y + coreClock.height + window.txGapPx)
+                    spacing: window.txGapPx
                     opacity: window.weatherContentOpacity
-                    
-                    // Added Scale property to give a z-depth shrink effect when spinning
-                    scale: window.transitionScale 
-                    transform: Translate { x: window.weatherContentOffset * 1.5 }
 
                     Repeater {
                         id: hourRepeater
-                        model: window.weatherData && window.weatherData.forecast[window.weatherView] && window.weatherData.forecast[window.weatherView].hourly ? window.weatherData.forecast[window.weatherView].hourly.slice(0, 8) : []
+                        model: window.weatherData && window.weatherData.forecast[window.weatherView] && window.weatherData.forecast[window.weatherView].hourly ? window.weatherData.forecast[window.weatherView].hourly.slice(0, window.timexUi.forecastHours) : []
                         
                         delegate: Item {
-                            property int mCount: hourRepeater.count
+                            property var hr: modelData
                             property bool isToday: window.weatherView === 0
                             property bool isHighlighted: isToday && index === window.activeHourIndex
-                            
-                            property real rx: Math.round(320 * window.sf) * centralHub.orbitBreath
-                            property real ry: Math.round(140 * window.sf) * centralHub.orbitBreath
-                            
-                            property int relIdx: isToday ? (index - window.activeHourIndex) : index
-                            
-                            property real targetAngleDeg: isToday ? (65 + (relIdx * 30)) : (index * (360 / Math.max(1, mCount)))
-                            
-                            property real orbitOffset: isToday ? 0 : (window.globalOrbitAngle * (180 / Math.PI) * -1.5)
-                            property real osc: isToday ? (Math.sin(window.globalOrbitAngle * 10 + index) * 5) : 0 
-                            
-                            // Integrated window.transitionSpin directly into the final angle calculation
-                            property real rad: (targetAngleDeg + orbitOffset + osc + window.transitionSpin) * (Math.PI / 180)
+                            readonly property real sz: window.sf * window.timexUi.forecastSize
 
-                            x: Math.cos(rad) * rx - width/2
-                            y: Math.sin(rad) * ry - height/2
-                            z: Math.sin(rad) * Math.round(100 * window.sf) 
-                            
-                            scale: isHighlighted ? 1.4 : (isToday ? (0.95 + 0.20 * Math.sin(rad)) : (0.90 + 0.25 * Math.sin(rad)))
-                            opacity: isHighlighted ? 1.0 : (isToday ? (0.7 + 0.3 * ((Math.sin(rad) + 1) / 2)) : (0.65 + 0.35 * ((Math.sin(rad) + 1) / 2)))
-
-                            width: Math.round(56 * window.sf); height: Math.round(95 * window.sf)
+                            width: Math.round(56 * sz); height: Math.round(95 * sz)
+                            scale: isHighlighted ? 1.12 : 1.0
+                            Behavior on scale { NumberAnimation { duration: 220; easing.type: Easing.OutBack } }
                             
                             Rectangle {
                                 anchors.fill: parent
-                                radius: Math.round(28 * window.sf)
+                                radius: Math.round(28 * sz)
                                 color: isHighlighted ? window.textAccent : (hrMa.containsMouse ? window.surface2 : window.surface0)
                                 border.color: isHighlighted ? "transparent" : (hrMa.containsMouse ? window.textAccent : window.surface1)
                                 border.width: 1
@@ -698,30 +674,27 @@ Item {
                                 Behavior on color { ColorAnimation { duration: 200 } }
                                 
                                 ColumnLayout {
-                                    anchors.centerIn: parent 
-                                    spacing: Math.round(4 * window.sf)
-                                    
-                                    Text { 
-                                        Layout.alignment: Qt.AlignHCenter
-                                        text: modelData.time
-                                        font.family: "Hack Nerd Font"; font.weight: Font.Bold; font.pixelSize: Math.round(12 * window.sf)
-                                        color: isHighlighted ? window.base : (hrMa.containsMouse ? window.text : window.overlay1)
-                                    }
-                                    
-                                    Text { 
-                                        Layout.alignment: Qt.AlignHCenter
-                                        text: modelData.icon || (window.weatherData && window.weatherData.forecast[window.weatherView] ? window.weatherData.forecast[window.weatherView].icon : "")
-                                        font.family: "Hack Nerd Font"; font.pixelSize: Math.round(18 * window.sf)
-                                        color: isHighlighted ? window.base : (modelData.hex || window.text)
-                                        
-                                        transform: Translate { y: hrMa.containsMouse ? Math.round(-3 * window.sf) : 0 }
-                                        Behavior on transform { NumberAnimation { duration: 200; easing.type: Easing.OutBack } }
-                                    }
-                                    
-                                    Text { 
-                                        Layout.alignment: Qt.AlignHCenter; text: modelData.temp + "°"
-                                        font.family: "Hack Nerd Font"; font.weight: Font.Black; font.pixelSize: Math.round(14 * window.sf)
-                                        color: isHighlighted ? window.base : window.text 
+                                    anchors.centerIn: parent
+                                    spacing: Math.round(3 * sz)
+
+                                    Repeater {
+                                        model: window.txFields
+                                        delegate: Text {
+                                            readonly property string fieldName: modelData
+                                            Layout.alignment: Qt.AlignHCenter
+                                            text: fieldName === "time" ? hr.time
+                                                : (fieldName === "icon"
+                                                    ? (hr.icon || (window.weatherData && window.weatherData.forecast[window.weatherView] ? window.weatherData.forecast[window.weatherView].icon : ""))
+                                                    : hr.temp + "°")
+                                            font.family: "Hack Nerd Font"
+                                            font.weight: fieldName === "time" ? Font.Bold : (fieldName === "temp" ? Font.Black : Font.Normal)
+                                            font.pixelSize: Math.round((fieldName === "time" ? 12 : (fieldName === "icon" ? 18 : 14)) * sz)
+                                            color: isHighlighted ? window.base
+                                                : (fieldName === "icon" ? (hr.hex || window.text)
+                                                    : (fieldName === "time" ? (hrMa.containsMouse ? window.text : window.overlay1) : window.text))
+                                            transform: Translate { y: (fieldName === "icon" && hrMa.containsMouse) ? Math.round(-3 * sz) : 0 }
+                                            Behavior on transform { NumberAnimation { duration: 200; easing.type: Easing.OutBack } }
+                                        }
                                     }
                                 }
                             }
@@ -736,11 +709,14 @@ Item {
             // =======================================================
             Rectangle {
                 id: calendarRect
+                visible: window.timexUi.calendarEnabled
                 anchors.left: parent.left
                 anchors.top: parent.top
                 anchors.margins: Math.round(40 * window.sf)
                 width: Math.round(320 * window.sf)
                 height: Math.round(420 * window.sf)
+                scale: window.timexUi.calendarSize
+                transformOrigin: Item.TopLeft
                 color: Qt.alpha(window.surface0, 0.2) 
                 radius: Math.round(14 * window.sf)
                 border.color: Qt.alpha(window.surface1, 0.4)
@@ -805,6 +781,7 @@ Item {
 
                         Rectangle {
                             Layout.preferredWidth: Math.round(32 * window.sf); Layout.preferredHeight: Math.round(32 * window.sf); radius: Math.round(16 * window.sf)
+                            visible: window.diaryManagerExists
                             color: diaryMa.containsMouse ? window.surface1 : "transparent"
                             Text { anchors.centerIn: parent; text: "+"; font.family: "Hack Nerd Font"; color: diaryMa.containsMouse ? window.mauve : window.text; font.pixelSize: Math.round(32 * window.sf) }
                             MouseArea { 
@@ -818,7 +795,7 @@ Item {
                     RowLayout {
                         Layout.fillWidth: true
                         Repeater {
-                            model: ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
+                            model: window.calendarWeekdays
                             Text {
                                 Layout.fillWidth: true
                                 text: modelData
@@ -877,11 +854,15 @@ Item {
             // RIGHT WING: ORGANIC FLOATING WEATHER STATS
             // =======================================================
             Item {
+                id: rightPanel
+                visible: window.timexUi.panelEnabled
                 anchors.right: parent.right
                 anchors.top: parent.top
                 anchors.margins: Math.round(40 * window.sf)
                 width: Math.round(320 * window.sf)
                 height: Math.round(420 * window.sf)
+                scale: window.timexUi.panelSize
+                transformOrigin: Item.TopRight
                 z: 10 
 
                 opacity: introWeather
@@ -992,7 +973,7 @@ Item {
                         spacing: Math.round(8 * window.sf)
 
                         Repeater {
-                            model: 4
+                            model: window.panelGauges
 
                             Item {
                                 id: gaugeWrapper
@@ -1004,20 +985,20 @@ Item {
 
                                 property var forecast: window.weatherData && window.weatherData.forecast[window.targetWeatherView] ? window.weatherData.forecast[window.targetWeatherView] : null
 
-                                property string gaugeIcon: index === 0 ? "" : index === 1 ? "" : index === 2 ? "" : ""
-                                property string gaugeLbl: index === 0 ? "WIND" : index === 1 ? "HUMID" : index === 2 ? "RAIN" : "FEELS"
+                                property string gaugeIcon: modelData === 0 ? "" : modelData === 1 ? "" : modelData === 2 ? "" : ""
+                                property string gaugeLbl: modelData === 0 ? "WIND" : modelData === 1 ? "HUMID" : modelData === 2 ? "RAIN" : "FEELS"
 
                                 property string gaugeVal: forecast ? (
-                                    index === 0 ? forecast.wind + "m/s" :
-                                    index === 1 ? forecast.humidity + "%" :
-                                    index === 2 ? forecast.pop + "%" :
+                                    modelData === 0 ? forecast.wind + "m/s" :
+                                    modelData === 1 ? forecast.humidity + "%" :
+                                    modelData === 2 ? forecast.pop + "%" :
                                     forecast.feels_like + "°"
                                 ) : ""
 
                                 property real gaugeFill: forecast ? (
-                                    index === 0 ? Math.min(1.0, forecast.wind / 25.0) :
-                                    index === 1 ? forecast.humidity / 100.0 :
-                                    index === 2 ? forecast.pop / 100.0 :
+                                    modelData === 0 ? Math.min(1.0, forecast.wind / 25.0) :
+                                    modelData === 1 ? forecast.humidity / 100.0 :
+                                    modelData === 2 ? forecast.pop / 100.0 :
                                     Math.max(0.0, Math.min(1.0, (forecast.feels_like + 15) / 55.0))
                                 ) : 0.0
                                 

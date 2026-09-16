@@ -55,9 +55,9 @@ Item {
     property string localVersion: "..."
     property string remoteVersion: "..."
 
-    // Manifest de versión + changelog (repo xscriptor-colors/hyprland, main).
+    // Manifest de versión + changelog (repo equisdots/hyprland, main).
     // Writable a propósito: los harness de test lo apuntan a un file:// local.
-    property string manifestUrl: "https://raw.githubusercontent.com/xscriptor-colors/hyprland/main/updates.json"
+    property string manifestUrl: "https://raw.githubusercontent.com/equisdots/hyprland/main/updates.json"
 
     // Cache del manifest (mismo path que usa dotfiles-update.sh): el popup no
     // hace red si el sello es del mes actual. Writable para el harness.
@@ -96,7 +96,7 @@ Item {
     Process {
         id: localVerProcess
         running: false
-        command: ["bash", "-c", "source ~/.local/state/xshell-version 2>/dev/null && [ -n \"$LOCAL_VERSION\" ] && echo $LOCAL_VERSION || echo '0.0.0'"]
+        command: ["bash", "-c", "source ~/.local/state/equisdots-version 2>/dev/null && [ -n \"$LOCAL_VERSION\" ] && echo $LOCAL_VERSION || echo '0.0.0'"]
         stdout: StdioCollector {
             onStreamFinished: {
                 let out = this.text ? this.text.trim() : "";
@@ -503,7 +503,7 @@ exit 0
                     easing.type: Easing.InSine
                     onFinished: {
                         updateBtn.triggered = true;
-                        let cmd = "if command -v kitty >/dev/null 2>&1; then kitty --hold bash -c 'eval \"$(curl -fsSL https://raw.githubusercontent.com/xscriptor-colors/hyprland/main/install.sh)\"'; else ${TERM:-xterm} -hold -e bash -c 'eval \"$(curl -fsSL https://raw.githubusercontent.com/xscriptor-colors/hyprland/main/install.sh)\"'; fi";
+                        let cmd = "if command -v kitty >/dev/null 2>&1; then kitty --hold bash -c 'eval \"$(curl -fsSL https://raw.githubusercontent.com/equisdots/hyprland/main/install.sh)\"'; else ${TERM:-xterm} -hold -e bash -c 'eval \"$(curl -fsSL https://raw.githubusercontent.com/equisdots/hyprland/main/install.sh)\"'; fi";
                         Quickshell.execDetached(["bash", "-c", cmd]);
                         Quickshell.execDetached(["bash", Quickshell.env("HOME") + "/.config/hypr/scripts/qs_manager.sh", "close"]);
                     }

@@ -49,6 +49,31 @@ var SECTIONS = {
         popupWidth: 1450,
         popupHeight: 750
     },
+    // Timex — layout of the calendar popup's hourly forecast row + clock
+    // (Settings → Shell → Timex). Applied by ui/timex/TimexPopup.qml.
+    "timex": {
+        forecastEnabled: true,
+        forecastPosition: "below",   // "below" | "above"
+        forecastSize: 1.0,           // 0.8 – 1.4
+        forecastGap: 16,             // screen px before scaling
+        forecastHours: 8,            // 3 – 8
+        forecastShowTime: true,
+        forecastShowIcon: true,
+        forecastShowTemp: true,
+        forecastOrder: "time,icon,temp",
+        clockScale: 1.0,             // 0.85 – 1.25
+        clockShowSeconds: true,
+        clockShowDate: true,
+        calendarEnabled: true,
+        calendarSize: 1.0,           // 0.8 – 1.2
+        calendarWeekStart: "monday", // "monday" | "sunday"
+        panelEnabled: true,
+        panelSize: 1.0,              // 0.8 – 1.2
+        panelShowWind: true,
+        panelShowHumidity: true,
+        panelShowPop: true,
+        panelShowFeels: true
+    },
     "updater": {
         popupWidth: 950,
         popupHeight: 850

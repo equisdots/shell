@@ -1,70 +1,62 @@
 # shell
 
-Compositor-agnostic Quickshell shell for the [equisdots](https://github.com/equisdots)
-desktop, built up one panel at a time (Hyprland + Niri as targets).
+Quickshell shell for the [equisdots](https://github.com/equisdots) desktop,
+built up port by port from xlinux (the stable base).
 
 Version: **0.1.0** · License: MIT
 
 ## State
 
-Repo skeleton growing from xlinux (the stable base), port by port. xlinux keeps
-working; nothing is removed there.
+The xlinux shell was ported as-is (behaviour preserved, naming updated) and
+restructured into `core/` + `ui/`; it is the shell running live at
+`~/.config/hypr/scripts/quickshell`. Renames applied: `dock` to `bar`, the
+legacy bar to `ClassicBar`; engine values `"bar"`/`"classic"`; config keys
+`"bar"`, `"classicbar"`, `"barEngine"` (contract kept).
 
-Ported so far, **as-is** (behaviour preserved, only naming updated):
+Running subsystems:
 
-- **Bar** — complete port of the dock/bar (host + both engines + modules +
-  editor). Renames applied: `dock` to `bar`, the legacy bar to `ClassicBar`;
-  engine values `"bar"`/`"classic"`; config keys `"dock"`, `"classicbar"`,
-  `"barEngine"`. The module catalog/loaders now use
-  `bar/modules/` relative paths.
-- **Core** — shell services: `Config`, `Caching`, `Scaler`,
-  `WindowRegistry.js` (layout math + widget registry) and the **compositor
-  adapter**: `core/Compositor.qml` (singleton, public surface) +
-  `core/compositors/Hyprland.qml` (backend). The six bar touch points are wired
-  through it: workspaces/focus/keyboard data commands, live window border
-  colours, workspace switching and keyboard-layout cycling. The Niri backend
-  will implement the same surface.
-- **davincix panel** — wallpaper picker.
+- **Bar** — host + both engines (zones/classic) + 18 modules + editor.
+- **Popups** — applauncher, battery, calendar, guide, music, network,
+  system-monitor, updater, volume.
+- **Panels** — clipboard, davincix, file-search, focustime, idle,
+  quickactions, quicknotes, rss-reader, scale, window-controls.
+- **Lock**, **notifications** (server + history + popups) and the **floating
+  widgets** (faces, redactor, loader).
+- **Core** — Config, Caching, Scaler, WindowRegistry.js, Personalization.js,
+  EditorNav.js, Theme/SysData/Cava/WidgetSync and the compositor adapter
+  (`core/Compositor.qml` + `core/compositors/Hyprland.qml`).
 
-> Nothing is runnable standalone yet: the entry point (`Shell.qml` + widget
-> registry mounting) is missing, and several wiring points still reference the
-> live xlinux locations. Known pending items: palette directory and desktop
-> scripts (`~/.config/hypr/scripts/*`) still point at the xlinux paths; the
-> editor's compositor pages (`HyprlandPage`, `InputPage`, `GpuPage`, `IdlePage`,
-> `NotificationsPage`) remain Hyprland-specific and will get their own
-> per-compositor treatment; `guide/` and the rest of the panels are still to be
-> ported; the davincix panel resolves the kernel through `$DAVINCIX_CLI`, with
-> the in-repo `../kernel/davincix.sh` fallback not applicable to this layout
-> yet.
+Known pending:
+
+- Compositor scope is Hyprland; the Niri backend in
+  `equisdots/docs/compositor-api.md` is a plan item, not active work.
+- The palette directory is frozen at `dock/palettes` (shared contract with
+  `theme-sync`, `colors.lua`, `sddm-colors.sh` and `dots`).
+- Some popup helpers (diary, schedule) have no script yet; schedule is
+  optional (existence-guarded), diary is still a dead button.
+- The `install/` layer does not exist yet.
 
 ## Layout
 
 | Path | Content |
 |---|---|
-| `core/Compositor.qml` | Compositor surface for the UI (singleton) |
-| `core/compositors/Hyprland.qml` | Hyprland backend (commands + actions) |
-| `core/Config.qml` | Settings/state service (`settings.json`, envs, keybinds) |
-| `core/Caching.qml` | Cache/run/state paths |
-| `core/Scaler.qml` | UI scale helper |
-| `core/WindowRegistry.js` | Layout math + widget registry (future panels map) |
-| `bar/Bar.qml` | Bar host: per-screen `PanelWindow`, pollers, geometry, dual engine |
-| `bar/ClassicBar.qml` | Classic engine (left/center/right sections + autohide) |
-| `bar/Zone.qml` | Zones engine (data-driven `left/center/right`) |
-| `bar/ModulePill.qml` | Pill chrome used by every module |
-| `bar/BarLayout.js` | Pure layout/model logic (catalog, zones, classic sections, presets) |
-| `bar/Colors.qml` | Palette engine (base16 + semantic roles) |
-| `bar/modules/` | The 18 bar modules |
-| `bar/popups/` | Popups triggered by bar modules (port target; see its README) |
-| `bar/BarEditor.qml` | Bar editor widget (SUPER+SHIFT+D target) |
-| `bar/edit/` | Editor controls (pills, cards, steppers) |
-| `bar/editor/` | Editor pages + `persist-hypr.sh` + search overlay |
-| `settings/tabs/` | Shared settings tabs (host API) |
-| `panels/davincix/` | Wallpaper picker panel |
-| `notifications/` | Notifications layer: server + history + popups |
-
-Future layers (not created yet): `lock/`, `install/`.
+| `Shell.qml` | Entry point (mounts `Main`, `Bar`, `Floating`, `Widgets`) |
+| `core/` | Services and contracts (no visuals) |
+| `core/compositors/Hyprland.qml` | Hyprland backend of the compositor surface |
+| `core/scripts/watchers/` | Data-fetcher scripts the bar polls |
+| `ui/bar/` | Bar host, engines, modules, `Colors.qml`, `edit/` + `editor/`, `popups/` |
+| `ui/panels/` | Standalone widgets (davincix, clipboard, focustime, ...) |
+| `ui/lock/`, `ui/notifications/`, `ui/widgets/` | Lock, notification layer, floating widgets |
+| `ui/settings/tabs/` | Shared settings tabs (host API) |
 
 ## Docs
 
-- `docs/personalization.md` — configuration surface (bar engines, island fill
-  API, per-block defaults).
+- `docs/architecture.md` — layer map and contracts.
+- `docs/bar.md` — bar host, both engines, zones, styles, classic parity.
+- `docs/bar-modules.md` — module contract, `ModulePill` API, compact mode,
+  per-module personalization.
+- `docs/windows.md` — windows, widget popups, IPC and watchers.
+- `docs/desktop-widgets.md` — floating widget subsystem and redactor.
+- `docs/themes.md` — palette system, live editing and theme-sync.
+- `docs/personalization.md` — configuration surface (bar engines, modules,
+  per-subsystem options).

@@ -106,7 +106,7 @@ Item {
     property int padH: bar.s(12)
     property int padV: bar.s(8)
 
-    readonly property bool accentVisible: root.effectiveAccentRole !== "" && accentActive && bar.topbarPillBg
+    readonly property bool accentVisible: root.effectiveAccentRole !== "" && accentActive && bar.pillBg
     readonly property bool hovered: pillMouse.containsMouse
     // While the bar is reordering islands live (bar.dragBusy), suppress every
     // pill transition so model rewrites never cascade into flicker/entrance
@@ -146,15 +146,15 @@ Item {
                     return root.hasAccentColor ? root.accentColor : (colors[root.effectiveAccentRole] || colors.surface1);
                 }
                 let c = colors[root.bgRole] || colors.surface0;
-                return Qt.rgba(c.r, c.g, c.b, bar.topbarPillSolid ? 1.0 : (root.bgRole === "surface0" ? 0.4 : 0.6));
+                return Qt.rgba(c.r, c.g, c.b, bar.pillSolid ? 1.0 : (root.bgRole === "surface0" ? 0.4 : 0.6));
             }
-            if (root.unified || !bar.topbarPillBg) return "transparent";
+            if (root.unified || !bar.pillBg) return "transparent";
             if (accentVisible) return root.hasAccentColor ? root.accentColor : (colors[root.effectiveAccentRole] || colors.surface1);
             // barBg: standard islands become transparent and float on the bar strip.
             if (bar.barBg) return "transparent";
             let role = root.bgRole;
             let c = colors[role] || colors.surface0;
-            return Qt.rgba(c.r, c.g, c.b, bar.topbarPillSolid ? 1.0 : (role === "surface0" ? 0.4 : 0.6));
+            return Qt.rgba(c.r, c.g, c.b, bar.pillSolid ? 1.0 : (role === "surface0" ? 0.4 : 0.6));
         }
         readonly property color hoverBg: {
             if (root.fillSuppressed || root.noFill) return "transparent";
@@ -163,9 +163,9 @@ Item {
                     return root.hasAccentColor ? root.accentColor : (colors[root.effectiveAccentRole] || colors.surface1);
                 }
                 let c = colors[root.bgHoverRole] || colors.surface1;
-                return Qt.rgba(c.r, c.g, c.b, bar.topbarPillSolid ? 1.0 : (root.bgHoverRole === "surface1" ? 0.6 : 0.9));
+                return Qt.rgba(c.r, c.g, c.b, bar.pillSolid ? 1.0 : (root.bgHoverRole === "surface1" ? 0.6 : 0.9));
             }
-            if (root.unified || !bar.topbarPillBg) return "transparent";
+            if (root.unified || !bar.pillBg) return "transparent";
             if (accentVisible) return root.hasAccentColor ? root.accentColor : (colors[root.effectiveAccentRole] || colors.surface1);
             if (bar.barBg) {
                 // subtle hover highlight floating on the bar strip
@@ -174,7 +174,7 @@ Item {
             }
             let role = root.bgHoverRole;
             let c = colors[role] || colors.surface1;
-            return Qt.rgba(c.r, c.g, c.b, bar.topbarPillSolid ? 1.0 : (role === "surface1" ? 0.6 : 0.9));
+            return Qt.rgba(c.r, c.g, c.b, bar.pillSolid ? 1.0 : (role === "surface1" ? 0.6 : 0.9));
         }
         color: isHovered ? hoverBg : idleBg
         Behavior on color { ColorAnimation { duration: 200 } }
