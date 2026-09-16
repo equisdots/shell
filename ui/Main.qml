@@ -308,18 +308,23 @@ PanelWindow {
     property var    _layoutCache:    ({})
     property string _layoutCacheKey: ""
 
+    // Posicion configurable por widget (settings.widgets.<name>.position).
+    function userWidgetPosition(name) {
+        let pos = "default";
+        try {
+            let w = Config.rawSettings.widgets;
+            if (w && w[name] && w[name].position) pos = w[name].position;
+        } catch(e) {}
+        return pos;
+    }
+
     function getLayout(name) {
         // El layout se calcula contra el TAMANO DE PANTALLA, no contra la
         // ventana master (que en estado oculto queda en animW/animH = 1px):
         // con mw=1 los rx/ry salian negativos y el popup nacia fuera de pantalla.
         let sw = masterWindow.screen ? masterWindow.screen.width  : masterWindow.width;
         let sh = masterWindow.screen ? masterWindow.screen.height : masterWindow.height;
-        // Posicion configurable por widget (settings.widgets.<name>.position).
-        let pos = "default";
-        try {
-            let w = Config.rawSettings.widgets;
-            if (w && w[name] && w[name].position) pos = w[name].position;
-        } catch(e) {}
+        let pos = userWidgetPosition(name);
         let key = name + "|" + sw + "|" + sh + "|" + masterWindow.globalUiScale + "|" + pos;
         if (_layoutCacheKey === key) return _layoutCache[key];
         let result = Registry.getLayout(name, 0, 0, sw, sh, masterWindow.globalUiScale);
@@ -346,7 +351,10 @@ PanelWindow {
         let finalW = (currentItem && currentItem.targetMasterWidth  !== undefined) ? currentItem.targetMasterWidth  : t.w;
         let finalH = (currentItem && currentItem.targetMasterHeight !== undefined) ? currentItem.targetMasterHeight : t.h;
         let finalX = t.rx;
-        if (currentItem && currentItem.targetMasterWidth !== undefined && finalW !== t.w) {
+        // Recentrar solo con posición "default": una posición elegida en
+        // Engine (settings.widgets.<name>.position) manda.
+        if (masterWindow.userWidgetPosition(masterWindow.currentActive) === "default"
+            && currentItem && currentItem.targetMasterWidth !== undefined && finalW !== t.w) {
             finalX = Math.floor((masterWindow.width / 2) - (finalW / 2));
         }
         let finalY = t.ry;
@@ -372,7 +380,13 @@ PanelWindow {
         if (it.targetMasterWidth !== undefined) {
             masterWindow.animW = it.targetMasterWidth;
             masterWindow.targetW = it.targetMasterWidth;
-            masterWindow.animX = Math.floor((masterWindow.width / 2) - (it.targetMasterWidth / 2));
+            if (masterWindow.userWidgetPosition(masterWindow.currentActive) === "default") {
+                masterWindow.animX = Math.floor((masterWindow.width / 2) - (it.targetMasterWidth / 2));
+            } else {
+                // Posición elegida en Engine: recalcular X con el layout real.
+                let t = masterWindow.getLayout(masterWindow.currentActive);
+                if (t) masterWindow.animX = t.rx;
+            }
         }
         if (it.targetMasterHeight !== undefined) {
             masterWindow.animH = it.targetMasterHeight;
