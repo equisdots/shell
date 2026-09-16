@@ -5,22 +5,22 @@
 // reproduces the bar exactly as it was before it became user-configurable.
 // `label` and `icon` are only consumed by the settings panel module list.
 var MODULES = [
-    { id: "help",       label: "Help",        icon: "󰅖", zone: "left",   component: "bar/modules/HelpModule.qml" },
-    { id: "search",     label: "Search",      icon: "󰍉", zone: "left",   component: "bar/modules/SearchModule.qml" },
-    { id: "settings",   label: "Settings",    icon: "",  zone: "left",   component: "bar/modules/SettingsModule.qml" },
-    { id: "update",     label: "Updates",     icon: "󰚰", zone: "left",   component: "bar/modules/UpdateModule.qml" },
-    { id: "time",       label: "Clock",       icon: "󰅐", zone: "left",   component: "bar/modules/TimeModule.qml" },
-    { id: "date",       label: "Date",        icon: "󰃭", zone: "left",   component: "bar/modules/DateModule.qml" },
-    { id: "media",      label: "Media",       icon: "󰎈", zone: "left",   component: "bar/modules/MediaModule.qml" },
-    { id: "workspaces", label: "Workspaces",  icon: "󰽿", zone: "center", component: "bar/modules/WorkspacesModule.qml" },
-    { id: "tray",       label: "System tray", icon: "󱊖", zone: "right",  component: "bar/modules/TrayModule.qml" },
-    { id: "keyboard",   label: "Keyboard",    icon: "󰌌", zone: "right",  component: "bar/modules/KeyboardModule.qml" },
-    { id: "wifi",       label: "Network",     icon: "󰤨", zone: "right",  component: "bar/modules/WifiModule.qml" },
-    { id: "bluetooth",  label: "Bluetooth",   icon: "󰂯", zone: "right",  component: "bar/modules/BluetoothModule.qml" },
-    { id: "sysmon",     label: "Resources",   icon: "󰍛", zone: "right",  component: "bar/modules/SysmonModule.qml" },
-    { id: "volume",     label: "Volume",      icon: "󰕾", zone: "right",  component: "bar/modules/VolumeModule.qml" },
-    { id: "battery",    label: "Battery",     icon: "󰁹", zone: "right",  component: "bar/modules/BatteryModule.qml" },
-    { id: "recording",  label: "Recording",   icon: "",  zone: "right",  component: "bar/modules/RecordingModule.qml" }
+    { id: "help",       label: "Help",        icon: "󰅖", zone: "left",   component: "ui/bar/modules/HelpModule.qml" },
+    { id: "search",     label: "Search",      icon: "󰍉", zone: "left",   component: "ui/bar/modules/SearchModule.qml" },
+    { id: "settings",   label: "Settings",    icon: "",  zone: "left",   component: "ui/bar/modules/SettingsModule.qml" },
+    { id: "update",     label: "Updates",     icon: "󰚰", zone: "left",   component: "ui/bar/modules/UpdateModule.qml" },
+    { id: "time",       label: "Clock",       icon: "󰅐", zone: "left",   component: "ui/bar/modules/TimeModule.qml" },
+    { id: "date",       label: "Date",        icon: "󰃭", zone: "left",   component: "ui/bar/modules/DateModule.qml" },
+    { id: "media",      label: "Media",       icon: "󰎈", zone: "left",   component: "ui/bar/modules/MediaModule.qml" },
+    { id: "workspaces", label: "Workspaces",  icon: "󰽿", zone: "center", component: "ui/bar/modules/WorkspacesModule.qml" },
+    { id: "tray",       label: "System tray", icon: "󱊖", zone: "right",  component: "ui/bar/modules/TrayModule.qml" },
+    { id: "keyboard",   label: "Keyboard",    icon: "󰌌", zone: "right",  component: "ui/bar/modules/KeyboardModule.qml" },
+    { id: "wifi",       label: "Network",     icon: "󰤨", zone: "right",  component: "ui/bar/modules/WifiModule.qml" },
+    { id: "bluetooth",  label: "Bluetooth",   icon: "󰂯", zone: "right",  component: "ui/bar/modules/BluetoothModule.qml" },
+    { id: "sysmon",     label: "Resources",   icon: "󰍛", zone: "right",  component: "ui/bar/modules/SysmonModule.qml" },
+    { id: "volume",     label: "Volume",      icon: "󰕾", zone: "right",  component: "ui/bar/modules/VolumeModule.qml" },
+    { id: "battery",    label: "Battery",     icon: "󰁹", zone: "right",  component: "ui/bar/modules/BatteryModule.qml" },
+    { id: "recording",  label: "Recording",   icon: "",  zone: "right",  component: "ui/bar/modules/RecordingModule.qml" }
 ];
 
 var ZONES = ["left", "center", "right"];

@@ -13,9 +13,9 @@ working; nothing is removed there.
 Ported so far, **as-is** (behaviour preserved, only naming updated):
 
 - **Bar** — complete port of the dock/bar (host + both engines + modules +
-  editor). Renames applied: `dock` to `bar`, `SerpBar` to `ClassicBar`,
-  `serpbar` to `classicbar`; engine values `"bar"`/`"classic"`; config keys
-  `"bar"`, `"classicbar"`, `"barEngine"`. The module catalog/loaders now use
+  editor). Renames applied: `dock` to `bar`, the legacy bar to `ClassicBar`;
+  engine values `"bar"`/`"classic"`; config keys `"dock"`, `"classicbar"`,
+  `"barEngine"`. The module catalog/loaders now use
   `bar/modules/` relative paths.
 - **Core** — shell services: `Config`, `Caching`, `Scaler`,
   `WindowRegistry.js` (layout math + widget registry) and the **compositor

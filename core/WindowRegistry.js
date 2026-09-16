@@ -27,44 +27,69 @@ function s(val, scale) {
     return Math.round(val * scale);
 }
 
+
+// ═══ POPUP POSITION OVERRIDES ═══════════════════════════════════════════════
+// settings.widgets.<name>.position places any widget anywhere on screen.
+// "default" keeps the widget's own layout; the rest anchor with a margin.
+var POSITION_IDS = ["default", "top-left", "top-center", "top-right",
+                    "center-left", "center", "center-right",
+                    "bottom-left", "bottom-center", "bottom-right"];
+function positionLayout(t, pos, mw, mh, userScale) {
+    if (!t || !pos || pos === "default") return t;
+    let scale = getScale(mw, mh, userScale);
+    let m = s(20, scale);
+    let cx = Math.floor((mw - t.w) / 2);
+    let cy = Math.floor((mh - t.h) / 2);
+    if (pos === "top-left")          { t.rx = m;         t.ry = m; }
+    else if (pos === "top-center")   { t.rx = cx;        t.ry = m; }
+    else if (pos === "top-right")    { t.rx = mw - t.w - m; t.ry = m; }
+    else if (pos === "center-left")  { t.rx = m;         t.ry = cy; }
+    else if (pos === "center")       { t.rx = cx;        t.ry = cy; }
+    else if (pos === "center-right") { t.rx = mw - t.w - m; t.ry = cy; }
+    else if (pos === "bottom-left")  { t.rx = m;         t.ry = mh - t.h - m; }
+    else if (pos === "bottom-center"){ t.rx = cx;        t.ry = mh - t.h - m; }
+    else if (pos === "bottom-right") { t.rx = mw - t.w - m; t.ry = mh - t.h - m; }
+    return t;
+}
+
 function getLayout(name, mx, my, mw, mh, userScale) {
     let scale = getScale(mw, mh, userScale);
 
     let base = {
         // --- Top Right Popups ---
-        "battery":   { w: s(801, scale), h: s(760, scale), rx: mw - s(805, scale), ry: s(60, scale), comp: "battery/BatteryPopup.qml" },
-        "network":   { w: s(900, scale), h: s(700, scale), rx: mw - s(904, scale), ry: s(60, scale), comp: "network/NetworkPopup.qml" },
-        "volume":    { w: s(450, scale), h: s(700, scale), rx: mw - s(455, scale), ry: s(60, scale), comp: "volume/VolumePopup.qml" },
+        "battery":   { w: s(801, scale), h: s(760, scale), rx: mw - s(805, scale), ry: s(60, scale), comp: "ui/bar/popups/battery/BatteryPopup.qml" },
+        "network":   { w: s(900, scale), h: s(700, scale), rx: mw - s(904, scale), ry: s(60, scale), comp: "ui/bar/popups/network/NetworkPopup.qml" },
+        "volume":    { w: s(450, scale), h: s(700, scale), rx: mw - s(455, scale), ry: s(60, scale), comp: "ui/bar/popups/volume/VolumePopup.qml" },
         
         // --- Central Standard Tools ---
-        "applauncher": { w: s(800, scale), h: s(700, scale), rx: Math.floor((mw/2)-(s(800, scale)/2)), ry: Math.floor((mh/2)-(s(700, scale)/2)), comp: "applauncher/appLauncher.qml" },
-        "clipboard": { w: s(800, scale), h: s(700, scale), rx: Math.floor((mw/2)-(s(800, scale)/2)), ry: Math.floor((mh/2)-(s(700, scale)/2)), comp: "clipboard/ClipboardManager.qml" },
-        "idle": { w: s(560, scale), h: s(430, scale), rx: Math.floor((mw/2)-(s(560, scale)/2)), ry: Math.floor((mh/2)-(s(430, scale)/2)), comp: "idle/IdlePopup.qml" },
+        "applauncher": { w: s(800, scale), h: s(700, scale), rx: Math.floor((mw/2)-(s(800, scale)/2)), ry: Math.floor((mh/2)-(s(700, scale)/2)), comp: "ui/bar/popups/applauncher/appLauncher.qml" },
+        "clipboard": { w: s(800, scale), h: s(700, scale), rx: Math.floor((mw/2)-(s(800, scale)/2)), ry: Math.floor((mh/2)-(s(700, scale)/2)), comp: "ui/panels/clipboard/ClipboardManager.qml" },
+        "idle": { w: s(560, scale), h: s(430, scale), rx: Math.floor((mw/2)-(s(560, scale)/2)), ry: Math.floor((mh/2)-(s(430, scale)/2)), comp: "ui/panels/idle/IdlePopup.qml" },
 
         // --- Central Large Tools ---
-        "focustime": { w: s(900, scale), h: s(700, scale), rx: Math.floor((mw/2)-(s(900, scale)/2)), ry: Math.floor((mh/2)-(s(700, scale)/2)), comp: "focustime/FocusTimePopup.qml" },
+        "focustime": { w: s(900, scale), h: s(700, scale), rx: Math.floor((mw/2)-(s(900, scale)/2)), ry: Math.floor((mh/2)-(s(700, scale)/2)), comp: "ui/panels/focustime/FocusTimePopup.qml" },
 
         // --- Extralarge / Custom Centered ---
-        "guide":     { w: s(1160, scale), h: s(720, scale), rx: Math.floor((mw/2)-(s(1160, scale)/2)), ry: Math.floor((mh/2)-(s(720, scale)/2)), comp: "bar/popups/guide/GuidePopup.qml" },
-        "calendar":  { w: s(1450, scale), h: s(750, scale), rx: Math.floor((mw/2)-(s(1450, scale)/2)), ry: Math.floor((mh/2)-(s(750, scale)/2)), comp: "calendar/CalendarPopup.qml" },
-        "updater": { w: s(950, scale), h: s(850, scale), rx: Math.floor((mw/2)-(s(950, scale)/2)), ry: Math.floor((mh/2)-(s(850, scale)/2)), comp: "updater/UpdaterPopup.qml" },
-        "system-monitor": { w: s(580, scale), h: s(480, scale), rx: Math.floor((mw/2)-(s(580, scale)/2)), ry: Math.floor((mh/2)-(s(480, scale)/2)), comp: "system-monitor/SystemMonitor.qml" },
-        "quicknotes": { w: s(480, scale), h: s(460, scale), rx: Math.floor((mw/2)-(s(480, scale)/2)), ry: Math.floor((mh/2)-(s(460, scale)/2)), comp: "quicknotes/QuickNotes.qml" },
-        "rss-reader": { w: s(650, scale), h: s(560, scale), rx: Math.floor((mw/2)-(s(650, scale)/2)), ry: Math.floor((mh/2)-(s(560, scale)/2)), comp: "rss-reader/RssReader.qml" },
-        "file-search": { w: s(600, scale), h: s(500, scale), rx: Math.floor((mw/2)-(s(600, scale)/2)), ry: Math.floor((mh/2)-(s(500, scale)/2)), comp: "file-search/FileSearch.qml" },
-        "scale": { w: s(520, scale), h: s(560, scale), rx: Math.floor((mw/2)-(s(520, scale)/2)), ry: Math.floor((mh/2)-(s(560, scale)/2)), comp: "scale/ScalePicker.qml" },
-        "window-controls": { w: s(480, scale), h: s(800, scale), rx: Math.floor((mw/2)-(s(480, scale)/2)), ry: Math.floor((mh/2)-(s(800, scale)/2)), comp: "window-controls/WindowControls.qml" },
-        "bar-editor": { w: Math.min(s(1800, scale), mw - s(40, scale)), h: s(760, scale), rx: Math.floor((mw - Math.min(s(1800, scale), mw - s(40, scale))) / 2), ry: Math.floor((mh/2)-(s(760, scale)/2)), comp: "bar/BarEditor.qml" },
-        "wallpaper": { w: mw, h: s(650, scale), rx: 0, ry: Math.floor((mh/2)-(s(650, scale)/2)), comp: "panels/davincix/DavincixPicker.qml" },
+        "guide":     { w: s(1160, scale), h: s(720, scale), rx: Math.floor((mw/2)-(s(1160, scale)/2)), ry: Math.floor((mh/2)-(s(720, scale)/2)), comp: "ui/bar/popups/guide/GuidePopup.qml" },
+        "calendar":  { w: s(1450, scale), h: s(750, scale), rx: Math.floor((mw/2)-(s(1450, scale)/2)), ry: Math.floor((mh/2)-(s(750, scale)/2)), comp: "ui/bar/popups/calendar/CalendarPopup.qml" },
+        "updater": { w: s(950, scale), h: s(850, scale), rx: Math.floor((mw/2)-(s(950, scale)/2)), ry: Math.floor((mh/2)-(s(850, scale)/2)), comp: "ui/bar/popups/updater/UpdaterPopup.qml" },
+        "system-monitor": { w: s(580, scale), h: s(480, scale), rx: Math.floor((mw/2)-(s(580, scale)/2)), ry: Math.floor((mh/2)-(s(480, scale)/2)), comp: "ui/bar/popups/system-monitor/SystemMonitor.qml" },
+        "quicknotes": { w: s(480, scale), h: s(460, scale), rx: Math.floor((mw/2)-(s(480, scale)/2)), ry: Math.floor((mh/2)-(s(460, scale)/2)), comp: "ui/panels/quicknotes/QuickNotes.qml" },
+        "rss-reader": { w: s(650, scale), h: s(560, scale), rx: Math.floor((mw/2)-(s(650, scale)/2)), ry: Math.floor((mh/2)-(s(560, scale)/2)), comp: "ui/panels/rss-reader/RssReader.qml" },
+        "file-search": { w: s(600, scale), h: s(500, scale), rx: Math.floor((mw/2)-(s(600, scale)/2)), ry: Math.floor((mh/2)-(s(500, scale)/2)), comp: "ui/panels/file-search/FileSearch.qml" },
+        "scale": { w: s(520, scale), h: s(560, scale), rx: Math.floor((mw/2)-(s(520, scale)/2)), ry: Math.floor((mh/2)-(s(560, scale)/2)), comp: "ui/panels/scale/ScalePicker.qml" },
+        "window-controls": { w: s(480, scale), h: s(800, scale), rx: Math.floor((mw/2)-(s(480, scale)/2)), ry: Math.floor((mh/2)-(s(800, scale)/2)), comp: "ui/panels/window-controls/WindowControls.qml" },
+        "bar-editor": { w: Math.min(s(1800, scale), mw - s(40, scale)), h: s(760, scale), rx: Math.floor((mw - Math.min(s(1800, scale), mw - s(40, scale))) / 2), ry: Math.floor((mh/2)-(s(760, scale)/2)), comp: "ui/bar/BarEditor.qml" },
+        "wallpaper": { w: mw, h: s(650, scale), rx: 0, ry: Math.floor((mh/2)-(s(650, scale)/2)), comp: "ui/panels/davincix/DavincixPicker.qml" },
         
         // --- Top Left Edge ---
-        "music":     { w: s(700, scale), h: s(650, scale), rx: s(5, scale), ry: s(60, scale), comp: "music/MusicPopup.qml" },
+        "music":     { w: s(700, scale), h: s(650, scale), rx: s(5, scale), ry: s(60, scale), comp: "ui/bar/popups/music/MusicPopup.qml" },
 
         // --- Screen Spanning Panels ---
         
         // Full-screen desktop-widget editor: covers the whole monitor (rx/ry 0)
         // so redactor-local coordinates equal the widget layout coordinates.
-        "widgets-redactor": { w: mw, h: mh, rx: 0, ry: 0, comp: "widgets/WidgetRedactor.qml" },
+        "widgets-redactor": { w: mw, h: mh, rx: 0, ry: 0, comp: "ui/widgets/WidgetRedactor.qml" },
         
         // --- Utility ---
         "hidden":    { w: 1, h: 1, rx: -5000 - mx, ry: -5000 - my, comp: "" } 

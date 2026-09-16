@@ -151,3 +151,40 @@ API (`core/Notifications.js`): `normalize(raw)`, `layout(raw, scale)`,
 
 API: `setModuleColorSlot(bar, id, slot, value)` (empty value removes the
 override); the generic `colors` map is normalized by `moduleConfig`.
+
+
+## Subsystem options (generic API)
+
+Ported subsystems without a dedicated module expose their options through
+`core/Personalization.js`, one settings section per subsystem:
+
+`lock`, `battery`, `volume`, `music`, `network`, `calendar`, `updater`, `applauncher`, `system-monitor`, `clipboard`, `focustime`, `quicknotes`, `idle`, `file-search`, `rss-reader`, `scale`, `window-controls`, `widgets`
+
+Each section mirrors the subsystem's defaults (sizes, timeouts, poll rates,
+booleans). API: `defaults(section)`, `normalize(section, raw)`,
+`value(section, raw, key)`, `setOption(section, raw, key, value)`,
+`patch(section, raw, key, value)` (ready for `Config.updateJsonBulk`).
+
+Wiring status: the option tables are defined and documented; components
+replace their hardcoded values with `value(...)` reads as they are validated
+in the testing phase (one line per option).
+
+## Settings panel (BarEditor)
+
+The panel navigation is data-driven from `core/EditorNav.js`: five collapsible
+groups (Shell, Bar, Theme, Behavior, System) with their pages. `GROUPS` defines
+the defaults; everything else lives in `settings.editor`:
+
+```json
+"editor": {
+  "collapsed": { "theme": true },
+  "defaultPage": "s_general",
+  "order": ["shell", "bar", "theme", "behavior", "system"],
+  "hidden": ["d_guide"]
+}
+```
+
+API: `groups()`, `configure(groups, raw)` (applies order/hidden/collapsed),
+`pageIds(groups)`, `findItem(groups, id)`, `patch(raw, key, value)`. The rail
+renders the result and persists collapse with `Config.setSetting("editor", ...)`;
+engine-specific pages (`engine: "bar" | "classic"`) are filtered per engine.
