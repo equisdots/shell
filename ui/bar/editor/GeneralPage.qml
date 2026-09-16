@@ -32,7 +32,7 @@ Item {
         { id: "system-monitor", label: "System" },
         { id: "applauncher", label: "Launcher" },
         { id: "clipboard", label: "Clipboard" },
-        { id: "calendar", label: "Calendar" },
+        { id: "calendar", label: "Timex" },
         { id: "music", label: "Music" },
         { id: "updater", label: "Updater" },
         { id: "guide", label: "About (guide)" },
