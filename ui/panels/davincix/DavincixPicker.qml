@@ -47,7 +47,7 @@ Item {
         let override = Quickshell.env("DAVINCIX_CLI");
         if (override && override !== "") return override;
 
-        return decodeURIComponent(Qt.resolvedUrl("../kernel/davincix.sh").toString().replace(/^file:\/\//, ""));
+        return Quickshell.env("HOME") + "/.local/bin/davincix";
     }
 
     Colors { id: _theme }
