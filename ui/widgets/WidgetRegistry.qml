@@ -71,7 +71,7 @@ QtObject {
             }
         },
         "weather": {
-            name: "Weather",
+            name: "Timex",
             icon: "󰖐",
             // Per-type default that all variants must survive:
             //   compact — free-ish aspect (0.7..2.2), min 90x90; 300x140

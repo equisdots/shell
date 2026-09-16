@@ -57,7 +57,7 @@ var MODULES = [
     { id: "volume",     label: "Volume",      icon: "󰕾", component: "modules/VolumeModule.qml" },
     { id: "battery",    label: "Battery",     icon: "󰁹", component: "modules/BatteryModule.qml" },
     { id: "recording",  label: "Recording",   icon: "",  component: "modules/RecordingModule.qml" },
-    { id: "weather",    label: "Weather",     icon: "󰖐", component: "modules/WeatherModule.qml" },
+    { id: "weather",    label: "Timex",       icon: "󰖐", component: "modules/WeatherModule.qml" },
     { id: "focus",      label: "Focus",       icon: "󰋼", component: "modules/FocusModule.qml" }
 ];
 

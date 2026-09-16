@@ -93,7 +93,7 @@ Item {
     function applyActiveMode() {
         if (root.activeMode === "") return;
         let map = {
-            "general": "s_general", "weather": "s_timex", "keyboard": "s_keyboard",
+            "general": "s_general", "timex": "s_timex", "keyboard": "s_keyboard",
             "monitors": "s_monitors", "startup": "s_startup", "topbar": "d_engine",
             "bar": "d_engine", "engine": "d_engine", "launcher": "d_launcher",
             "hyprland": "d_hyprland", "idle": "d_idle", "gpu": "d_gpu",
@@ -672,7 +672,7 @@ Item {
     function pageLoader(id) {
         let map = {
             "s_general":  sGeneralLoader,
-            "s_timex":  sWeatherLoader,
+            "s_timex":  sTimexLoader,
             "s_keyboard": sKeyboardLoader,
             "s_monitors": sMonitorsLoader,
             "s_startup":  sStartupLoader,
@@ -1777,13 +1777,13 @@ Item {
                         Behavior on opacity { NumberAnimation { duration: 250 } }
                     }
                     Loader {
-                        id: sWeatherLoader
+                        id: sTimexLoader
                         anchors.fill: parent
                         visible: root.currentPage === "s_timex"
                         opacity: visible ? 1.0 : 0.0
                         property real slideY: visible ? 0 : root.s(10)
                         Behavior on slideY { NumberAnimation { duration: 250; easing.type: Easing.OutQuart } }
-                        transform: Translate { y: sWeatherLoader.slideY }
+                        transform: Translate { y: sTimexLoader.slideY }
                         Behavior on opacity { NumberAnimation { duration: 250 } }
                     }
                     Loader {

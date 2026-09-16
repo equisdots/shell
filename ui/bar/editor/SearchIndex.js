@@ -23,7 +23,7 @@ function cards() {
         { page: "s_timex", boxIndex: 1, label: "City", desc: "City name or lat,lon", icon: "󰍎", color: "blue" },
         { page: "s_timex", boxIndex: 2, label: "API key", desc: "Only for keyed providers", icon: "󰌆", color: "blue" },
         { page: "s_timex", boxIndex: 3, label: "Temperature Unit", desc: "Celsius / Fahrenheit", icon: "󰔄", color: "blue" },
-        { page: "s_timex", boxIndex: 4, label: "Weather data", desc: "Snapshot, age and refresh", icon: "󰙦", color: "blue" },
+        { page: "s_timex", boxIndex: 4, label: "Timex data", desc: "Snapshot, age and refresh", icon: "󰙦", color: "blue" },
         { page: "s_timex", boxIndex: 5, label: "Timex layout", desc: "Forecast row and clock position/size", icon: "󰒓", color: "blue" },
         { page: "s_timex", boxIndex: 6, label: "Calendar & panel", desc: "Month grid and day panel options", icon: "󰃭", color: "blue" },
         { page: "s_general", boxIndex: 5, label: "App scale", desc: "Scale GTK / Electron apps", icon: "", color: "sapphire" }
