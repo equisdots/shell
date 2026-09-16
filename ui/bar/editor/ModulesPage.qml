@@ -145,7 +145,10 @@ Item {
 
                     GridLayout {
                         width: parent.width
-                        columns: 2
+                        // Responsive: 2 columnas solo cuando la card conserva el
+                        // ancho minimo (~s(680)); si no, 1 columna a lo ancho
+                        // (evita solapes de los controles internos).
+                        columns: Math.max(1, Math.floor((width + columnSpacing) / (bar.s(500) + columnSpacing)))
                         columnSpacing: bar.s(12)
                         rowSpacing: bar.s(12)
 

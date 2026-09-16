@@ -553,7 +553,7 @@ Item {
 
     // Panel width: doubled (2 x 1120) with a screen margin cap so it always
     // fits; Main follows this target live and animates the morph.
-    property real targetMasterWidth: Math.min(root.s(1800), Screen.width - root.s(40))
+    property real targetMasterWidth: Math.min(root.s(1260), Screen.width - root.s(40))
     property real targetMasterHeight: root.s(760)
     // Grupos de navegación: definidos en core/EditorNav.js (5 grupos
     // colapsables, orden/visibilidad/estado desde settings.editor).
