@@ -41,7 +41,12 @@ Item {
 
     // Uses a unique temp file per call (mktemp) so concurrent saves never
     // overwrite each other's temp file, preventing JSON corruption.
+    // Bumped on every settings mutation: bindings that must react to
+    // in-place rawSettings changes depend on this counter.
+    property int rev: 0
+
     function setSetting(key, value) {
+        rev++;
         rawSettings[key] = value;
         let safeValue = typeof value === "string" ? `"${value}"` : value;
         if (typeof value === "object") safeValue = JSON.stringify(value).replace(/'/g, "'\\''");
@@ -105,6 +110,19 @@ Item {
     property real topbarBorderWidthRight: 0
     property string topbarBorderColorRight: "surface1"
     property real appScale: 1.0
+    // ── Persist General-tab scalars when they change ───────────────────
+    // The tab edits these properties directly; without this hook the values
+    // only lived in memory (UI Scale / Workspaces / App scale did nothing).
+    // Debounced and gated on dataReady so the initial load never re-saves.
+    Timer {
+        id: scalarSave
+        interval: 300
+        onTriggered: if (dataReady) saveAppSettings()
+    }
+    onUiScaleChanged: scalarSave.restart()
+    onWorkspaceCountChanged: scalarSave.restart()
+    onAppScaleChanged: scalarSave.restart()
+
     property int workspaceCount: 8
     property int initialWorkspaceCount: 8
     property string wallpaperDir: {
@@ -146,7 +164,7 @@ Item {
         sh("notify-send 'Quickshell' 'Settings Applied Successfully!'");
 
         if (config.workspaceCount !== config.initialWorkspaceCount) {
-            sh(`qs -p "${qsScriptsDir}/dock/Dock.qml" ipc call topbar queueReload`);
+            sh(`qs -p "${qsScriptsDir}/Shell.qml" ipc call topbar queueReload`);
             config.initialWorkspaceCount = config.workspaceCount;
         }
     }

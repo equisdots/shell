@@ -360,14 +360,22 @@ Item {
             z: -1
         }
 
-        ColumnLayout {
+        // Two-column grid (Modules-page style): every option box is one card,
+        // they flow two per row. Layout.fillHeight keeps both cards of a row
+        // the same height. NOTE: the scales in this page are NOT the same —
+        // UI Scale affects only the shell, App scale applies the global
+        // display scale (scale-menu.sh), Monitor scale lives in Monitors.
+        GridLayout {
             id: settingsMainCol
             width: parent.width
-            spacing: root.s(10)
+            columns: 2
+            columnSpacing: root.s(10)
+            rowSpacing: root.s(10)
 
             // ── Box 0: Guide on startup ──────────────────────────────
             Rectangle {
                 id: box0
+                Layout.fillHeight: true
                 Layout.fillWidth: true
                 Layout.preferredHeight: guideRow.implicitHeight + root.s(28)
                 radius: root.s(26)
@@ -446,6 +454,7 @@ Item {
             // ── Box 1: Help icon ─────────────────────────────────────
             Rectangle {
                 id: box1
+                Layout.fillHeight: true
                 Layout.fillWidth: true
                 Layout.preferredHeight: helpIconRow.implicitHeight + root.s(28)
                 radius: root.s(26)
@@ -514,6 +523,7 @@ Item {
             // ── Box 2: UI Scale ──────────────────────────────────────
             Rectangle {
                 id: box2
+                Layout.fillHeight: true
                 Layout.fillWidth: true
                 Layout.preferredHeight: col2.implicitHeight + root.s(32)
                 radius: root.s(26)
@@ -604,6 +614,7 @@ Item {
             // ── Box 3: Keyboard layouts ──────────────────────────────
             Rectangle {
                 id: box3
+                Layout.fillHeight: true
                 Layout.fillWidth: true
                 Layout.preferredHeight: col3lang.implicitHeight + root.s(32)
                 radius: root.s(26)
@@ -772,6 +783,7 @@ Item {
             // ── Box 4: Layout shortcut ───────────────────────────────
             Rectangle {
                 id: box4
+                Layout.fillHeight: true
                 Layout.fillWidth: true
                 Layout.preferredHeight: col4layout.implicitHeight + root.s(32)
                 radius: root.s(26)
@@ -894,6 +906,7 @@ Item {
             // ── Box 5: Wallpaper directory ───────────────────────────
             Rectangle {
                 id: box5
+                Layout.fillHeight: true
                 Layout.fillWidth: true
                 Layout.preferredHeight: col5wp.implicitHeight + root.s(32)
                 radius: root.s(26)
@@ -1022,6 +1035,7 @@ Item {
             // ── Box 6: Workspaces ────────────────────────────────────
             Rectangle {
                 id: box6
+                Layout.fillHeight: true
                 Layout.fillWidth: true
                 Layout.preferredHeight: col6ws.implicitHeight + root.s(32)
                 radius: root.s(26)
@@ -1105,6 +1119,7 @@ Item {
             // -- Box 7: App scale ------------------------------------
             Rectangle {
                 id: box7
+                Layout.fillHeight: true
                 property bool isActive: root.highlightedBox === 7
                 Layout.fillWidth: true
                 Layout.preferredHeight: appScaleRow.implicitHeight + root.s(28)

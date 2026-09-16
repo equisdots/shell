@@ -1292,6 +1292,8 @@ Item {
         function appScaleStep(dir) {
             let next = Math.max(0.75, Math.min(2.0, Config.appScale + dir * 0.25));
             Config.appScale = Math.round(next * 100) / 100;
+            // Aplicar de verdad: escala global via Hyprland Lua API
+            Quickshell.execDetached(["bash", Quickshell.env("HOME") + "/.config/hypr/scripts/scale-menu.sh", String(Config.appScale)]);
         }
     }
 

@@ -8,8 +8,13 @@
 // ═══════════════════════════════════════════════════════════════════════════
 var DEFAULTS = {
     width: 350,       // popup width (unscaled)
+    maxHeight: 0,     // 0 = auto; otherwise max popup card height (unscaled)
     marginTop: 60,
     marginRight: 20,
+    position: 2,      // 0 tl, 1 tc, 2 tr, 3 bl, 4 bc, 5 br
+    shadow: 0,        // 0/1 like hyprland window shadow
+    shadowBlur: 14,
+    shadowOffset: 6,
     spacing: 12,
     radius: 14,
     padding: 12,
@@ -35,6 +40,15 @@ function layout(raw, scale) {
         w: Math.round(o.width * scale),
         marginTop: Math.round(o.marginTop * scale),
         marginRight: Math.round(o.marginRight * scale),
+        maxHeight: Math.round(o.maxHeight * scale),
+        posTop: o.position === 0 || o.position === 1 || o.position === 2,
+        posBottom: o.position === 3 || o.position === 4 || o.position === 5,
+        posLeft: o.position === 0 || o.position === 3,
+        posCenterX: o.position === 1 || o.position === 4,
+        posRight: o.position === 2 || o.position === 5,
+        shadow: o.shadow === 1,
+        shadowBlur: Math.round(o.shadowBlur * scale),
+        shadowOffset: Math.round(o.shadowOffset * scale),
         spacing: Math.round(o.spacing * scale),
         radius: Math.round(o.radius * scale),
         padding: Math.round(o.padding * scale)

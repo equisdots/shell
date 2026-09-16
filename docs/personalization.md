@@ -188,3 +188,24 @@ API: `groups()`, `configure(groups, raw)` (applies order/hidden/collapsed),
 `pageIds(groups)`, `findItem(groups, id)`, `patch(raw, key, value)`. The rail
 renders the result and persists collapse with `Config.setSetting("editor", ...)`;
 engine-specific pages (`engine: "bar" | "classic"`) are filtered per engine.
+
+## Notifications layout
+
+`settings.notifications` (core/Notifications.js): `width`, `maxHeight` (0 = auto),
+`marginTop`, `marginRight`, `position` (0 tl, 1 tc, 2 tr, 3 bl, 4 bc, 5 br),
+`shadow` (0/1), `shadowBlur`, `shadowOffset`, `spacing`, `radius`, `padding`,
+`timeout`, `maxVisible`. `layout(raw, scale)` returns scaled values plus the
+anchor booleans (`posTop/Bottom/Left/CenterX/Right`). Controls live in
+Settings -> Notifications. Centering anchors only the left side with a computed
+margin (anchoring left+right stretches the layer).
+
+## Config reactivity
+
+`Config.setSetting()` mutates `rawSettings` in place, so bindings that must
+react to live edits depend on `Config.rev` (bumped on every set). General-tab
+scalars (`uiScale`, `workspaceCount`, `appScale`) persist through
+`onXChanged` -> debounced `saveAppSettings()` (gated on `dataReady`);
+`workspaceCount` triggers the bar reload through `qs -p <shell>/Shell.qml
+ipc call topbar queueReload`. The three scales are distinct: UI Scale = shell
+only, App scale = global display scale (`scripts/scale-menu.sh`), monitor
+scale = Hyprland monitors.

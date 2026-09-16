@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Effects
 import QtQuick.Window
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -41,20 +42,28 @@ PanelWindow {
 
     // Personalization: scaled layout from the core Notifications API
     // (settings.json "notifications" section).
-    property var layoutConfig: Notifications.layout(Config.rawSettings.notifications,
-                                                    Registry.getScale(Screen.width, Screen.height, popupWindow.uiScale))
+    property var layoutConfig: (Config.rev, Notifications.layout(Config.rawSettings.notifications,
+                                                    Registry.getScale(Screen.width, Screen.height, popupWindow.uiScale)))
 
     WlrLayershell.namespace: "qs-popups"
     WlrLayershell.layer: WlrLayer.Overlay
 
     anchors {
-        top: true
-        right: true
+        top: layoutConfig.posTop
+        bottom: layoutConfig.posBottom
+        left: layoutConfig.posLeft || layoutConfig.posCenterX
+        right: layoutConfig.posRight
     }
 
+    // Centrado: ancla izquierda con margen calculado (anclar left+right a la vez
+    // estira la capa a todo el ancho).
     margins {
-        top: popupWindow.layoutConfig.marginTop
-        right: popupWindow.layoutConfig.marginRight
+        top: layoutConfig.posBottom ? 0 : layoutConfig.marginTop
+        bottom: layoutConfig.posBottom ? layoutConfig.marginTop : 0
+        left: layoutConfig.posCenterX
+              ? Math.max(0, Math.round((Screen.width - popupWindow.width) / 2))
+              : 0
+        right: layoutConfig.posRight ? layoutConfig.marginRight : 0
     }
 
     exclusionMode: ExclusionMode.Ignore
@@ -123,7 +132,10 @@ PanelWindow {
             delegate: Item {
                 id: delegateRoot
                 width: ListView.view.width
-                height: contentCol.height + (popupWindow.layoutConfig.padding * 2)
+                height: (popupWindow.layoutConfig.maxHeight > 0
+                         && contentCol.height + (popupWindow.layoutConfig.padding * 2) > popupWindow.layoutConfig.maxHeight)
+                        ? popupWindow.layoutConfig.maxHeight
+                        : contentCol.height + (popupWindow.layoutConfig.padding * 2)
 
                 property string fullSummary: model.summary || ""
                 property string fullBody: model.body || ""
@@ -179,6 +191,17 @@ PanelWindow {
                     }
                 }
 
+                // Sombra estilo ventana Hyprland: elemento detrás del card
+                // (offset + opacidad; sin MultiEffect circular).
+                Rectangle {
+                    anchors.fill: popupCard
+                    anchors.topMargin: popupWindow.layoutConfig.shadow ? popupWindow.layoutConfig.shadowOffset : 0
+                    radius: popupCard.radius
+                    color: "black"
+                    opacity: popupWindow.layoutConfig.shadow ? 0.45 : 0.0
+                    visible: opacity > 0
+                }
+
                 Rectangle {
                     id: popupCard
                     anchors.fill: parent
@@ -188,11 +211,14 @@ PanelWindow {
                     border.width: 1
                     clip: true
 
+
+
                     Timer {
                         interval: delegateRoot.effectiveTimeout > 0 ? delegateRoot.effectiveTimeout : 5000
                         running: delegateRoot.effectiveTimeout > 0
                         onTriggered: popupWindow.removeNotif(delegateRoot.popupUid)
                     }
+
 
                     // Card body click — invokes "default" action
                     MouseArea {
