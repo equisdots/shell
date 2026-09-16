@@ -1,7 +1,9 @@
 import QtQuick
+import QtQuick.Effects
 import Quickshell
 import Quickshell.Services.SystemTray
 import "../../../core"
+import "../../../core/Personalization.js" as Personalization
 import ".."
 
 // System tray — icon grid. Single row on top/bottom bars, a 2-column grid on
@@ -9,6 +11,11 @@ import ".."
 ModulePill {
     id: mod
 
+    readonly property var trayCfg: Personalization.normalize("tray", Config.rawSettings.tray)
+    readonly property bool trayTinted: trayCfg.tint === true
+    readonly property color trayTintColor: trayCfg.useAccent
+        ? (colors[accentRole] || colors.mauve)
+        : contentColor
     noFill: true
     padH: bar.s(12)
     showState: trayRepeater.count > 0
@@ -43,9 +50,16 @@ ModulePill {
             required property var modelData
             source: modelData.icon || ""
             fillMode: Image.PreserveAspectFit
-            sourceSize: Qt.size(bar.s(18), bar.s(18))
-            width: bar.s(18)
-            height: bar.s(18)
+            sourceSize: Qt.size(bar.s(mod.trayCfg.size), bar.s(mod.trayCfg.size))
+            width: bar.s(mod.trayCfg.size)
+            height: bar.s(mod.trayCfg.size)
+
+            layer.enabled: mod.trayTinted
+            layer.effect: MultiEffect {
+                saturation: -1.0
+                colorization: 1.0
+                colorizationColor: mod.trayTintColor
+            }
 
             opacity: initAnimTrigger ? (trayMouse.containsMouse ? 1.0 : 0.8) : 0.0
             scale: initAnimTrigger ? (trayMouse.containsMouse ? 1.15 : 1.0) : 0.0

@@ -31,6 +31,7 @@ Item {
         { id: "lock", label: "Lock screen" },
         { id: "updater", label: "Updater" },
         { id: "idle", label: "Idle" },
+        { id: "tray", label: "System tray" },
         { id: "widgets", label: "Desktop widgets" }
     ]
     property int tick: 0

@@ -106,6 +106,11 @@ var SECTIONS = {
         blurPasses: 3,
         roundness: 20
     },
+    "tray": {
+        tint: false,        // recolor tray icons with the palette
+        useAccent: false,   // tint with the module accent instead of content color
+        size: 18
+    },
     "widgets": {
         redactorWidth: 1920,
         redactorHeight: 1080
