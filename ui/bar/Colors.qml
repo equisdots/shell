@@ -159,8 +159,9 @@ Item {
     function syncWindowBorders() {
         Compositor.setWindowBorderColors(root.borderHex("active").slice(1), root.borderHex("inactive").slice(1));
         // Sync kitty + nvim themes to the active palette (the SDDM greeter is
-        // static, equisdots/login, and does not follow the palette).
-        Quickshell.execDetached(["bash", "-c", "bash ~/.config/hypr/scripts/theme-sync.sh >/dev/null 2>&1"]);
+        // static, equisdots/login, and does not follow the palette). The engine
+        // lives in the equisdots/theme-sync repo, installed by `dots`.
+        Quickshell.execDetached(["bash", "-c", "ENGINE=\"$HOME/.local/share/equisdots/theme-sync/theme-sync.sh\"; [ -x \"$ENGINE\" ] || ENGINE=\"$HOME/.local/bin/theme-sync\"; bash \"$ENGINE\" >/dev/null 2>&1"]);
     }
 
     function applyPalette(c) {
@@ -317,7 +318,7 @@ Item {
 
     onPaletteNameChanged: {
         root.readSettings();
-        root.paletteWatcher.reload();
+        paletteWatcher.reload();
     }
 
     Component.onCompleted: root.readSettings()

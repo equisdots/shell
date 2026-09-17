@@ -301,7 +301,7 @@ Item {
 
     onPaletteNameChanged: {
         root.refreshPalette();
-        root.paletteWatcher.reload();
+        paletteWatcher.reload();
     }
 
     Component.onCompleted: root.refreshSettings()

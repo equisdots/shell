@@ -1187,7 +1187,7 @@ Item {
                                 ColumnLayout { 
                                     anchors.centerIn: parent
                                     spacing: root.s(8)
-                                    Text { text: "xscriptor palettes"; font.family: "Hack Nerd Font"; font.weight: Font.Black; font.pixelSize: root.s(15); color: root.ambientPurple; Layout.alignment: Qt.AlignHCenter } 
+                                    Text { text: "equisdots palettes"; font.family: "Hack Nerd Font"; font.weight: Font.Black; font.pixelSize: root.s(15); color: root.ambientPurple; Layout.alignment: Qt.AlignHCenter } 
                                     RowLayout { 
                                         spacing: root.s(4)
                                         Layout.alignment: Qt.AlignHCenter
@@ -1334,7 +1334,7 @@ Item {
                         model: [
                             { name: "X Config", icon: "X", color: "blue", url: "https://github.com/xlnux" },
                             { name: "Hyprland Config", icon: "󰣇", color: "mauve", url: "https://github.com/equisdots/hyprland" },
-                            { name: "Wallpapers", icon: "", color: "peach", url: "https://github.com/xscriptor-colors/xww" }
+                            { name: "Wallpapers", icon: "", color: "peach", url: "https://github.com/equisdots/background" }
                         ]
 
                         Rectangle {
