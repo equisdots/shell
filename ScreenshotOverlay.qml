@@ -5,8 +5,8 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Io
-import "./bar"
-import "../core"
+import "./ui/bar"
+import "./core"
 
 PanelWindow {
     id: root
