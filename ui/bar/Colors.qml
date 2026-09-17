@@ -158,11 +158,8 @@ Item {
     // restart) through the core adapter. Only touches the border option.
     function syncWindowBorders() {
         Compositor.setWindowBorderColors(root.borderHex("active").slice(1), root.borderHex("inactive").slice(1));
-        // Keep the SDDM login theme in sync with the active palette (local file
-        // always regenerates; the sudo copy to /usr/share silently no-ops when
-        // passwordless sudo is unavailable).
-        Quickshell.execDetached(["bash", "-c", "bash ~/.config/hypr/scripts/sddm-colors.sh >/dev/null 2>&1"]);
-        // Sync kitty + nvim themes to the active palette.
+        // Sync kitty + nvim themes to the active palette (the SDDM greeter is
+        // static, equisdots/login, and does not follow the palette).
         Quickshell.execDetached(["bash", "-c", "bash ~/.config/hypr/scripts/theme-sync.sh >/dev/null 2>&1"]);
     }
 

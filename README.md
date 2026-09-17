@@ -31,7 +31,7 @@ Known pending:
 - Compositor scope is Hyprland; the Niri backend in
   `equisdots/docs/compositor-api.md` is a plan item, not active work.
 - The palette directory is frozen at `dock/palettes` (shared contract with
-  `theme-sync`, `colors.lua`, `sddm-colors.sh` and `dots`).
+  `theme-sync`, `colors.lua` and `dots`).
 - Some popup helpers (diary, schedule) have no script yet; schedule is
   optional (existence-guarded), diary is still a dead button.
 - The `install/` layer does not exist yet.

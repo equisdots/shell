@@ -66,9 +66,9 @@ new palette format:
 4. Propagation is instant: `ui/bar/Colors.qml` and `core/Theme.qml` watch the
    palettes directory, re-read the active file and re-apply it, so bar islands,
    editor chrome and every desktop-widget face recolor live. The border push
-   (`syncWindowBorders`) also re-syncs Hyprland window borders, regenerates the
-   cross-app themes (`theme-sync.sh`) and rewrites the SDDM login theme
-   (`sddm-colors.sh`).
+   (`syncWindowBorders`) also re-syncs Hyprland window borders and regenerates
+   the cross-app themes (`theme-sync.sh`). The SDDM greeter is static
+   (equisdots/login) and does not follow the palette.
 5. **Session snapshot**: the first edit of a palette copies its pristine file
    to `~/.local/state/quickshell/palette_backup/<slug>.json` (a snapshot from
    an earlier session is never overwritten). The card's **Reset** button

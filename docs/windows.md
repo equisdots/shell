@@ -74,8 +74,8 @@ repo ([`equisdots/davincix`](https://github.com/equisdots/davincix)):
   installs it from the repo: `set`, `fetch`, `current`, `thumbs`, `search`,
   `stop`, `import`, `slideshow`, `keys`, `paths`).
 - Callers: the picker itself, `qs_manager.sh` (`thumbs`, `current`),
-  `init.sh` (random first-run) and `Lock.qml` / `sddm-colors.sh`
-  (read `current_wallpaper.png`).
+  `init.sh` (random first-run) and `Lock.qml` (reads
+  `current_wallpaper.png`).
 
 ## IPC system
 
