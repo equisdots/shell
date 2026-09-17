@@ -26,7 +26,8 @@ function cards() {
         { page: "s_timex", boxIndex: 4, label: "Timex data", desc: "Snapshot, age and refresh", icon: "󰙦", color: "blue" },
         { page: "s_timex", boxIndex: 5, label: "Timex layout", desc: "Forecast row and clock position/size", icon: "󰒓", color: "blue" },
         { page: "s_timex", boxIndex: 6, label: "Calendar & panel", desc: "Month grid and day panel options", icon: "󰃭", color: "blue" },
-        { page: "s_general", boxIndex: 5, label: "App scale", desc: "Scale GTK / Electron apps", icon: "", color: "sapphire" }
+        { page: "s_general", boxIndex: 5, label: "App scale", desc: "Scale GTK / Electron apps", icon: "", color: "sapphire" },
+        { page: "s_general", boxIndex: 6, label: "Current wallpaper", desc: "Preview and change the desktop background", icon: "󰋩", color: "peach" }
     ];
 }
 

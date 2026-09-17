@@ -10,6 +10,8 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
+import QtQuick.Effects
+import Quickshell
 import Quickshell.Io
 import "../../../core"
 
@@ -316,6 +318,27 @@ Item {
                 }
             }
         }
+    }
+
+    // ════ Preview del wallpaper actual ════
+    // Misma fuente que la pantalla de bloqueo: davincix cachea en
+    // wallpaper_picker/current_wallpaper.png lo último aplicado vía xwww.
+    // FileView vigila el png: si el fondo cambia en caliente, la preview se
+    // recarga sola (wpCacheBust fuerza un source distinto en la Image).
+    Caching { id: paths }
+
+    readonly property string currentWallpaperPath: paths.getCacheDir("wallpaper_picker") + "/current_wallpaper.png"
+    property int wpCacheBust: 0
+
+    function openWallpaperPicker() {
+        Quickshell.execDetached(["bash", "-c", "~/.config/hypr/scripts/qs_manager.sh toggle wallpaper"]);
+    }
+
+    FileView {
+        id: wallpaperWatcher
+        path: root.currentWallpaperPath
+        watchChanges: true
+        onFileChanged: root.wpCacheBust++
     }
 
     // ════ Cuerpo original del tab ════
@@ -1056,6 +1079,126 @@ Item {
                                 Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
                             }
                             MouseArea { id: asPlusMa; anchors.fill: parent; hoverEnabled: true; onClicked: root.appScaleStep(1) }
+                        }
+                    }
+                }
+            }
+
+            // ── Box 6: Current wallpaper ─────────────────────────────
+            Rectangle {
+                id: boxWall
+                Layout.fillWidth: true
+                Layout.columnSpan: 2
+                Layout.preferredHeight: colWall.implicitHeight + root.s(32)
+                radius: root.s(26)
+
+                property bool isActive: root.highlightedBox === 6
+                color: isActive ? root.peach : root.surface0
+                border.color: isActive ? root.peach : root.surface1
+                border.width: 1
+                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
+
+                MouseArea { anchors.fill: parent; onClicked: root.highlightedBox = 6; z: -1 }
+
+                ColumnLayout {
+                    id: colWall
+                    anchors.top: parent.top; anchors.left: parent.left; anchors.right: parent.right; anchors.margins: root.s(16)
+                    spacing: root.s(16)
+                    RowLayout {
+                        Layout.fillWidth: true; spacing: root.s(14)
+                        Item {
+                            Layout.preferredWidth: root.s(22); Layout.alignment: Qt.AlignVCenter
+                            Text {
+                                anchors.centerIn: parent; text: "󰋩"
+                                font.family: "Hack Nerd Font"; font.pixelSize: root.s(18)
+                                color: boxWall.isActive ? root.base : root.peach
+                                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
+                            }
+                        }
+                        ColumnLayout {
+                            Layout.fillWidth: true; Layout.alignment: Qt.AlignVCenter; spacing: root.s(3)
+                            Text {
+                                text: "Wallpaper"; font.family: "Inter"; font.weight: Font.Medium; font.pixelSize: root.s(14)
+                                color: boxWall.isActive ? root.base : root.text; Layout.fillWidth: true
+                                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
+                            }
+                            Text {
+                                text: "Current desktop background"; font.family: "Inter"; font.pixelSize: root.s(11)
+                                color: boxWall.isActive ? Qt.alpha(root.base, 0.75) : Qt.alpha(root.subtext0, 0.7); Layout.fillWidth: true
+                                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
+                            }
+                        }
+                        // Botón de cambio: mismo toggle que SUPER+W (abre davincix)
+                        Rectangle {
+                            Layout.alignment: Qt.AlignVCenter
+                            width: root.s(34); height: root.s(34); radius: root.s(22)
+                            color: wpChangeMa.pressed
+                                ? Qt.alpha(root.base, 0.35)
+                                : (wpChangeMa.containsMouse ? Qt.alpha(root.base, 0.25) : Qt.alpha(root.base, 0.15))
+                            border.color: wpChangeMa.containsMouse ? (boxWall.isActive ? root.base : root.peach) : "transparent"
+                            border.width: 1
+                            scale: wpChangeMa.pressed ? 0.90 : (wpChangeMa.containsMouse ? 1.08 : 1.0)
+                            Behavior on scale { NumberAnimation { duration: 200; easing.type: Easing.OutQuart } }
+                            Behavior on color { ColorAnimation { duration: 200 } }
+                            Behavior on border.color { ColorAnimation { duration: 200 } }
+                            Text {
+                                anchors.centerIn: parent; text: "󰏫"
+                                font.family: "Hack Nerd Font"; font.pixelSize: root.s(16)
+                                color: boxWall.isActive ? root.base : root.peach
+                                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
+                            }
+                            MouseArea {
+                                id: wpChangeMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                                onClicked: { root.highlightedBox = 6; root.openWallpaperPicker(); }
+                            }
+                        }
+                    }
+                    Rectangle {
+                        id: wpPreviewFrame
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: root.s(420)
+                        radius: root.s(18)
+                        color: boxWall.isActive ? Qt.alpha(root.base, 0.15) : root.surface1
+                        border.color: boxWall.isActive ? Qt.alpha(root.base, 0.3) : root.surface2
+                        border.width: 1
+                        Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
+
+                        // La Image no hereda el radius del frame: se recorta con
+                        // MultiEffect (mismo patrón que MusicPopup/Lock) usando un
+                        // rectángulo redondeado invisible como máscara alpha.
+                        Item {
+                            id: wpPreviewLayer
+                            anchors.fill: parent
+                            layer.enabled: true
+                            layer.effect: MultiEffect {
+                                maskEnabled: true
+                                maskSource: wpPreviewMask
+                            }
+
+                            Image {
+                                id: wpPreviewImage
+                                anchors.fill: parent
+                                source: "file://" + root.currentWallpaperPath + "?v=" + root.wpCacheBust
+                                fillMode: Image.PreserveAspectCrop
+                                asynchronous: true
+                                cache: false
+                                visible: status === Image.Ready
+                            }
+                        }
+                        Rectangle {
+                            id: wpPreviewMask
+                            anchors.fill: parent
+                            radius: wpPreviewFrame.radius
+                            visible: false
+                            layer.enabled: true
+                        }
+                        Text {
+                            anchors.centerIn: parent
+                            text: "No wallpaper set"
+                            visible: wpPreviewImage.status === Image.Error || wpPreviewImage.status === Image.Null
+                            font.family: "Inter"; font.pixelSize: root.s(11)
+                            color: boxWall.isActive ? Qt.alpha(root.base, 0.6) : Qt.alpha(root.subtext0, 0.6)
+                            Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
                         }
                     }
                 }
