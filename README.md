@@ -23,6 +23,8 @@ Running subsystems:
   `settings.json → shadows`, applies live).
 - **Glass** — translucent shell backgrounds + compositor backdrop blur
   (`settings.json → glass`, hyprland `layers.lua`; Theme → Glass page).
+- **Mascots** — click-through top island + chibi cursor-following mascots that
+  morph into a dock with the launcher (`ui/Mascots.qml`; Theme → Mascots page).
 - **Panels** — clipboard, davincix, file-search, focustime, idle,
   quickactions, quicknotes, rss-reader, scale, window-controls.
 - **Lock**, **notifications** (server + history + popups) and the **floating
@@ -55,6 +57,20 @@ Known pending:
 | `ui/notifications/`, `ui/widgets/` | Notification layer, floating widgets |
 | `ui/settings/tabs/` | Shared settings tabs (host API) |
 
+## Local checks
+
+No CI: run the checks locally before pushing.
+
+```bash
+scripts/check.sh
+```
+
+- `qmllint` over every `.qml` file (needs the Qt declarative tools). `ui/Main.qml`
+  is in the script allowlist because of a qmllint limitation with the current
+  Quickshell qmltypes; the shell loads it at runtime.
+- `node --check` over the plain `.js` modules (the `.pragma library` directive
+  is stripped first).
+
 ## Docs
 
 - `docs/architecture.md` — layer map and contracts.
@@ -66,3 +82,4 @@ Known pending:
 - `docs/themes.md` — palette system, live editing and theme-sync.
 - `docs/personalization.md` — configuration surface (bar engines, modules,
   per-subsystem options).
+- `docs/development.md` — local check scripts and development pitfalls.

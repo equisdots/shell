@@ -16,4 +16,5 @@ ShellRoot {
     Bar {}
     Floating {}
     Widgets {}
+    Mascots {}
 }

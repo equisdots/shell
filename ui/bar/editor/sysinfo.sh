@@ -32,7 +32,13 @@ fi
 iface="$(ip route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i=="dev") print $(i+1)}' | head -1)"
 echo "iface=${iface:-none}"
 echo "ip=$(ip -4 addr show "${iface:-lo}" 2>/dev/null | awk '/inet / {print $2}' | cut -d/ -f1 | head -1)"
-echo "ssid=$(nmcli -t -f active,ssid dev wifi 2>/dev/null | awk -F: '$1=="yes" {print $2; exit}')"
+# SSID: iwgetid reads the current association instantly; the nmcli path only
+# as a fallback (listing wifi with nmcli triggers a scan and took ~5s).
+if command -v iwgetid >/dev/null 2>&1; then
+    echo "ssid=$(iwgetid -r 2>/dev/null)"
+else
+    echo "ssid=$(timeout 2 nmcli -t -f active,ssid dev wifi 2>/dev/null | awk -F: '$1=="yes" {print $2; exit}')"
+fi
 
 # Monitors
 mon="$(hyprctl monitors -j 2>/dev/null)"

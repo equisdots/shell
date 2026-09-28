@@ -26,6 +26,8 @@ Item {
     anchors.fill: parent   // Phase 3: el item del Loader ocupa la stage
 
     property var bar: null
+    // Case-insensitive filter over the palette name/slug (all sections).
+    property string filter: ""
 
     // Gate: el cuerpo se crea cuando bar ya está inyectado (initial
     // property aplicada tras la creación del root). Evita bindings
@@ -82,10 +84,29 @@ Item {
                         color: bar.colors.text
                     }
 
+                    TextField {
+                        width: parent.width
+                        placeholderText: "Filter palettes"
+                        color: bar.colors.text
+                        placeholderTextColor: Qt.alpha(bar.colors.subtext0, 0.7)
+                        font.family: "Hack Nerd Font"
+                        font.pixelSize: bar.s(12)
+                        leftPadding: bar.s(12)
+                        rightPadding: bar.s(12)
+                        onTextChanged: root.filter = text
+                        background: Rectangle {
+                            radius: bar.s(12)
+                            color: Qt.alpha(bar.colors.surface0, 0.4)
+                            border.width: 1
+                            border.color: bar.colors.surface1
+                        }
+                    }
+
                     // Section: X
                     Text {
                         width: parent.width
                         horizontalAlignment: Text.AlignHCenter
+                        visible: root.bar.palettesOf("x", root.filter).length > 0
                         text: "X"
                         font.family: "Hack Nerd Font"
                         font.weight: Font.Black
@@ -97,8 +118,9 @@ Item {
                         columns: 3
                         columnSpacing: bar.s(10)
                         rowSpacing: bar.s(10)
+                        visible: root.bar.palettesOf("x", root.filter).length > 0
                         Repeater {
-                            model: root.bar.palettesOf("x")
+                            model: root.bar.palettesOf("x", root.filter)
                             delegate: PaletteCard {}
                         }
                     }
@@ -107,6 +129,7 @@ Item {
                     Text {
                         width: parent.width
                         horizontalAlignment: Text.AlignHCenter
+                        visible: root.bar.palettesOf("custom", root.filter).length > 0
                         text: "Custom"
                         font.family: "Hack Nerd Font"
                         font.weight: Font.Black
@@ -118,8 +141,9 @@ Item {
                         columns: 3
                         columnSpacing: bar.s(10)
                         rowSpacing: bar.s(10)
+                        visible: root.bar.palettesOf("custom", root.filter).length > 0
                         Repeater {
-                            model: root.bar.palettesOf("custom")
+                            model: root.bar.palettesOf("custom", root.filter)
                             delegate: PaletteCard {}
                         }
                     }
@@ -128,6 +152,7 @@ Item {
                     Text {
                         width: parent.width
                         horizontalAlignment: Text.AlignHCenter
+                        visible: root.bar.palettesOf("user", root.filter).length > 0
                         text: "User"
                         font.family: "Hack Nerd Font"
                         font.weight: Font.Black
@@ -139,8 +164,9 @@ Item {
                         columns: 3
                         columnSpacing: bar.s(10)
                         rowSpacing: bar.s(10)
+                        visible: root.bar.palettesOf("user", root.filter).length > 0
                         Repeater {
-                            model: root.bar.palettesOf("user")
+                            model: root.bar.palettesOf("user", root.filter)
                             delegate: PaletteCard {}
                         }
                     }
