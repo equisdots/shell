@@ -4,7 +4,6 @@ import QtQuick.Controls
 import Quickshell
 import Quickshell.Io
 import "../../../core"
-import "../../../core/Personalization.js" as Personalization
 import "../../bar"
 
 Item {
@@ -29,103 +28,30 @@ Item {
     Scaler { id: scaler; currentWidth: Screen.width }
     function s(val) { return scaler.s(val) }
 
-    // values
-    property real activeOpacity: Personalization.value("window-controls", Config.rawSettings["window-controls"], "activeOpacity")
-    property real inactiveOpacity: Personalization.value("window-controls", Config.rawSettings["window-controls"], "inactiveOpacity")
-    property int blurSize: Personalization.value("window-controls", Config.rawSettings["window-controls"], "blurSize")
-    property int blurPasses: Personalization.value("window-controls", Config.rawSettings["window-controls"], "blurPasses")
-    property real roundness: Personalization.value("window-controls", Config.rawSettings["window-controls"], "roundness")
-    property int gapsIn: 16
-    property int gapsOut: 25
-    property int borderSize: 2
-    property int shadowRange: 35
-    property int shadowRenderPower: 5
-    property int shadowOffsetX: 0
-    property int shadowOffsetY: 10
+    // The 12 knobs live in the shared HyprEffects singleton (same kernel as
+    // the BarEditor Hyprland tab): robust live read + partial live apply.
+    readonly property var fx: HyprEffects.values
 
     property bool isDirty: false
 
+    // Re-read the live values every time the widget opens; persist the Lua
+    // overrides on close (one Hyprland auto-reload, not one per knob).
+    Component.onCompleted: HyprEffects.refresh()
+    Component.onDestruction: HyprEffects.persist()
+
+    // Changes preview live (debounced) through HyprEffects; Save persists the
+    // Lua overrides now and clears the dirty dot.
     function saveChanges() {
-        // Hyprland 0.55+ has no `hyprctl keyword`; the Lua override modules are
-        // written by persist.sh and loaded at the end of hyprland.lua, then a
-        // reload applies them.
-        Quickshell.execDetached(["bash",
-            Quickshell.env("HOME") + "/.config/hypr/scripts/quickshell/ui/panels/window-controls/persist.sh",
-            window.activeOpacity.toFixed(2),
-            window.inactiveOpacity.toFixed(2),
-            String(Math.round(window.roundness)),
-            String(Math.round(window.blurSize)),
-            String(Math.round(window.blurPasses)),
-            String(Math.round(window.gapsIn)),
-            String(Math.round(window.gapsOut)),
-            String(Math.round(window.borderSize)),
-            String(Math.round(window.shadowRange)),
-            String(Math.round(window.shadowRenderPower)),
-            String(Math.round(window.shadowOffsetX)),
-            String(Math.round(window.shadowOffsetY)),
-        ])
+        HyprEffects.persist()
         window.isDirty = false
     }
 
     function resetDefaults() {
-        activeOpacity = 0.85; inactiveOpacity = 0.80
-        blurSize = 8; blurPasses = 3; roundness = 20
-        shadowRange = 35; shadowRenderPower = 5; shadowOffsetX = 0; shadowOffsetY = 10
+        HyprEffects.resetEffects()
         window.isDirty = true
     }
 
     function markDirty() { window.isDirty = true }
-
-    function loadCurrent() {
-        reader.command = ["bash", "-c",
-            "echo active_opacity=$(hyprctl getoption decoration:active_opacity | grep 'float:' | awk '{print $2}');" +
-            "echo inactive_opacity=$(hyprctl getoption decoration:inactive_opacity | grep 'float:' | awk '{print $2}');" +
-            "echo roundness=$(hyprctl getoption decoration:rounding | grep 'int:' | awk '{print $2}');" +
-            "echo blur_size=$(hyprctl getoption decoration:blur:size | grep 'int:' | awk '{print $2}');" +
-            "echo blur_passes=$(hyprctl getoption decoration:blur:passes | grep 'int:' | awk '{print $2}');" +
-            "echo gaps_in=$(hyprctl getoption general:gaps_in | grep 'int:' | awk '{print $2}');" +
-            "echo gaps_out=$(hyprctl getoption general:gaps_out | grep 'int:' | awk '{print $2}');" +
-            "echo border_size=$(hyprctl getoption general:border_size | grep 'int:' | awk '{print $2}');" +
-            "echo shadow_range=$(hyprctl getoption decoration:shadow:range | grep 'int:' | awk '{print $2}');" +
-            "echo shadow_render_power=$(hyprctl getoption decoration:shadow:render_power | grep 'int:' | awk '{print $2}');" +
-            "echo shadow_offset=$(hyprctl getoption decoration:shadow:offset | grep 'vec2:' | awk '{print $2, $3}')"
-        ]
-        reader.running = true
-    }
-
-    Process {
-        id: reader
-        stdout: StdioCollector {
-            onStreamFinished: {
-                try {
-                    if (!this.text) return
-                    let lines = this.text.trim().split('\n')
-                    for (let i = 0; i < lines.length; i++) {
-                        let parts = lines[i].split('=')
-                        if (parts.length < 2) continue
-                        let v = parts[1].trim()
-                        if (parts[0] === 'active_opacity') window.activeOpacity = parseFloat(v) || 0.85
-                        else if (parts[0] === 'inactive_opacity') window.inactiveOpacity = parseFloat(v) || 0.80
-                        else if (parts[0] === 'roundness') window.roundness = parseInt(v) || 20
-                        else if (parts[0] === 'blur_size') window.blurSize = parseInt(v) || 8
-                        else if (parts[0] === 'blur_passes') window.blurPasses = parseInt(v) || 3
-                        else if (parts[0] === 'gaps_in') window.gapsIn = parseInt(v) || 16
-                        else if (parts[0] === 'gaps_out') window.gapsOut = parseInt(v) || 25
-                        else if (parts[0] === 'border_size') window.borderSize = parseInt(v) || 2
-                        else if (parts[0] === 'shadow_range') window.shadowRange = parseInt(v) || 35
-                        else if (parts[0] === 'shadow_render_power') window.shadowRenderPower = parseInt(v) || 5
-                        else if (parts[0] === 'shadow_offset') {
-                            let offsets = v.split(' ')
-                            window.shadowOffsetX = parseInt(offsets[0]) || 0
-                            window.shadowOffsetY = parseInt(offsets[1]) || 10
-                        }
-                    }
-                } catch(e) {}
-            }
-        }
-    }
-
-    Timer { interval: 300; running: true; repeat: false; onTriggered: loadCurrent() }
 
     Rectangle {
         anchors.fill: parent; color: window.base; radius: s(16)
@@ -162,8 +88,8 @@ Item {
             RowLayout { Layout.fillWidth: true; Layout.preferredHeight: s(44); spacing: s(10)
                 Text { text: "\uF06E"; font.family: "Hack Nerd Font"; font.pixelSize: s(14); color: window.mauve; Layout.preferredWidth: s(20) }
                 Text { text: "Active Opacity"; font.family: "Hack Nerd Font"; font.pixelSize: s(11); color: window.subtext0; Layout.preferredWidth: s(100) }
-                DragSlider { id: aoDs; from: 0.3; to: 1.0; step: 0.05; initial: window.activeOpacity; barColor: window.mauve
-                    onDragged: function(v) { window.activeOpacity = v; markDirty() }
+                DragSlider { id: aoDs; from: 0.3; to: 1.0; step: 0.05; initial: fx.active_opacity; barColor: window.mauve
+                    onDragged: function(v) { HyprEffects.set("active_opacity", v); markDirty() }
                 }
                 Text { text: aoDs.current.toFixed(2); font.family: "Hack Nerd Font"; font.pixelSize: s(12); font.weight: Font.Bold; color: window.text; Layout.preferredWidth: s(45); horizontalAlignment: Text.AlignRight }
             }
@@ -171,8 +97,8 @@ Item {
             RowLayout { Layout.fillWidth: true; Layout.preferredHeight: s(44); spacing: s(10)
                 Text { text: "\uF070"; font.family: "Hack Nerd Font"; font.pixelSize: s(14); color: window.blue; Layout.preferredWidth: s(20) }
                 Text { text: "Inactive Opacity"; font.family: "Hack Nerd Font"; font.pixelSize: s(11); color: window.subtext0; Layout.preferredWidth: s(100) }
-                DragSlider { id: ioDs; from: 0.3; to: 1.0; step: 0.05; initial: window.inactiveOpacity; barColor: window.blue
-                    onDragged: function(v) { window.inactiveOpacity = v; markDirty() }
+                DragSlider { id: ioDs; from: 0.3; to: 1.0; step: 0.05; initial: fx.inactive_opacity; barColor: window.blue
+                    onDragged: function(v) { HyprEffects.set("inactive_opacity", v); markDirty() }
                 }
                 Text { text: ioDs.current.toFixed(2); font.family: "Hack Nerd Font"; font.pixelSize: s(12); font.weight: Font.Bold; color: window.text; Layout.preferredWidth: s(45); horizontalAlignment: Text.AlignRight }
             }
@@ -182,8 +108,8 @@ Item {
             RowLayout { Layout.fillWidth: true; Layout.preferredHeight: s(44); spacing: s(10)
                 Text { text: "\uF192"; font.family: "Hack Nerd Font"; font.pixelSize: s(14); color: window.green; Layout.preferredWidth: s(20) }
                 Text { text: "Rounding"; font.family: "Hack Nerd Font"; font.pixelSize: s(11); color: window.subtext0; Layout.preferredWidth: s(100) }
-                DragSlider { id: roDs; from: 0; to: 35; step: 1; initial: window.roundness; barColor: window.green
-                    onDragged: function(v) { window.roundness = v; markDirty() }
+                DragSlider { id: roDs; from: 0; to: 35; step: 1; initial: fx.rounding; barColor: window.green
+                    onDragged: function(v) { HyprEffects.set("rounding", v); markDirty() }
                 }
                 Text { text: Math.round(roDs.current) + "px"; font.family: "Hack Nerd Font"; font.pixelSize: s(12); font.weight: Font.Bold; color: window.text; Layout.preferredWidth: s(45); horizontalAlignment: Text.AlignRight }
             }
@@ -193,8 +119,8 @@ Item {
             RowLayout { Layout.fillWidth: true; Layout.preferredHeight: s(44); spacing: s(10)
                 Text { text: "\uF0EB"; font.family: "Hack Nerd Font"; font.pixelSize: s(14); color: window.peach; Layout.preferredWidth: s(20) }
                 Text { text: "Blur Size"; font.family: "Hack Nerd Font"; font.pixelSize: s(11); color: window.subtext0; Layout.preferredWidth: s(100) }
-                DragSlider { id: bsDs; from: 0; to: 24; step: 1; initial: window.blurSize; barColor: window.peach
-                    onDragged: function(v) { window.blurSize = v; markDirty() }
+                DragSlider { id: bsDs; from: 0; to: 24; step: 1; initial: fx.blur_size; barColor: window.peach
+                    onDragged: function(v) { HyprEffects.set("blur_size", v); markDirty() }
                 }
                 Text { text: Math.round(bsDs.current) + "px"; font.family: "Hack Nerd Font"; font.pixelSize: s(12); font.weight: Font.Bold; color: window.text; Layout.preferredWidth: s(45); horizontalAlignment: Text.AlignRight }
             }
@@ -202,8 +128,8 @@ Item {
             RowLayout { Layout.fillWidth: true; Layout.preferredHeight: s(44); spacing: s(10)
                 Text { text: "\uF2C8"; font.family: "Hack Nerd Font"; font.pixelSize: s(14); color: window.sapphire; Layout.preferredWidth: s(20) }
                 Text { text: "Blur Passes"; font.family: "Hack Nerd Font"; font.pixelSize: s(11); color: window.subtext0; Layout.preferredWidth: s(100) }
-                DragSlider { id: bpDs; from: 0; to: 10; step: 1; initial: window.blurPasses; barColor: window.sapphire
-                    onDragged: function(v) { window.blurPasses = v; markDirty() }
+                DragSlider { id: bpDs; from: 0; to: 10; step: 1; initial: fx.blur_passes; barColor: window.sapphire
+                    onDragged: function(v) { HyprEffects.set("blur_passes", v); markDirty() }
                 }
                 Text { text: Math.round(bpDs.current); font.family: "Hack Nerd Font"; font.pixelSize: s(12); font.weight: Font.Bold; color: window.text; Layout.preferredWidth: s(45); horizontalAlignment: Text.AlignRight }
             }
@@ -213,8 +139,8 @@ Item {
             RowLayout { Layout.fillWidth: true; Layout.preferredHeight: s(44); spacing: s(10)
                 Text { text: "\uF239"; font.family: "Hack Nerd Font"; font.pixelSize: s(14); color: window.mauve; Layout.preferredWidth: s(20) }
                 Text { text: "Gaps In"; font.family: "Hack Nerd Font"; font.pixelSize: s(11); color: window.subtext0; Layout.preferredWidth: s(100) }
-                DragSlider { id: giDs; from: 0; to: 50; step: 2; initial: window.gapsIn; barColor: window.mauve
-                    onDragged: function(v) { window.gapsIn = v; markDirty() }
+                DragSlider { id: giDs; from: 0; to: 50; step: 2; initial: fx.gaps_in; barColor: window.mauve
+                    onDragged: function(v) { HyprEffects.set("gaps_in", v); markDirty() }
                 }
                 Text { text: Math.round(giDs.current) + "px"; font.family: "Hack Nerd Font"; font.pixelSize: s(12); font.weight: Font.Bold; color: window.text; Layout.preferredWidth: s(45); horizontalAlignment: Text.AlignRight }
             }
@@ -222,8 +148,8 @@ Item {
             RowLayout { Layout.fillWidth: true; Layout.preferredHeight: s(44); spacing: s(10)
                 Text { text: "\uF108"; font.family: "Hack Nerd Font"; font.pixelSize: s(14); color: window.blue; Layout.preferredWidth: s(20) }
                 Text { text: "Gaps Out"; font.family: "Hack Nerd Font"; font.pixelSize: s(11); color: window.subtext0; Layout.preferredWidth: s(100) }
-                DragSlider { id: goDs; from: 0; to: 50; step: 2; initial: window.gapsOut; barColor: window.blue
-                    onDragged: function(v) { window.gapsOut = v; markDirty() }
+                DragSlider { id: goDs; from: 0; to: 50; step: 2; initial: fx.gaps_out; barColor: window.blue
+                    onDragged: function(v) { HyprEffects.set("gaps_out", v); markDirty() }
                 }
                 Text { text: Math.round(goDs.current) + "px"; font.family: "Hack Nerd Font"; font.pixelSize: s(12); font.weight: Font.Bold; color: window.text; Layout.preferredWidth: s(45); horizontalAlignment: Text.AlignRight }
             }
@@ -231,8 +157,8 @@ Item {
             RowLayout { Layout.fillWidth: true; Layout.preferredHeight: s(44); spacing: s(10)
                 Text { text: "\uF358"; font.family: "Hack Nerd Font"; font.pixelSize: s(14); color: window.peach; Layout.preferredWidth: s(20) }
                 Text { text: "Border Width"; font.family: "Hack Nerd Font"; font.pixelSize: s(11); color: window.subtext0; Layout.preferredWidth: s(100) }
-                DragSlider { id: bwDs; from: 0; to: 20; step: 1; initial: window.borderSize; barColor: window.peach
-                    onDragged: function(v) { window.borderSize = v; markDirty() }
+                DragSlider { id: bwDs; from: 0; to: 20; step: 1; initial: fx.border_size; barColor: window.peach
+                    onDragged: function(v) { HyprEffects.set("border_size", v); markDirty() }
                 }
                 Text { text: Math.round(bwDs.current) + "px"; font.family: "Hack Nerd Font"; font.pixelSize: s(12); font.weight: Font.Bold; color: window.text; Layout.preferredWidth: s(45); horizontalAlignment: Text.AlignRight }
             }
@@ -242,8 +168,8 @@ Item {
             RowLayout { Layout.fillWidth: true; Layout.preferredHeight: s(44); spacing: s(10)
                 Text { text: "\uF042"; font.family: "Hack Nerd Font"; font.pixelSize: s(14); color: window.peach; Layout.preferredWidth: s(20) }
                 Text { text: "Shadow Range"; font.family: "Hack Nerd Font"; font.pixelSize: s(11); color: window.subtext0; Layout.preferredWidth: s(100) }
-                DragSlider { id: srDs; from: 0; to: 50; step: 1; initial: window.shadowRange; barColor: window.peach
-                    onDragged: function(v) { window.shadowRange = v; markDirty() }
+                DragSlider { id: srDs; from: 0; to: 50; step: 1; initial: fx.shadow_range; barColor: window.peach
+                    onDragged: function(v) { HyprEffects.set("shadow_range", v); markDirty() }
                 }
                 Text { text: Math.round(srDs.current) + "px"; font.family: "Hack Nerd Font"; font.pixelSize: s(12); font.weight: Font.Bold; color: window.text; Layout.preferredWidth: s(45); horizontalAlignment: Text.AlignRight }
             }
@@ -251,8 +177,8 @@ Item {
             RowLayout { Layout.fillWidth: true; Layout.preferredHeight: s(44); spacing: s(10)
                 Text { text: "\uF0E7"; font.family: "Hack Nerd Font"; font.pixelSize: s(14); color: window.sapphire; Layout.preferredWidth: s(20) }
                 Text { text: "Shadow Power"; font.family: "Hack Nerd Font"; font.pixelSize: s(11); color: window.subtext0; Layout.preferredWidth: s(100) }
-                DragSlider { id: spDs; from: 0; to: 10; step: 1; initial: window.shadowRenderPower; barColor: window.sapphire
-                    onDragged: function(v) { window.shadowRenderPower = v; markDirty() }
+                DragSlider { id: spDs; from: 0; to: 10; step: 1; initial: fx.shadow_render_power; barColor: window.sapphire
+                    onDragged: function(v) { HyprEffects.set("shadow_render_power", v); markDirty() }
                 }
                 Text { text: Math.round(spDs.current); font.family: "Hack Nerd Font"; font.pixelSize: s(12); font.weight: Font.Bold; color: window.text; Layout.preferredWidth: s(45); horizontalAlignment: Text.AlignRight }
             }
@@ -260,8 +186,8 @@ Item {
             RowLayout { Layout.fillWidth: true; Layout.preferredHeight: s(44); spacing: s(10)
                 Text { text: "\uF061"; font.family: "Hack Nerd Font"; font.pixelSize: s(14); color: window.mauve; Layout.preferredWidth: s(20) }
                 Text { text: "Shadow Offset X"; font.family: "Hack Nerd Font"; font.pixelSize: s(11); color: window.subtext0; Layout.preferredWidth: s(100) }
-                DragSlider { id: soxDs; from: -30; to: 30; step: 1; initial: window.shadowOffsetX; barColor: window.mauve
-                    onDragged: function(v) { window.shadowOffsetX = v; markDirty() }
+                DragSlider { id: soxDs; from: -30; to: 30; step: 1; initial: fx.shadow_offset_x; barColor: window.mauve
+                    onDragged: function(v) { HyprEffects.set("shadow_offset_x", v); markDirty() }
                 }
                 Text { text: Math.round(soxDs.current) + "px"; font.family: "Hack Nerd Font"; font.pixelSize: s(12); font.weight: Font.Bold; color: window.text; Layout.preferredWidth: s(45); horizontalAlignment: Text.AlignRight }
             }
@@ -269,8 +195,8 @@ Item {
             RowLayout { Layout.fillWidth: true; Layout.preferredHeight: s(44); spacing: s(10)
                 Text { text: "\uF063"; font.family: "Hack Nerd Font"; font.pixelSize: s(14); color: window.green; Layout.preferredWidth: s(20) }
                 Text { text: "Shadow Offset Y"; font.family: "Hack Nerd Font"; font.pixelSize: s(11); color: window.subtext0; Layout.preferredWidth: s(100) }
-                DragSlider { id: soyDs; from: -30; to: 30; step: 1; initial: window.shadowOffsetY; barColor: window.green
-                    onDragged: function(v) { window.shadowOffsetY = v; markDirty() }
+                DragSlider { id: soyDs; from: -30; to: 30; step: 1; initial: fx.shadow_offset_y; barColor: window.green
+                    onDragged: function(v) { HyprEffects.set("shadow_offset_y", v); markDirty() }
                 }
                 Text { text: Math.round(soyDs.current) + "px"; font.family: "Hack Nerd Font"; font.pixelSize: s(12); font.weight: Font.Bold; color: window.text; Layout.preferredWidth: s(45); horizontalAlignment: Text.AlignRight }
             }

@@ -673,7 +673,7 @@ Variants {
                 height: floatingWidget.activeEdge === "bottom" ? floatingWidget.s(15) : Math.max(floatingWidget.s(20), floatingWidget.baseSidebarH - floatingWidget.s(20))
                 radius: floatingWidget.s(9)
                 
-                color: Qt.rgba(mocha.base.r, mocha.base.g, mocha.base.b, 1.0)
+                color: Qt.rgba(mocha.base.r, mocha.base.g, mocha.base.b, mocha.base.a)
                 border.width: 0
                 
                 opacity: (floatingWidget.isPeekVisible && !floatingWidget.isSidebarVisible) ? (peekMouse.containsMouse || peekMouse.pressed ? 1.0 : 0.6) : 0.0
@@ -832,7 +832,7 @@ Variants {
                         width: floatingWidget.s(18) + parent.width
                         height: parent.height
                         radius: floatingWidget.s(18) 
-                        color: Qt.rgba(mocha.base.r, mocha.base.g, mocha.base.b, 0.95) 
+                        color: Qt.rgba(mocha.base.r, mocha.base.g, mocha.base.b, 0.95 * mocha.base.a) 
                         border.width: 1
                         border.color: Qt.rgba(mocha.text.r, mocha.text.g, mocha.text.b, 0.08)
 

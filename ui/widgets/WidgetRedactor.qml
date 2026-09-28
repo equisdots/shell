@@ -863,6 +863,9 @@ Item {
         // Make sure the thumbnails folder exists so FolderListModel settles.
         Quickshell.execDetached(["mkdir", "-p", root.thumbsDir]);
         WidgetSync.setRedactMode(root.targetScreen, true);
+        // Synchronous scale from Config BEFORE the first layout: otherwise the
+        // panel starts at 1.0 and jumps size when the async reader returns.
+        root.uiScale = Config.uiScale;
         scaleReader.running = true;
         root.refreshModel();
         // Re-assert redaction a few times: if this popup opened before the
@@ -1274,7 +1277,7 @@ Item {
         width: Math.min(root.width - 2 * s(8), toolbarRow.implicitWidth + s(20))
         height: s(46)
         radius: s(14)
-        color: Qt.rgba(Theme.base.r, Theme.base.g, Theme.base.b, 0.94)
+        color: Qt.rgba(Theme.base.r, Theme.base.g, Theme.base.b, 0.94 * Theme.base.a)
         border.width: 1
         border.color: Theme.surface1
 
@@ -1657,7 +1660,7 @@ Item {
         width: hintText.implicitWidth + s(24)
         height: hintText.implicitHeight + s(8)
         radius: s(10)
-        color: Qt.rgba(Theme.base.r, Theme.base.g, Theme.base.b, 0.8)
+        color: Qt.rgba(Theme.base.r, Theme.base.g, Theme.base.b, 0.8 * Theme.base.a)
 
         Text {
             id: hintText

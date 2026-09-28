@@ -4,18 +4,17 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
 import "../edit"
+import "../../../core"
 
 // ═══════════════════════════════════════════════════════════════════════════
-// HyprlandPage — BarEditor tab (grupo System): las 12 perillas de efectos de
-// ventana / layout del widget window-controls (SUPER+SHIFT+B), con el MISMO
-// manejo de color por fila y el MISMO script de persistencia.
+// HyprlandPage — BarEditor tab (System group): the 12 window-effect / layout
+// knobs of the window-controls widget (SUPER+SHIFT+B).
 //
-//   · Lectura: `hyprctl getoption ...` (mismo comando que WindowControls).
-//   · Guardado: window-controls/persist.sh con los 12 args (mismo orden que
-//     WindowControls.saveChanges); persist.sh escribe config/gaps.lua +
-//     config/window-effects.lua y recarga Hyprland.
-//   · Auto-save con debounce de 600 ms (cada `edited` lo reinicia).
-// Gate: el cuerpo se crea cuando `bar` ya está inyectado.
+//   · Read/save: core/HyprEffects.qml (singleton) + core/scripts/
+//     hypr-effects.sh — SAME kernel as WindowControls. Reads the live values
+//     with `hyprctl -j getoption` (gaps arrive as "css gap data") and applies
+//     PARTIAL changes live (`hyprctl eval`, no reload).
+// Gate: the body is created once `bar` has been injected.
 // ═══════════════════════════════════════════════════════════════════════════
 
 Item {
@@ -24,118 +23,23 @@ Item {
 
     property var bar: null
 
-    // ── Las 12 perillas (mismos defaults que WindowControls.qml) ──
-    property real activeOpacity: 0.85
-    property real inactiveOpacity: 0.80
-    property real roundness: 20
-    property int blurSize: 8
-    property int blurPasses: 3
-    property int gapsIn: 16
-    property int gapsOut: 25
-    property int borderSize: 2
-    property int shadowRange: 35
-    property int shadowPower: 5
-    property int shadowOffX: 0
-    property int shadowOffY: 10
+    // The 12 knobs live in the shared HyprEffects singleton (same kernel as
+    // Window Controls): moving one knob no longer rewrites the rest — the old
+    // bug rewrote all 12 with misread gaps (16/25).
+    readonly property var fx: HyprEffects.values
 
     // Gate: el cuerpo se crea cuando bar ya está inyectado (initial
     // property aplicada tras la creación del root). Evita bindings
     // evaluados con bar null que quedaban muertos en negro.
     readonly property var flickable: body.item ? body.item.flickable : null
 
-    // ── Lectura de los valores actuales (mismo comando que el widget) ──
-    function loadCurrent() {
-        reader.command = ["bash", "-c",
-            "echo active_opacity=$(hyprctl getoption decoration:active_opacity | grep 'float:' | awk '{print $2}');" +
-            "echo inactive_opacity=$(hyprctl getoption decoration:inactive_opacity | grep 'float:' | awk '{print $2}');" +
-            "echo roundness=$(hyprctl getoption decoration:rounding | grep 'int:' | awk '{print $2}');" +
-            "echo blur_size=$(hyprctl getoption decoration:blur:size | grep 'int:' | awk '{print $2}');" +
-            "echo blur_passes=$(hyprctl getoption decoration:blur:passes | grep 'int:' | awk '{print $2}');" +
-            "echo gaps_in=$(hyprctl getoption general:gaps_in | grep 'int:' | awk '{print $2}');" +
-            "echo gaps_out=$(hyprctl getoption general:gaps_out | grep 'int:' | awk '{print $2}');" +
-            "echo border_size=$(hyprctl getoption general:border_size | grep 'int:' | awk '{print $2}');" +
-            "echo shadow_range=$(hyprctl getoption decoration:shadow:range | grep 'int:' | awk '{print $2}');" +
-            "echo shadow_render_power=$(hyprctl getoption decoration:shadow:render_power | grep 'int:' | awk '{print $2}');" +
-            "echo shadow_offset=$(hyprctl getoption decoration:shadow:offset | grep 'vec2:' | awk '{print $2, $3}')"
-        ];
-        reader.running = true;
-    }
+    // Re-read the live values when the page opens (the singleton also
+    // refreshes itself when the shell starts).
+    Component.onCompleted: HyprEffects.refresh()
 
-    Process {
-        id: reader
-        stdout: StdioCollector {
-            onStreamFinished: {
-                try {
-                    if (!this.text) return;
-                    let lines = this.text.trim().split('\n');
-                    for (let i = 0; i < lines.length; i++) {
-                        let parts = lines[i].split('=');
-                        if (parts.length < 2) continue;
-                        let v = parts[1].trim();
-                        let f = parseFloat(v);
-                        // Fallback solo si el valor no es numérico (0 es válido).
-                        if (parts[0] === 'active_opacity') root.activeOpacity = isNaN(f) ? 0.85 : f;
-                        else if (parts[0] === 'inactive_opacity') root.inactiveOpacity = isNaN(f) ? 0.80 : f;
-                        else if (parts[0] === 'roundness') root.roundness = isNaN(f) ? 20 : Math.round(f);
-                        else if (parts[0] === 'blur_size') root.blurSize = isNaN(f) ? 8 : Math.round(f);
-                        else if (parts[0] === 'blur_passes') root.blurPasses = isNaN(f) ? 3 : Math.round(f);
-                        else if (parts[0] === 'gaps_in') root.gapsIn = isNaN(f) ? 16 : Math.round(f);
-                        else if (parts[0] === 'gaps_out') root.gapsOut = isNaN(f) ? 25 : Math.round(f);
-                        else if (parts[0] === 'border_size') root.borderSize = isNaN(f) ? 2 : Math.round(f);
-                        else if (parts[0] === 'shadow_range') root.shadowRange = isNaN(f) ? 35 : Math.round(f);
-                        else if (parts[0] === 'shadow_render_power') root.shadowPower = isNaN(f) ? 5 : Math.round(f);
-                        else if (parts[0] === 'shadow_offset') {
-                            // hyprctl imprime "vec2: [x, y]" → limpiamos corchetes
-                            // y comas (el widget leía X=0 por este formato).
-                            let offsets = v.replace(/[\[\],]/g, " ").trim().split(/\s+/);
-                            let ox = parseFloat(offsets[0]);
-                            let oy = parseFloat(offsets[1]);
-                            root.shadowOffX = isNaN(ox) ? 0 : Math.round(ox);
-                            root.shadowOffY = isNaN(oy) ? 10 : Math.round(oy);
-                        }
-                    }
-                } catch (e) {}
-            }
-        }
-    }
-
-    Timer { interval: 300; running: true; repeat: false; onTriggered: root.loadCurrent() }
-
-    // ── Guardado (debounce 600 ms) vía persist.sh ──
-    Timer { id: saveTimer; interval: 600; onTriggered: root.saveChanges() }
-    function markDirty() { saveTimer.restart(); }
-    function saveChanges() {
-        Quickshell.execDetached(["bash",
-            Quickshell.env("HOME") + "/.config/hypr/scripts/quickshell/ui/panels/window-controls/persist.sh",
-            root.activeOpacity.toFixed(2),
-            root.inactiveOpacity.toFixed(2),
-            String(Math.round(root.roundness)),
-            String(Math.round(root.blurSize)),
-            String(Math.round(root.blurPasses)),
-            String(Math.round(root.gapsIn)),
-            String(Math.round(root.gapsOut)),
-            String(Math.round(root.borderSize)),
-            String(Math.round(root.shadowRange)),
-            String(Math.round(root.shadowPower)),
-            String(Math.round(root.shadowOffX)),
-            String(Math.round(root.shadowOffY))
-        ]);
-    }
-
-    // Reset: solo opacidades/blur/rounding/shadow (gaps y border intactos,
-    // igual que WindowControls.resetDefaults).
-    function resetDefaults() {
-        root.activeOpacity = 0.85;
-        root.inactiveOpacity = 0.80;
-        root.blurSize = 8;
-        root.blurPasses = 3;
-        root.roundness = 20;
-        root.shadowRange = 35;
-        root.shadowPower = 5;
-        root.shadowOffX = 0;
-        root.shadowOffY = 10;
-        root.markDirty();
-    }
+    // Reset: opacities/blur/rounding/shadow only (gaps and border untouched,
+    // same as WindowControls.resetDefaults). Applied by the singleton.
+    function resetDefaults() { HyprEffects.resetEffects(); }
 
     Loader {
         id: body
@@ -188,7 +92,7 @@ Item {
                     EditLabel {
                         bar: root.bar
                         width: parent.width
-                        text: "Window effects and layout. Applies live via a Hyprland reload (same knobs as SUPER+SHIFT+B)."
+                        text: "Window effects, layout and borders. Applies live, no reload (same knobs as SUPER+SHIFT+B)."
                         font.pixelSize: bar.s(11)
                         color: bar.colors.subtext0
                         wrapMode: Text.WordWrap
@@ -210,8 +114,8 @@ Item {
                         from: 0.3; to: 1.0; step: 0.05
                         decimals: 2
                         accentColor: bar.colors.mauve
-                        value: root.activeOpacity
-                        onEdited: (v) => { root.activeOpacity = v; root.markDirty(); }
+                        value: fx.active_opacity
+                        onEdited: (v) => HyprEffects.set("active_opacity", v)
                     }
                     EffectSlider {
                         width: parent.width
@@ -221,8 +125,8 @@ Item {
                         from: 0.3; to: 1.0; step: 0.05
                         decimals: 2
                         accentColor: bar.colors.blue
-                        value: root.inactiveOpacity
-                        onEdited: (v) => { root.inactiveOpacity = v; root.markDirty(); }
+                        value: fx.inactive_opacity
+                        onEdited: (v) => HyprEffects.set("inactive_opacity", v)
                     }
 
                     // ── Rounding ────────────────────────────────────────────
@@ -241,8 +145,8 @@ Item {
                         from: 0; to: 35; step: 1
                         suffix: "px"
                         accentColor: bar.colors.green
-                        value: root.roundness
-                        onEdited: (v) => { root.roundness = v; root.markDirty(); }
+                        value: fx.rounding
+                        onEdited: (v) => HyprEffects.set("rounding", v)
                     }
 
                     // ── Blur ────────────────────────────────────────────────
@@ -261,8 +165,8 @@ Item {
                         from: 0; to: 24; step: 1
                         suffix: "px"
                         accentColor: bar.colors.peach
-                        value: root.blurSize
-                        onEdited: (v) => { root.blurSize = v; root.markDirty(); }
+                        value: fx.blur_size
+                        onEdited: (v) => HyprEffects.set("blur_size", v)
                     }
                     EffectSlider {
                         width: parent.width
@@ -271,8 +175,8 @@ Item {
                         label: "Blur Passes"
                         from: 0; to: 10; step: 1
                         accentColor: bar.colors.sapphire
-                        value: root.blurPasses
-                        onEdited: (v) => { root.blurPasses = v; root.markDirty(); }
+                        value: fx.blur_passes
+                        onEdited: (v) => HyprEffects.set("blur_passes", v)
                     }
 
                     // ── Layout ──────────────────────────────────────────────
@@ -291,8 +195,8 @@ Item {
                         from: 0; to: 50; step: 2
                         suffix: "px"
                         accentColor: bar.colors.mauve
-                        value: root.gapsIn
-                        onEdited: (v) => { root.gapsIn = v; root.markDirty(); }
+                        value: fx.gaps_in
+                        onEdited: (v) => HyprEffects.set("gaps_in", v)
                     }
                     EffectSlider {
                         width: parent.width
@@ -302,8 +206,8 @@ Item {
                         from: 0; to: 50; step: 2
                         suffix: "px"
                         accentColor: bar.colors.blue
-                        value: root.gapsOut
-                        onEdited: (v) => { root.gapsOut = v; root.markDirty(); }
+                        value: fx.gaps_out
+                        onEdited: (v) => HyprEffects.set("gaps_out", v)
                     }
                     EffectSlider {
                         width: parent.width
@@ -313,8 +217,8 @@ Item {
                         from: 0; to: 20; step: 1
                         suffix: "px"
                         accentColor: bar.colors.peach
-                        value: root.borderSize
-                        onEdited: (v) => { root.borderSize = v; root.markDirty(); }
+                        value: fx.border_size
+                        onEdited: (v) => HyprEffects.set("border_size", v)
                     }
 
                     // ── Shadow ──────────────────────────────────────────────
@@ -333,8 +237,8 @@ Item {
                         from: 0; to: 50; step: 1
                         suffix: "px"
                         accentColor: bar.colors.peach
-                        value: root.shadowRange
-                        onEdited: (v) => { root.shadowRange = v; root.markDirty(); }
+                        value: fx.shadow_range
+                        onEdited: (v) => HyprEffects.set("shadow_range", v)
                     }
                     EffectSlider {
                         width: parent.width
@@ -343,8 +247,8 @@ Item {
                         label: "Shadow Power"
                         from: 0; to: 10; step: 1
                         accentColor: bar.colors.sapphire
-                        value: root.shadowPower
-                        onEdited: (v) => { root.shadowPower = v; root.markDirty(); }
+                        value: fx.shadow_render_power
+                        onEdited: (v) => HyprEffects.set("shadow_render_power", v)
                     }
                     EffectSlider {
                         width: parent.width
@@ -354,8 +258,8 @@ Item {
                         from: -30; to: 30; step: 1
                         suffix: "px"
                         accentColor: bar.colors.mauve
-                        value: root.shadowOffX
-                        onEdited: (v) => { root.shadowOffX = v; root.markDirty(); }
+                        value: fx.shadow_offset_x
+                        onEdited: (v) => HyprEffects.set("shadow_offset_x", v)
                     }
                     EffectSlider {
                         width: parent.width
@@ -365,8 +269,15 @@ Item {
                         from: -30; to: 30; step: 1
                         suffix: "px"
                         accentColor: bar.colors.green
-                        value: root.shadowOffY
-                        onEdited: (v) => { root.shadowOffY = v; root.markDirty(); }
+                        value: fx.shadow_offset_y
+                        onEdited: (v) => HyprEffects.set("shadow_offset_y", v)
+                    }
+
+                    // ── Window borders (shared component, also in Bar → Style) ──
+                    WindowBordersSection {
+                        width: parent.width
+                        bar: root.bar
+                        titlePx: 16
                     }
 
                     // Acciones: Reset (defaults del widget) + Refresh de lectura.

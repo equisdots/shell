@@ -82,75 +82,76 @@ Item {
                         color: bar.colors.text
                     }
 
-                    // Grid 3 columnas de cards de paleta (GP:1276-1302)
+                    // Section: X
+                    Text {
+                        width: parent.width
+                        horizontalAlignment: Text.AlignHCenter
+                        text: "X"
+                        font.family: "Hack Nerd Font"
+                        font.weight: Font.Black
+                        font.pixelSize: bar.s(16)
+                        color: bar.colors.text
+                    }
                     GridLayout {
                         width: parent.width
                         columns: 3
                         columnSpacing: bar.s(10)
                         rowSpacing: bar.s(10)
                         Repeater {
-                            model: root.bar.palettes
-                            delegate: Rectangle {
-                                required property var modelData
-                                property var pal: modelData
-                                readonly property bool isSel: root.bar.bar.palette === pal.slug
-                                Layout.fillWidth: true
-                                height: bar.s(45)
-                                radius: bar.s(18)
-                                color: !bar ? "transparent"
-                                    : (isSel ? bar.colors.mauve
-                                             : (palMa.containsMouse ? Qt.alpha(bar.colors.mauve, 0.1) : Qt.alpha(bar.colors.surface0, 0.4)))
-                                border.width: 1
-                                border.color: !bar ? "transparent"
-                                    : ((isSel || palMa.containsMouse) ? bar.colors.mauve : bar.colors.surface1)
-                                Behavior on color { ColorAnimation { duration: 150 } }
-                                Behavior on border.color { ColorAnimation { duration: 150 } }
-                                RowLayout {
-                                    anchors.fill: parent
-                                    anchors.margins: bar.s(10)
-                                    spacing: bar.s(10)
-                                    Item {
-                                        Layout.preferredWidth: bar.s(24)
-                                        Layout.preferredHeight: bar.s(24)
-                                        Column {
-                                            anchors.centerIn: parent
-                                            spacing: bar.s(2)
-                                            Row {
-                                                spacing: bar.s(2)
-                                                Repeater {
-                                                    model: [0, 1]
-                                                    delegate: Rectangle { width: bar.s(9); height: bar.s(9); radius: bar.s(2); color: pal.colors[index] }
-                                                }
-                                            }
-                                            Row {
-                                                spacing: bar.s(2)
-                                                Repeater {
-                                                    model: [0, 1]
-                                                    delegate: Rectangle { width: bar.s(9); height: bar.s(9); radius: bar.s(2); color: pal.colors[2 + index] }
-                                                }
-                                            }
-                                        }
-                                    }
-                                    Text {
-                                        text: pal.name
-                                        font.family: "Hack Nerd Font"
-                                        font.weight: isSel ? Font.Bold : Font.Medium
-                                        font.pixelSize: bar.s(12)
-                                        color: !bar ? "transparent" : (isSel ? bar.colors.crust : bar.colors.text)
-                                        Layout.fillWidth: true
-                                        Layout.alignment: Qt.AlignVCenter
-                                        elide: Text.ElideRight
-                                    }
-                                }
-                                MouseArea {
-                                    id: palMa
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: root.bar.applyBar(Object.assign({}, root.bar.bar, { palette: pal.slug }))
-                                }
-                            }
+                            model: root.bar.palettesOf("x")
+                            delegate: PaletteCard {}
                         }
+                    }
+
+                    // Section: Custom
+                    Text {
+                        width: parent.width
+                        horizontalAlignment: Text.AlignHCenter
+                        text: "Custom"
+                        font.family: "Hack Nerd Font"
+                        font.weight: Font.Black
+                        font.pixelSize: bar.s(16)
+                        color: bar.colors.text
+                    }
+                    GridLayout {
+                        width: parent.width
+                        columns: 3
+                        columnSpacing: bar.s(10)
+                        rowSpacing: bar.s(10)
+                        Repeater {
+                            model: root.bar.palettesOf("custom")
+                            delegate: PaletteCard {}
+                        }
+                    }
+
+                    // Section: User
+                    Text {
+                        width: parent.width
+                        horizontalAlignment: Text.AlignHCenter
+                        text: "User"
+                        font.family: "Hack Nerd Font"
+                        font.weight: Font.Black
+                        font.pixelSize: bar.s(16)
+                        color: bar.colors.text
+                    }
+                    GridLayout {
+                        width: parent.width
+                        columns: 3
+                        columnSpacing: bar.s(10)
+                        rowSpacing: bar.s(10)
+                        Repeater {
+                            model: root.bar.palettesOf("user")
+                            delegate: PaletteCard {}
+                        }
+                    }
+                    EditLabel {
+                        bar: root.bar
+                        width: parent.width
+                        visible: root.bar.palettesOf("user").length === 0
+                        text: "Your own palettes created with 'New palette' appear here."
+                        font.pixelSize: bar.s(11)
+                        color: bar.colors.subtext0
+                        wrapMode: Text.WordWrap
                     }
 
                     // Fila de acciones: Edit colors / Reset / New palette
@@ -620,4 +621,67 @@ Item {
             }
         }
     }
+    // Palette card (3-col grid): preview swatches + name; click applies it.
+    component PaletteCard: Rectangle {
+        id: palCard
+        required property var modelData
+        readonly property var pal: modelData
+        readonly property bool isSel: root.bar.bar.palette === pal.slug
+        Layout.fillWidth: true
+        height: bar.s(45)
+        radius: bar.s(18)
+        color: !bar ? "transparent"
+            : (isSel ? bar.colors.mauve
+                     : (palMa.containsMouse ? Qt.alpha(bar.colors.mauve, 0.1) : Qt.alpha(bar.colors.surface0, 0.4)))
+        border.width: 1
+        border.color: !bar ? "transparent"
+            : ((isSel || palMa.containsMouse) ? bar.colors.mauve : bar.colors.surface1)
+        Behavior on color { ColorAnimation { duration: 150 } }
+        Behavior on border.color { ColorAnimation { duration: 150 } }
+        RowLayout {
+            anchors.fill: parent
+            anchors.margins: bar.s(10)
+            spacing: bar.s(10)
+            Item {
+                Layout.preferredWidth: bar.s(24)
+                Layout.preferredHeight: bar.s(24)
+                Column {
+                    anchors.centerIn: parent
+                    spacing: bar.s(2)
+                    Row {
+                        spacing: bar.s(2)
+                        Repeater {
+                            model: [0, 1]
+                            delegate: Rectangle { width: bar.s(9); height: bar.s(9); radius: bar.s(2); color: palCard.pal.colors[index] }
+                        }
+                    }
+                    Row {
+                        spacing: bar.s(2)
+                        Repeater {
+                            model: [0, 1]
+                            delegate: Rectangle { width: bar.s(9); height: bar.s(9); radius: bar.s(2); color: palCard.pal.colors[2 + index] }
+                        }
+                    }
+                }
+            }
+            Text {
+                text: palCard.pal.name
+                font.family: "Hack Nerd Font"
+                font.weight: palCard.isSel ? Font.Bold : Font.Medium
+                font.pixelSize: bar.s(12)
+                color: !bar ? "transparent" : (palCard.isSel ? bar.colors.crust : bar.colors.text)
+                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignVCenter
+                elide: Text.ElideRight
+            }
+        }
+        MouseArea {
+            id: palMa
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: root.bar.applyBar(Object.assign({}, root.bar.bar, { palette: palCard.pal.slug }))
+        }
+    }
+
 }

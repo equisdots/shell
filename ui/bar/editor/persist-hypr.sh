@@ -2,7 +2,7 @@
 # ═══════════════════════════════════════════════════════════════════════════
 # persist-hypr.sh — Overrides de Hyprland generados por el panel Settings.
 #
-# Mismo patrón que window-controls/persist.sh: escribe módulos Lua en
+# Mismo patrón que los overrides del panel Settings: escribe módulos Lua en
 # ~/.config/hypr/config/ (cargados al final de hyprland.lua → siempre ganan)
 # y recarga Hyprland. Escritura atómica (tmp + mv en el mismo dir) y
 # validación con `luac -p`: si el Lua generado no compila, se descarta el

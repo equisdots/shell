@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
+import QtQuick.Effects
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
@@ -108,6 +109,33 @@ Variants {
             // config synced, so uiScale/baseScale are final before any module
             // renders (bar.s() is a function, so QML can't reactively rescale).
             property bool configReady: false
+
+            // ================================================================
+            // SHADOWS (settings.json "shadows", same config as popups)
+            // The bar draws its own shadows (per island / strip): Hyprland does
+            // not decorate layer surfaces. The surface is padded so they are
+            // not clipped, and the padding is masked out for input.
+            // ================================================================
+            property var shadowsCfg: ({})
+            readonly property bool shadowOn: shadowsCfg.enabled !== false
+            readonly property real shadowBlur: s(shadowsCfg.blur !== undefined ? shadowsCfg.blur : 26)
+            readonly property real shadowSpread: s(shadowsCfg.spread !== undefined ? shadowsCfg.spread : 0)
+            readonly property real shadowOffX: s(shadowsCfg.offsetX !== undefined ? shadowsCfg.offsetX : 0)
+            readonly property real shadowOffY: s(shadowsCfg.offsetY !== undefined ? shadowsCfg.offsetY : 6)
+            readonly property real shadowOpacity: shadowsCfg.opacity !== undefined ? shadowsCfg.opacity : 0.5
+            readonly property real shadowPad: shadowOn
+                ? shadowBlur + shadowSpread + Math.max(shadowOffX, shadowOffY, 0)
+                : 0
+            // Bar-engine only for now (the classic engine keeps its geometry).
+            readonly property bool barShadow: shadowOn && !classicMode && configReady && shadowPad > 0
+            readonly property real padTop: !barShadow ? 0
+                : (orientation === "horizontal" ? (position === "top" ? Math.min(shadowPad, s(edgeGap)) : shadowPad) : 0)
+            readonly property real padBottom: !barShadow ? 0
+                : (orientation === "horizontal" ? (position === "bottom" ? Math.min(shadowPad, s(edgeGap)) : shadowPad) : 0)
+            readonly property real padLeft: !barShadow ? 0
+                : (orientation === "vertical" ? (position === "left" ? Math.min(shadowPad, s(edgeGap)) : shadowPad) : 0)
+            readonly property real padRight: !barShadow ? 0
+                : (orientation === "vertical" ? (position === "right" ? Math.min(shadowPad, s(edgeGap)) : shadowPad) : 0)
             property string position: "top"
             property string orientation: "horizontal"
             property string paletteName: "x"
@@ -508,9 +536,10 @@ Variants {
             // GEOMETRY
             // ================================================================
             property int barHeight: s(thickness)
-            // Vertical bars need extra width (~50px physical) to fit compact
-            // islands and the HH:mm clock comfortably.
-            property int barWidth: orientation === "horizontal" ? s(thickness) : Math.max(s(thickness), s(70))
+            // Thickness is the bar cross-size in both orientations: for vertical
+            // bars it is the width. Very small values make the islands compact;
+            // below ~s(40) the HH:mm clock / long labels may clip by design.
+            property int barWidth: s(thickness)
             property int pillHeight: orientation === "horizontal" ? barHeight - s(12) : barWidth - s(8)
             property int pillWidth: orientation === "horizontal" ? barHeight - s(12) : barWidth - s(8)
             function pillRadius(h) { return Math.round(h * 0.5 * roundness); }
@@ -520,8 +549,12 @@ Variants {
             readonly property string iconColor: (barConfig.iconColor !== undefined && barConfig.iconColor !== null) ? barConfig.iconColor : ""
             function moduleConfig(id) { return BarLayout.moduleConfig(barConfig, id); }
 
-            implicitHeight: orientation === "horizontal" ? barHeight : (barWindow.screen ? barWindow.screen.height : 1080)
-            implicitWidth: orientation === "horizontal" ? (barWindow.screen ? barWindow.screen.width : 1920) : barWidth
+            implicitHeight: orientation === "horizontal"
+                ? barHeight + barWindow.padTop + barWindow.padBottom
+                : (barWindow.screen ? barWindow.screen.height : 1080)
+            implicitWidth: orientation === "horizontal"
+                ? (barWindow.screen ? barWindow.screen.width : 1920)
+                : barWidth + barWindow.padLeft + barWindow.padRight
 
             // --- margins -------------------------------------------------------
             // The bar margins offset the whole surface from the anchored edges:
@@ -546,25 +579,25 @@ Variants {
                     : (barWindow.classicMode
                         ? (position === "top" ? (barWindow.classicEdgeFlush ? 0 : s(edgeGap))
                             : (position === "bottom" && barWindow.classicFillStyle ? 0 : s(4)))
-                        : (position === "top" ? s(edgeGap) : s(4)))
+                        : (position === "top" ? s(edgeGap) - barWindow.padTop : s(4)))
                 bottom: orientation === "vertical"
                     ? (barWindow.classicMode && barWindow.classicFillStyle ? 0 : s(4))
                     : (barWindow.classicMode
                         ? (position === "bottom" ? (barWindow.classicEdgeFlush ? 0 : s(edgeGap))
                             : (position === "top" && barWindow.classicFillStyle ? 0 : s(4)))
-                        : (position === "bottom" ? s(edgeGap) : s(4)))
+                        : (position === "bottom" ? s(edgeGap) - barWindow.padBottom : s(4)))
                 left: orientation === "horizontal"
                     ? (barWindow.classicMode && barWindow.classicFillStyle ? 0 : s(4))
                     : (barWindow.classicMode
                         ? (position === "left" ? (barWindow.classicEdgeFlush ? 0 : s(edgeGap))
                             : (position === "right" && barWindow.classicFillStyle ? 0 : s(4)))
-                        : (position === "left" ? s(edgeGap) : s(4)))
+                        : (position === "left" ? s(edgeGap) - barWindow.padLeft : s(4)))
                 right: orientation === "horizontal"
                     ? (barWindow.classicMode && barWindow.classicFillStyle ? 0 : s(4))
                     : (barWindow.classicMode
                         ? (position === "right" ? (barWindow.classicEdgeFlush ? 0 : s(edgeGap))
                             : (position === "left" && barWindow.classicFillStyle ? 0 : s(4)))
-                        : (position === "right" ? s(edgeGap) : s(4)))
+                        : (position === "right" ? s(edgeGap) - barWindow.padRight : s(4)))
             }
             // A hidden autohide bar reserves no edge space at all; every other
             // state reserves the same band as the bar engine.
@@ -588,7 +621,17 @@ Variants {
                     item: barWindow.classicAreaItem
                 }
             }
-            mask: barWindow.classicMode && barWindow.classicAreaItem ? classicMask : null
+            // With shadows on, the surface is padded so the shadow fits; the
+            // padding must not swallow input, so the mask tracks the visual bar
+            // band (barContent) instead of the whole padded surface.
+            Region {
+                id: barBandMask
+                Region {
+                    item: barContent
+                }
+            }
+            mask: barWindow.classicMode && barWindow.classicAreaItem ? classicMask
+                : (barWindow.barShadow ? barBandMask : null)
 
             function applyPosition() {
                 barWindow.anchors.top = undefined;
@@ -707,6 +750,8 @@ Variants {
                             if (parsed.uiScale !== undefined && barWindow.uiScale !== parsed.uiScale) {
                                 barWindow.uiScale = parsed.uiScale;
                             }
+                            barWindow.shadowsCfg = (parsed.shadows && typeof parsed.shadows === "object")
+                                ? parsed.shadows : {};
                             if (parsed.workspaceCount !== undefined && barWindow.workspaceCount !== parsed.workspaceCount) {
                                 barWindow.workspaceCount = parsed.workspaceCount;
                                 wsDaemon.running = false;
@@ -1196,9 +1241,27 @@ Variants {
             // float INSIDE it like a taskbar. Pill backgrounds then go transparent
             // (see ModulePill) and the accent islands stay as colored pills.
             // Hidden while the classic engine renders (ClassicBar draws its own strip).
+            // Strip shadow (barBg style): same "shadows" config as popups.
+            RectangularShadow {
+                visible: barWindow.barShadow && barWindow.barBg && !barWindow.classicMode
+                anchors.fill: barBackground
+                radius: barBackground.radius
+                topLeftRadius: barBackground.topLeftRadius
+                topRightRadius: barBackground.topRightRadius
+                bottomLeftRadius: barBackground.bottomLeftRadius
+                bottomRightRadius: barBackground.bottomRightRadius
+                blur: barWindow.shadowBlur
+                spread: barWindow.shadowSpread
+                offset: Qt.vector2d(barWindow.shadowOffX, barWindow.shadowOffY)
+                color: Qt.rgba(0, 0, 0, barWindow.shadowOpacity)
+            }
             Rectangle {
                 id: barBackground
                 anchors.fill: parent
+                anchors.topMargin: barWindow.padTop
+                anchors.bottomMargin: barWindow.padBottom
+                anchors.leftMargin: barWindow.padLeft
+                anchors.rightMargin: barWindow.padRight
                 visible: barWindow.barBg && !barWindow.classicMode
                 radius: barWindow.pillRadius(barWindow.pillHeight)
                 topLeftRadius: orientation === "vertical" ? 0 : (position === "top" ? 0 : radius)
@@ -1206,7 +1269,7 @@ Variants {
                 bottomLeftRadius: orientation === "vertical" ? 0 : (position === "bottom" ? 0 : radius)
                 bottomRightRadius: orientation === "vertical" ? 0 : (position === "bottom" ? 0 : radius)
                 // vertical: flat on the screen-edge side
-                color: Qt.rgba(barColors.base.r, barColors.base.g, barColors.base.b, barWindow.pillSolid ? 1.0 : barWindow.barOpacity)
+                color: Qt.rgba(barColors.base.r, barColors.base.g, barColors.base.b, barWindow.pillSolid ? barColors.base.a : barWindow.barOpacity * barColors.base.a)
                 border.width: barWindow.borderWidth
                 border.color: barColors[borderColor] || barColors.surface1
                 Behavior on color { ColorAnimation { duration: 300 } }
@@ -1215,6 +1278,10 @@ Variants {
             Item {
                 id: barContent
                 anchors.fill: parent
+                anchors.topMargin: barWindow.padTop
+                anchors.bottomMargin: barWindow.padBottom
+                anchors.leftMargin: barWindow.padLeft
+                anchors.rightMargin: barWindow.padRight
 
                 // Zones only build once uiScale/baseScale are final (bar.s() is a
                 // function, so modules can't reactively rescale after creation).

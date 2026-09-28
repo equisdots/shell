@@ -44,6 +44,16 @@ Item {
 
     property var bar: BarLayout.defaultBar()
     property var palettes: ([])
+    // Palette list helpers: entries carry `category` ("x" built-in, "custom"
+    // community/terminal packs, "user" created here); missing = "x".
+    function palettesOf(category) {
+        let out = [];
+        for (let i = 0; i < root.palettes.length; i++) {
+            let p = root.palettes[i];
+            if (p && String(p.category || "x") === category) out.push(p);
+        }
+        return out;
+    }
     property bool _dirty: false
     // true solo tras cargar el estado real desde settings.json (dataReady):
     // impide persistir el bar por defecto si el panel se abre durante el
@@ -97,7 +107,8 @@ Item {
             "monitors": "s_monitors", "startup": "s_startup", "topbar": "d_engine",
             "bar": "d_engine", "engine": "d_engine", "launcher": "d_launcher",
             "hyprland": "d_hyprland", "idle": "d_idle", "gpu": "d_gpu",
-            "notifications": "d_notifications", "guide": "d_guide", "about": "d_guide"
+            "notifications": "d_notifications", "guide": "d_guide", "about": "d_guide",
+            "shadows": "d_shadows", "glass": "d_glass", "palette": "d_palette"
         };
         let page = map[root.activeMode] !== undefined ? map[root.activeMode] : root.activeMode;
         if (root.navIndex(page) === -1) return;
@@ -150,7 +161,15 @@ Item {
     }
     Connections {
         target: Config
-        function onDataReadyChanged() { if (Config.dataReady) root.reload(); }
+        function onDataReadyChanged() {
+            if (Config.dataReady) {
+                root.reload();
+                // Scale is known as soon as Config parses settings.json:
+                // syncing it here too covers the cold start (editor opened
+                // before the initial read finishes).
+                root.uiScale = Config.uiScale;
+            }
+        }
     }
 
     // ════ ENGINE SWITCHING + CLASSIC EDITS (Phase D4-E2) ════
@@ -555,6 +574,8 @@ Item {
     // fits; Main follows this target live and animates the morph.
     property real targetMasterWidth: Math.min(root.s(1260), Screen.width - root.s(40))
     property real targetMasterHeight: root.s(760)
+    // Outer radius for the host-drawn panel shadow (matches the panel bg).
+    readonly property real shadowRadius: root.s(21)
     // Grupos de navegación: definidos en core/EditorNav.js (5 grupos
     // colapsables, orden/visibilidad/estado desde settings.editor).
     property var navGroups: EditorNav.configure(EditorNav.groups(), Config.rawSettings.editor)
@@ -665,7 +686,9 @@ Item {
             "d_guide":         "editor/GuidePage.qml",
             "d_hyprland":      "editor/HyprlandPage.qml",
             "d_animations":    "editor/AnimationsPage.qml",
-            "d_input":         "editor/InputPage.qml"
+            "d_input":         "editor/InputPage.qml",
+            "d_shadows":       "editor/ShadowsPage.qml",
+            "d_glass":         "editor/GlassPage.qml"
         };
         return map[id] || "";
     }
@@ -692,7 +715,9 @@ Item {
             "d_guide":         guidePageLoader,
             "d_hyprland":      hyprlandLoader,
             "d_animations":    animationsLoader,
-            "d_input":         inputLoader
+            "d_input":         inputLoader,
+            "d_shadows":       dShadowsLoader,
+            "d_glass":         dGlassLoader
         };
         return map[id] || null;
     }
@@ -783,7 +808,19 @@ Item {
     function activeSlug() {
         return String(themeColors.paletteName || "x").replace(/[^a-zA-Z0-9_-]/g, "");
     }
-    function paletteFilePath(slug) { return themeColors.palettesDir + "/" + slug + ".json"; }
+    // Resolve a palette file through the index (community palettes live in a
+    // subfolder and carry an explicit `path`); falls back to the flat file.
+    function paletteIndexEntry(slug) {
+        for (let i = 0; i < root.palettes.length; i++) {
+            if (root.palettes[i] && root.palettes[i].slug === slug) return root.palettes[i];
+        }
+        return null;
+    }
+    function paletteFilePath(slug) {
+        let e = root.paletteIndexEntry(slug);
+        let rel = (e && typeof e.path === "string" && e.path !== "") ? e.path : (slug + ".json");
+        return themeColors.palettesDir + "/" + rel;
+    }
     function backupDir() { return Quickshell.env("HOME") + "/.local/state/quickshell/palette_backup"; }
     function backupFilePath(slug) { return root.backupDir() + "/" + slug + ".json"; }
 
@@ -986,7 +1023,7 @@ Item {
         }
         let pal = root.buildPaletteObject(name, root.paletteDraftColors.slice());
         let json = JSON.stringify(pal, null, 4);
-        let entry = JSON.stringify({ slug: pal.slug, name: pal.name, colors: root.paletteDraftColors.slice() });
+        let entry = JSON.stringify({ slug: pal.slug, name: pal.name, category: "user", colors: root.paletteDraftColors.slice() });
         let dir = themeColors.palettesDir;
         let file = root.paletteFilePath(pal.slug);
         let index = dir + "/index.json";
@@ -1086,10 +1123,18 @@ Item {
         }
     }
 
-    // The instance is torn down right after closing (StackView clear):
-    // flush any pending palette write on destroy.
-    Component.onDestruction: root.flushPaletteWrite()
+    // The instance is torn down right after closing (StackView clear): flush
+    // any pending palette write and persist the effect knobs (previewed live
+    // while dragging; the Lua write here causes one Hyprland auto-reload).
+    Component.onDestruction: {
+        root.flushPaletteWrite();
+        HyprEffects.persist();
+    }
 
+    // Fallback: Config reads settings.json only once at shell start, so this
+    // only covers a uiScale edited externally while the shell is running. It
+    // must not reassign when the value already matches: doing so re-laid out
+    // the panel after the first paint and displaced the nav pill on open.
     Process {
         id: scaleReader
         command: ["bash", "-c", "cat ~/.config/hypr/settings.json 2>/dev/null | jq -r '.uiScale // 1'"]
@@ -1097,7 +1142,7 @@ Item {
         stdout: StdioCollector {
             onStreamFinished: {
                 let v = parseFloat(this.text.trim());
-                if (!isNaN(v) && v > 0) root.uiScale = v;
+                if (!isNaN(v) && v > 0 && root.uiScale !== v) root.uiScale = v;
             }
         }
     }
@@ -1114,6 +1159,12 @@ Item {
     }
 
     Component.onCompleted: {
+        // Scale from Config (synchronous, settings.json is already parsed when
+        // the shell starts) BEFORE the first layout. The old flow started at
+        // 1.0 and corrected itself when the async jq returned: the first open
+        // was laid out at the wrong scale and then re-scaled, leaving the nav
+        // pill displaced downwards (and the panel morphing).
+        root.uiScale = Config.uiScale;
         startupSequence.start();
         reload();
         paletteReader.running = true;
@@ -1600,6 +1651,26 @@ Item {
                         property real slideY: visible ? 0 : root.s(10)
                         Behavior on slideY { NumberAnimation { duration: 250; easing.type: Easing.OutQuart } }
                         transform: Translate { y: dWidgetsLoader.slideY }
+                        Behavior on opacity { NumberAnimation { duration: 250 } }
+                    }
+                    Loader {
+                        id: dShadowsLoader
+                        anchors.fill: parent
+                        visible: root.currentPage === "d_shadows"
+                        opacity: visible ? 1.0 : 0.0
+                        property real slideY: visible ? 0 : root.s(10)
+                        Behavior on slideY { NumberAnimation { duration: 250; easing.type: Easing.OutQuart } }
+                        transform: Translate { y: dShadowsLoader.slideY }
+                        Behavior on opacity { NumberAnimation { duration: 250 } }
+                    }
+                    Loader {
+                        id: dGlassLoader
+                        anchors.fill: parent
+                        visible: root.currentPage === "d_glass"
+                        opacity: visible ? 1.0 : 0.0
+                        property real slideY: visible ? 0 : root.s(10)
+                        Behavior on slideY { NumberAnimation { duration: 250; easing.type: Easing.OutQuart } }
+                        transform: Translate { y: dGlassLoader.slideY }
                         Behavior on opacity { NumberAnimation { duration: 250 } }
                     }
                     Loader {

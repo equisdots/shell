@@ -184,7 +184,7 @@ Item {
             bottomRightRadius: classicRoot.vertical
                 ? ((bar.position === "right" && classicRoot.edgeFlush) ? 0 : radius)
                 : ((bar.position === "bottom" && classicRoot.edgeFlush) ? 0 : radius)
-            color: Qt.rgba(colors.base.r, colors.base.g, colors.base.b, bar.barOpacity)
+            color: Qt.rgba(colors.base.r, colors.base.g, colors.base.b, bar.barOpacity * colors.base.a)
             border.width: bar.borderWidth
             border.color: colors[bar.borderColor] || colors.surface1
             Behavior on color { ColorAnimation { duration: 300 } }

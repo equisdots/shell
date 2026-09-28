@@ -1,7 +1,13 @@
 # Palette System
 
-The system uses **12 fixed palettes** (Matugen-free) shipped by the
-[`equisdots/palettes`](https://github.com/equisdots/palettes) repo and deployed
+The palette page is grouped in three sections: **X** (the 12 built-in
+palettes), **Custom** (community palettes — base16 ports of well-known terminal
+themes under `dock/palettes/community/`, with attribution in its `README.md`)
+and **User** (palettes created from the editor, `category: "user"`).
+
+The system ships **12 X palettes** (Matugen-free) plus the community set, from
+the [`equisdots/palettes`](https://github.com/equisdots/palettes) repo,
+deployed
 to the **frozen shared path**:
 
 ```
@@ -17,7 +23,9 @@ configs stored it under `dock.palette`: the shell migrates that shape once via
 
 - `dock/palettes/<slug>.json` — one file per palette (base-16 colors + optional
   `background`/`foreground`/`roles` overrides).
-- `dock/palettes/index.json` — ordered list of palettes shown in the editor.
+- `dock/palettes/index.json` — ordered list of palettes shown in the editor
+  (`category` + optional `path` drive the X / Custom / User sections; community
+  files live under `dock/palettes/community/`).
 - `ui/bar/Colors.qml` — component that loads the active palette and derives the
   semantic roles (`base`, `surface0/1/2`, `text`, `overlay0/1/2`, accent set).
   Every bar module reads from `colors.<role>`, so swapping the palette never

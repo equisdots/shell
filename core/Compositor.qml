@@ -23,9 +23,10 @@ QtObject {
     readonly property var keyboardCommand: root.backend.keyboardCommand
     readonly property var focusCommand: root.backend.focusCommand
 
-    // Live actions.
-    function setWindowBorderColors(activeHex, inactiveHex) {
-        root.backend.setWindowBorderColors(activeHex, inactiveHex);
+    // Live actions. Each border spec is { hex, alpha, second, angle } (see
+    // Colors.borderSpec); the backend translates it to its own notation.
+    function setWindowBorders(activeSpec, inactiveSpec) {
+        root.backend.setWindowBorders(activeSpec, inactiveSpec);
     }
 
     function switchWorkspace(name) {

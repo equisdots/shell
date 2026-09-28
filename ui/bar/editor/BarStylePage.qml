@@ -142,7 +142,7 @@ Item {
                         bar: root.bar
                         label: "Thickness"
                         value: Math.round(root.bar.bar.thickness) + "px"
-                        onDec: root.bar.applyBar(Object.assign({}, root.bar.bar, { thickness: Math.max(32, root.bar.bar.thickness - 4) }))
+                        onDec: root.bar.applyBar(Object.assign({}, root.bar.bar, { thickness: Math.max(24, root.bar.bar.thickness - 4) }))
                         onInc: root.bar.applyBar(Object.assign({}, root.bar.bar, { thickness: Math.min(96, root.bar.bar.thickness + 4) }))
                     }
                     StepperCard {
@@ -238,125 +238,9 @@ Item {
                     }
 
                     // ════ WINDOW BORDERS ════
-                    Text {
-                        text: "Window borders"
-                        font.family: "Hack Nerd Font"
-                        font.weight: Font.Black
-                        font.pixelSize: bar.s(24)
-                        color: bar.colors.text
-                    }
-
-                    ToggleCard {
+                    WindowBordersSection {
                         width: parent.width
                         bar: root.bar
-                        icon: "󰢮"
-                        label: "Follow palette"
-                        checked: root.bar.bar.borderFollowPalette !== false
-                        onToggled: root.bar.applyBar(Object.assign({}, root.bar.bar, { borderFollowPalette: root.bar.bar.borderFollowPalette !== false ? false : true }))
-                    }
-
-                    // Target activo/inactivo (solo sin follow): grid 2 cards
-                    GridLayout {
-                        width: parent.width
-                        columns: 2
-                        columnSpacing: bar.s(10)
-                        rowSpacing: bar.s(10)
-                        visible: bar.bar.borderFollowPalette === false
-                        OptionCard {
-                            Layout.fillWidth: true
-                            bar: root.bar
-                            icon: "◉"
-                            label: "Active"
-                            active: root.bar.borderTargetActive
-                            onActivated: root.bar.borderTargetActive = true
-                        }
-                        OptionCard {
-                            Layout.fillWidth: true
-                            bar: root.bar
-                            icon: "○"
-                            label: "Inactive"
-                            accentRole: "blue"
-                            active: !root.bar.borderTargetActive
-                            onActivated: root.bar.borderTargetActive = false
-                        }
-                    }
-
-                    // Grid de swatches base16 (solo sin follow)
-                    GridLayout {
-                        width: parent.width
-                        columns: 8
-                        columnSpacing: bar.s(8)
-                        rowSpacing: bar.s(8)
-                        visible: bar.bar.borderFollowPalette === false
-                        Repeater {
-                            model: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
-                            delegate: Rectangle {
-                                required property int modelData
-                                readonly property bool isSel: root.bar.borderTargetActive
-                                    ? root.bar.colors.borderHex("active") === root.bar.colors.hexOf(root.bar.colors["color" + modelData])
-                                    : root.bar.colors.borderHex("inactive") === root.bar.colors.hexOf(root.bar.colors["color" + modelData])
-                                width: bar.s(24)
-                                height: bar.s(24)
-                                radius: bar.s(8)
-                                color: bar.colors["color" + modelData]
-                                border.width: isSel ? 2 : 1
-                                border.color: isSel ? bar.colors.text : (swMa.containsMouse ? bar.colors.mauve : bar.colors.surface1)
-                                Behavior on border.color { ColorAnimation { duration: 150 } }
-                                MouseArea {
-                                    id: swMa
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: {
-                                        let hex = root.bar.colors.hexOf(root.bar.colors["color" + modelData]);
-                                        root.bar.applyBar(Object.assign({}, root.bar.bar, root.bar.borderTargetActive
-                                            ? { borderActive: hex }
-                                            : { borderInactive: hex }));
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    // Preview del color activo/inactivo (solo sin follow)
-                    RowLayout {
-                        width: parent.width
-                        spacing: bar.s(10)
-                        visible: bar.bar.borderFollowPalette === false
-                        EditLabel {
-                            bar: root.bar
-                            text: root.bar.borderTargetActive ? "Active color" : "Inactive color"
-                            Layout.fillWidth: true
-                            Layout.alignment: Qt.AlignVCenter
-                        }
-                        Rectangle {
-                            Layout.preferredWidth: bar.s(92)
-                            Layout.preferredHeight: bar.s(30)
-                            Layout.alignment: Qt.AlignVCenter
-                            radius: bar.s(13)
-                            color: root.bar.borderTargetActive ? root.bar.colors.borderHex("active") : root.bar.colors.borderHex("inactive")
-                            border.width: 1
-                            border.color: root.bar.colors.surface1
-                            Text {
-                                anchors.centerIn: parent
-                                text: root.bar.borderTargetActive ? root.bar.colors.borderHex("active") : root.bar.colors.borderHex("inactive")
-                                font.family: "Hack Nerd Font"
-                                font.pixelSize: bar.s(11)
-                                font.weight: Font.Bold
-                                color: root.bar.colors.text
-                            }
-                        }
-                    }
-
-                    // Caption (solo con follow activo)
-                    EditLabel {
-                        bar: root.bar
-                        width: parent.width
-                        visible: bar.bar.borderFollowPalette !== false
-                        text: "Borders follow the active palette accent. Turn this off to pick custom colors (applies live, no window restart)."
-                        font.pixelSize: bar.s(12)
-                        color: bar.colors.subtext0
-                        wrapMode: Text.WordWrap
                     }
                 }
             }

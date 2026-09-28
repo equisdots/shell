@@ -18,6 +18,11 @@ Running subsystems:
 - **Bar** — host + both engines (zones/classic) + 18 modules + editor.
 - **Popups** — applauncher, battery, calendar, guide, music, network,
   system-monitor, updater, volume.
+- **Shadows** — host-drawn popup/menu shadows plus bar island/strip
+  shadows (`ui/Main.qml`, `ui/bar/Zone.qml`, `ShadowsPage.qml`;
+  `settings.json → shadows`, applies live).
+- **Glass** — translucent shell backgrounds + compositor backdrop blur
+  (`settings.json → glass`, hyprland `layers.lua`; Theme → Glass page).
 - **Panels** — clipboard, davincix, file-search, focustime, idle,
   quickactions, quicknotes, rss-reader, scale, window-controls.
 - **Lock**, **notifications** (server + history + popups) and the **floating
