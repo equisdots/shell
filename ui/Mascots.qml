@@ -1,5 +1,7 @@
 import QtQuick
 import Quickshell
+import Quickshell.Io
+import "../core"
 import "../core/WindowRegistry.js" as Registry
 import "./bar"
 import "./mascots"
@@ -23,6 +25,21 @@ Item {
 
     Colors { id: themeColors }
 
+    Caching { id: paths }
+
+    // Live wallpaper preview for the Davincix card: davincix repaints
+    // current_wallpaper.png whenever the background changes; watching the file
+    // bumps wallpaperRev so the dock thumbnail reloads with a fresh URL.
+    readonly property string wallpaperPreviewPath: paths.getCacheDir("wallpaper_picker") + "/current_wallpaper.png"
+    property int wallpaperRev: 0
+
+    FileView {
+        path: root.wallpaperPreviewPath
+        watchChanges: true
+        blockLoading: true
+        onFileChanged: root.wallpaperRev++
+    }
+
     MascotsOverlay {
         palette: themeColors
         settingsPath: Quickshell.env("HOME") + "/.config/hypr/settings.json"
@@ -32,23 +49,24 @@ Item {
             return Registry.getLayout(name, 0, 0, sw, sh, scale);
         }
         widgetList: [
-            { id: "calendar",       label: "Timex",     icon: "\uf0e17" },
-            { id: "wallpaper",      label: "Davincix",  icon: "\uf0976" },
-            { id: "applauncher",    label: "Launcher",  icon: "\uf003b" },
-            { id: "clipboard",      label: "Clipboard", icon: "\uf0a38" },
-            { id: "idle",           label: "Idle",      icon: "\uf0150" },
-            { id: "focustime",      label: "Focus",     icon: "\uf051b" },
-            { id: "updater",        label: "Updater",   icon: "\uf01da" },
-            { id: "system-monitor", label: "Monitor",   icon: "\uf0a07" },
-            { id: "quicknotes",     label: "Notes",     icon: "\uf11d7" },
-            { id: "rss-reader",     label: "RSS",       icon: "\uf046b" },
-            { id: "file-search",    label: "Files",     icon: "\uf0b97" },
-            { id: "music",          label: "Music",     icon: "\uf075a" },
-            { id: "network",        label: "Network",   icon: "\uf05a9" },
-            { id: "volume",         label: "Volume",    icon: "\uf057e" },
-            { id: "battery",        label: "Battery",   icon: "\uf0079" },
-            { id: "bar-editor",     label: "Settings",  icon: "\uf0493" },
-            { id: "widgets-redactor", label: "Widgets", icon: "\uf11d9" }
+            { id: "calendar",       label: "Timex",     icon: "󰅐" },
+            { id: "wallpaper",      label: "Davincix",  icon: "󰥶",
+              thumb: "file://" + root.wallpaperPreviewPath + "?v=" + root.wallpaperRev },
+            { id: "applauncher",    label: "Launcher",  icon: "󰀻" },
+            { id: "clipboard",      label: "Clipboard", icon: "󰨸" },
+            { id: "idle",           label: "Idle",      icon: "󰤄" },
+            { id: "focustime",      label: "Focus",     icon: "󰔛" },
+            { id: "updater",        label: "Updater",   icon: "󰇚" },
+            { id: "system-monitor", label: "Monitor",   icon: "󰨇" },
+            { id: "quicknotes",     label: "Notes",     icon: "󱇗" },
+            { id: "rss-reader",     label: "RSS",       icon: "󰑫" },
+            { id: "file-search",    label: "Files",     icon: "󰮗" },
+            { id: "music",          label: "Music",     icon: "󰝚" },
+            { id: "network",        label: "Network",   icon: "󰖩" },
+            { id: "volume",         label: "Volume",    icon: "󰕾" },
+            { id: "battery",        label: "Battery",   icon: "󰁹" },
+            { id: "bar-editor",     label: "Settings",  icon: "󰒓" },
+            { id: "widgets-redactor", label: "Widgets", icon: "󱇙" }
         ]
         widgetLauncher: function(id) {
             Quickshell.execDetached([

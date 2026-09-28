@@ -43,8 +43,9 @@ Catppuccin-Mocha fallback is built in. `widgetRectProvider(name, sw, sh,
 uiScale)` returns `{ x, y, w, h }` in screen coordinates for widgets that
 should hide the island when they overlap it; `dockWidgetName` hides the island
 entirely for that widget (e.g. a dock). `widgetList` is an array of
-`{ id, label, icon }` cards shown in the click dock, and `widgetLauncher(id)`
-is called when one is picked.
+`{ id, label, icon }` cards shown in the click dock; an entry may also carry an
+optional `thumb` (path or URL), shown instead of the icon once it loads (e.g. a
+live wallpaper preview). `widgetLauncher(id)` is called when one is picked.
 
 ## Integration example
 
