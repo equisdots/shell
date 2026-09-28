@@ -146,6 +146,11 @@ workspace number:
 - Occupied workspaces always show their app icons; markers only appear on empty
   pills (including an empty ACTIVE workspace). Marker color follows the pill
   state (active/hover/empty).
+- The icon map covers 430+ window classes (terminals, browsers, IDEs, dev and
+  media tools, chat, gaming, ...) with the class glyphs validated against the
+  Hack Nerd Font coverage. Vertical bars fit the glyphs to the pill width and
+  keep at least one icon even with a thin bar, appending `+` when more apps are
+  present than fit.
 
 The active-workspace highlight color can be themed per palette through the
 `workspaceActive` role (see `docs/themes.md`).

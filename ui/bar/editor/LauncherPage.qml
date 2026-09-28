@@ -143,7 +143,7 @@ Item {
                         bar: root.bar
                         label: "Width"
                         value: Math.round(root.bar.launcherCfg.width) + "px"
-                        onDec: root.bar.applyLauncher({ width: Math.max(480, root.bar.launcherCfg.width - 40) })
+                        onDec: root.bar.applyLauncher({ width: Math.max(320, root.bar.launcherCfg.width - 40) })
                         onInc: root.bar.applyLauncher({ width: Math.min(1280, root.bar.launcherCfg.width + 40) })
                     }
                     StepperCard {
@@ -167,7 +167,7 @@ Item {
                         bar: root.bar
                         label: "Row height"
                         value: Math.round(root.bar.launcherCfg.rowHeight) + "px"
-                        onDec: root.bar.applyLauncher({ rowHeight: Math.max(40, root.bar.launcherCfg.rowHeight - 4) })
+                        onDec: root.bar.applyLauncher({ rowHeight: Math.max(28, root.bar.launcherCfg.rowHeight - 4) })
                         onInc: root.bar.applyLauncher({ rowHeight: Math.min(80, root.bar.launcherCfg.rowHeight + 4) })
                     }
 

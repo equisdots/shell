@@ -112,7 +112,14 @@ ModulePill {
 
             readonly property var appClassList: (model.wsClasses || "") !== "" ? model.wsClasses.split(",") : []
             readonly property bool hasManyIcons: appClassList.length > 3
-            readonly property int maxShowIcons: hasManyIcons ? 2 : Math.min(appClassList.length, 3)
+            // Vertical bars: how many glyphs fit across the pill. At least one
+            // slot is kept so an occupied workspace never falls back to the dot
+            // marker, even with a thin bar.
+            readonly property int compactIconSlots: Math.max(1, Math.floor((bar.pillWidth - bar.s(8)) / (bar.s(12) + bar.s(2))))
+            readonly property int maxShowIcons: mod.compact
+                ? Math.min(appClassList.length, compactIconSlots)
+                : (hasManyIcons ? 2 : Math.min(appClassList.length, 3))
+            readonly property bool showIcons: appIconList.length > 0
             readonly property var appIconList: {
                 var icons = [];
                 for (var i = 0; i < appClassList.length && i < maxShowIcons; i++) icons.push(classIcon(appClassList[i]));
@@ -121,18 +128,199 @@ ModulePill {
 
             function classIcon(cls) {
                 var c = String(cls).toLowerCase();
+                // class -> Nerd Font glyph. Every codepoint is validated
+                // against the Hack Nerd Font coverage (no tofu); reverse-DNS
+                // classes are listed explicitly.
                 var map = {
-                    "kitty": "\uF489", "alacritty": "\uF489", "wezterm": "\uF489", "foot": "\uF489", "ghostty": "\uF489", "terminal": "\uF489",
-                    "firefox": "\uF269", "firefoxdeveloperedition": "\uF269", "brave": "\uF269", "brave-browser": "\uF269", "zen": "\uF269",
-                    "chromium": "\uF269", "google-chrome": "\uF269", "microsoft-edge": "\uF269", "edge": "\uF269",
-                    "code": "\uF121", "code-oss": "\uF121", "codium": "\uF121", "vscodium": "\uF121", "visual-studio-code": "\uF121", "code-insiders": "\uF121",
-                    "nautilus": "\uF07C", "org.gnome.nautilus": "\uF07C", "dolphin": "\uF07C", "thunar": "\uF07C", "pcmanfm": "\uF07C",
-                    "spotify": "\uF1BC", "discord": "\uF086", "slack": "\uF086", "obsidian": "\uF4A5",
-                    "gimp": "\uF338", "inkscape": "\uF344",
-                    "libreoffice": "\uF15C", "soffice": "\uF15C", "evince": "\uF15C", "org.gnome.evince": "\uF15C", "vlc": "\uF15C",
-                    "jetbrains-idea": "\uF121", "idea": "\uF121", "intellij": "\uF121",
-                    "thunderbird": "\uF0E0", "org.wezfurlong.wezterm": "\uF489",
-                    "steam": "\uF1B7", "steamwebhelper": "\uF1B7", "virt-manager": "\uF17B",
+                    // Terminals
+                    "kitty": "", "konsole": "", "gnome-terminal": "", "xfce4-terminal": "",
+                    "tilix": "", "terminator": "", "guake": "", "yakuake": "",
+                    "urxvt": "", "rxvt-unicode": "", "xterm": "", "st": "",
+                    "st-256color": "", "alacritty": "", "foot": "", "footclient": "",
+                    "ghostty": "", "wezterm": "", "org.wezfurlong.wezterm": "", "warp-terminal": "",
+                    "tabby": "", "hyper": "", "com.raggesilver.blackbox": "", "blackbox": "",
+                    "kgx": "", "console": "",
+                    // Browsers
+                    "firefox": "", "firefoxdeveloperedition": "", "firefox-esr": "", "librewolf": "",
+                    "floorp": "", "waterfox": "", "tor-browser": "", "qutebrowser": "",
+                    "zen": "", "zen-browser": "",
+                    // Chromium browsers
+                    "chromium": "", "chromium-browser": "", "ungoogled-chromium": "", "google-chrome": "",
+                    "google-chrome-stable": "", "microsoft-edge": "", "microsoft-edge-stable": "", "msedge": "",
+                    "vivaldi-stable": "", "vivaldi": "", "brave": "", "brave-browser": "",
+                    "brave-browser-beta": "", "brave-browser-nightly": "", "brave-beta": "",
+                    // Web (GTK/Qt)
+                    "epiphany": "󰖟", "org.gnome.epiphany": "󰖟", "falkon": "󰖟", "org.kde.falkon": "󰖟",
+                    "konqueror": "󰖟",
+                    // Editors
+                    "sublime_text": "", "sublime": "", "subl": "", "subl3": "",
+                    // Editors
+                    "emacs": "",
+                    // Editors
+                    "neovide": "", "nvim-qt": "", "gvim": "", "vimr": "",
+                    // Editors
+                    "zed": "", "dev.zed.zed": "", "zeditor": "", "helix": "",
+                    "hx": "", "lapce": "", "cursor": "", "windsurf": "",
+                    "geany": "", "kate": "", "gedit": "", "org.gnome.gedit": "",
+                    "gnome-text-editor": "", "org.gnome.texteditor": "", "gnome-builder": "", "org.gnome.builder": "",
+                    "eclipse": "", "netbeans": "", "code": "", "code-oss": "",
+                    "code-insiders": "", "codium": "", "vscodium": "", "visual-studio-code": "",
+                    "vscode": "",
+                    // JetBrains IDEs
+                    "jetbrains-idea": "", "idea": "", "intellij": "", "pycharm": "",
+                    "webstorm": "", "clion": "", "goland": "", "rider": "",
+                    "rustrover": "", "datagrip": "", "phpstorm": "", "fleet": "",
+                    "jetbrains-toolbox": "", "aqua": "", "mps": "",
+                    // Android
+                    "android-studio": "", "studio": "",
+                    // Python
+                    "thonny": "", "spyder": "", "idle": "", "idle3": "",
+                    "jupyter": "", "jupyter-notebook": "", "python": "",
+                    // Game engines
+                    "unity": "", "unityhub": "",
+                    // Game engines
+                    "godot": "", "godot_editor": "", "godot-engine": "",
+                    // Electron apps
+                    "electron": "",
+                    // API clients
+                    "postman": "", "insomnia": "", "bruno": "", "hoppscotch": "",
+                    "postwoman": "", "apifox": "",
+                    // Databases
+                    "dbeaver": "󰆼", "dbeaver-ce": "󰆼", "pgadmin4": "󰆼", "pgadmin": "󰆼",
+                    "mysql-workbench": "󰆼", "mongodb-compass": "󰆼", "redisinsight": "󰆼", "sqlitebrowser": "󰆼",
+                    "org.sqlitebrowser.sqlitebrowser": "󰆼", "navicat": "󰆼", "beekeeper-studio": "󰆼", "tableplus": "󰆼",
+                    // Containers
+                    "docker-desktop": "", "lazydocker": "", "podman-desktop": "", "rancher-desktop": "",
+                    // Remote/VMs
+                    "remmina": "", "org.remmina.remmina": "", "virt-manager": "", "org.virt_manager.virt-manager": "",
+                    "gnome-boxes": "", "org.gnome.boxes": "", "virtualbox": "", "virtualboxvm": "",
+                    "qemu": "", "qemu-system-x86_64": "", "vinagre": "",
+                    // Transfer
+                    "filezilla": "", "termius": "", "cyberduck": "", "winscp": "",
+                    // Network
+                    "wireshark": "", "org.wireshark.wireshark": "", "netsniff-ng": "", "ettercap": "",
+                    // Security
+                    "burpsuite": "", "burp": "", "owasp-zap": "", "zaproxy": "",
+                    "jd-gui": "", "ghidra": "", "ida": "", "ida64": "",
+                    "radare2": "", "cutter": "",
+                    // Git
+                    "gitkraken": "",
+                    // Git
+                    "meld": "", "org.gnome.meld": "",
+                    // Git
+                    "git-cola": "", "gitg": "", "ungit": "", "gitbutler": "",
+                    "gitbutlerapp": "",
+                    // Docs
+                    "zeal": "", "devdocs": "", "org.zealdocs.zeal": "", "obsidian": "",
+                    "md.obsidian": "", "logseq": "", "com.logseq.logseq": "", "zotero": "",
+                    "zotero-bin": "", "calibre": "", "calibre-ebook-viewer": "", "foliate": "",
+                    "com.github.johnfactotum.foliate": "",
+                    // Notes
+                    "joplin": "󰠮", "app.joplin": "󰠮", "net.cozic.joplin_desktop": "󰠮", "siyuan": "󰠮",
+                    "zettlr": "󰠮", "qownnotes": "󰠮",
+                    // Markdown
+                    "typora": "", "marktext": "", "ghostwriter": "", "apostrophe": "",
+                    "retext": "",
+                    // Passwords
+                    "keepassxc": "󰌆", "org.keepassxc.keepassxc": "󰌆", "bitwarden": "󰌆", "1password": "󰌆",
+                    "seahorse": "󰌆", "gcr-prompter": "󰌆", "gcr-viewer": "󰌆",
+                    // Disks
+                    "gparted": "󰋊", "gnome-disks": "󰋊", "org.gnome.diskutility": "󰋊", "baobab": "󰋊",
+                    "org.gnome.baobab": "󰋊", "timeshift": "󰋊", "backintime-qt": "󰋊", "org.kde.partitionmanager": "󰋊",
+                    // Qt
+                    "qt5ct": "", "qt6ct": "", "qtcreator": "", "designer": "",
+                    "assistant": "", "linguist": "", "qdbusviewer": "",
+                    // GPU
+                    "nvidia-settings": "", "corectrl": "", "lact": "",
+                    // Screenshot
+                    "satty": "", "com.gabm.satty": "", "flameshot": "", "org.flameshot.flameshot": "",
+                    "spectacle": "", "org.kde.spectacle": "", "xfce4-screenshooter": "", "gnome-screenshot": "",
+                    // Audio
+                    "qtractor": "", "ardour": "", "ardour7": "", "lmms": "",
+                    "reaper": "", "bitwig": "", "carla": "", "renoise": "",
+                    "mixxx": "",
+                    // Audio
+                    "pavucontrol": "", "org.pulseaudio.pavucontrol": "", "easyeffects": "", "com.github.wwmm.easyeffects": "",
+                    "qpwgraph": "", "helvum": "", "org.pipewire.helvum": "",
+                    // Bluetooth
+                    "blueman-manager": "", "blueman-adapters": "", "bluetooth-manager": "",
+                    // Calculator
+                    "kcalc": "", "galculator": "", "gnome-calculator": "", "org.gnome.calculator": "",
+                    "qalculate-qt": "", "qalculate-gtk": "", "speedcrunch": "",
+                    // Archives
+                    "ark": "", "org.kde.ark": "", "file-roller": "", "org.gnome.file-roller": "",
+                    "engrampa": "", "xarchiver": "",
+                    // System
+                    "mission-center": "", "io.missioncenter.missioncenter": "", "gnome-system-monitor": "", "org.gnome.systemmonitor": "",
+                    "resources": "", "plasma-systemmonitor": "", "qps": "", "ksysguard": "",
+                    "org.kde.plasma-systemmonitor": "", "system-monitor": "",
+                    // Download
+                    "qbittorrent": "", "org.qbittorrent.qbittorrent": "", "transmission": "", "transmission-gtk": "",
+                    "deluge": "", "fragments": "", "nicotine": "",
+                    // Sync
+                    "syncthing": "󰓦", "syncthing-gtk": "󰓦", "localsend": "󰓦", "org.localsend.localsend_app": "󰓦",
+                    "kdeconnect": "󰓦", "kdeconnect-app": "󰓦", "warpinator": "󰓦",
+                    // Settings
+                    "systemsettings": "", "kcmshell6": "", "kcmshell5": "", "gnome-control-center": "",
+                    "org.gnome.settings": "", "gnome-tweaks": "", "org.gnome.tweaks": "", "xfce4-settings-manager": "",
+                    // Launchers
+                    "rofi": "", "rofi-theme-selector": "", "wofi": "", "fuzzel": "",
+                    "anyrun": "", "ulauncher": "", "albert": "",
+                    // PDF
+                    "okular": "", "org.kde.okular": "", "xpdf": "", "mupdf": "",
+                    "zathura": "",
+                    // Office
+                    "onlyoffice": "", "onlyoffice-desktopeditors": "", "wps": "", "wpp": "",
+                    "et": "", "lowriter": "", "localc": "", "loimpress": "",
+                    "libreoffice": "",
+                    // Media play
+                    "mpv": "", "io.mpv.mpv": "", "celluloid": "", "io.github.celluloid_player.celluloid": "",
+                    "smplayer": "", "parole": "", "strawberry": "", "org.strawberrymusicplayer.strawberry": "",
+                    "elisa": "", "org.kde.elisa": "", "rhythmbox": "", "org.gnome.rhythmbox": "",
+                    "deadbeef": "", "audacious": "", "vlc": "", "org.videolan.vlc": "",
+                    // Video
+                    "zoom": "", "us.zoom.zoom": "", "obs": "", "obs-studio": "",
+                    "com.obsproject.studio": "", "kdenlive": "", "org.kde.kdenlive": "", "shotcut": "",
+                    "openshot": "", "handbrake": "", "fr.handbrake.handbrake": "", "kamoso": "",
+                    // Creative
+                    "blender": "", "org.blender.blender": "",
+                    // Creative
+                    "krita": "󰃣", "org.kde.krita": "󰃣", "mypaint": "󰃣", "pinta": "󰃣",
+                    "gimp": "󰃣", "org.gimp.gimp": "󰃣", "inkscape": "󰃣", "org.inkscape.inkscape": "󰃣",
+                    // Images
+                    "darktable": "󰋩", "org.darktable.darktable": "󰋩", "rawtherapee": "󰋩", "gthumb": "󰋩",
+                    "eog": "󰋩", "org.gnome.eog": "󰋩", "loupe": "󰋩", "org.gnome.loupe": "󰋩",
+                    "ristretto": "󰋩", "feh": "󰋩", "imv": "󰋩", "gwenview": "󰋩",
+                    "org.kde.gwenview": "󰋩",
+                    // Audio edit
+                    "audacity": "", "org.audacityteam.audacity": "", "tenacity": "", "com.github.tenacityteam.tenacity": "",
+                    // Chat
+                    "telegram-desktop": "", "org.telegram.desktop": "", "telegramdesktop": "",
+                    // Chat
+                    "signal": "", "signal-desktop": "", "org.signal.signal": "", "element": "",
+                    "im.riot.element": "", "io.element.element": "", "cinny": "", "io.cinny.cinny": "",
+                    "session": "",
+                    // Chat
+                    "teams": "󰊻", "microsoft-teams": "󰊻", "teams-for-linux": "󰊻",
+                    // Mail
+                    "thunderbird": "", "org.mozilla.thunderbird": "", "betterbird": "", "eu.betterbird.betterbird": "",
+                    "geary": "", "org.gnome.geary": "", "evolution": "", "org.gnome.evolution": "",
+                    // Discord clients
+                    "discord": "", "vesktop": "", "dev.vencord.vesktop": "", "equibop": "",
+                    "org.equibop.equibop": "", "discordcanary": "",
+                    // Gaming
+                    "steam": "", "steamwebhelper": "", "lutris": "", "net.lutris.lutris": "",
+                    "heroic": "", "com.heroicgameslauncher.hgl": "", "retroarch": "", "org.libretro.retroarch": "",
+                    "dolphin-emu": "", "org.dolphin_emu.dolphin_emu": "", "ryujinx": "", "org.ryujinx.ryujinx": "",
+                    "ppsspp": "", "duckstation": "", "pcsx2": "",
+                    // Minecraft
+                    "prismlauncher": "", "org.prismlauncher.prismlauncher": "", "minecraft-launcher": "", "multimc": "",
+                    "org.multimc.multimc": "",
+                    // Wine
+                    "bottles": "󰡔", "com.usebottles.bottles": "󰡔",
+                    // AI
+                    "chatgpt": "", "jan": "", "jan-ai": "", "lm-studio": "",
+                    "lmstudio": "", "gpt4all": "", "anythingllm": "",
                     "": ""
                 };
                 return map[c] || "\uF128";
@@ -164,7 +352,7 @@ ModulePill {
                     // Empty workspace marker (configurable: number/dot/letter).
                     // Occupied workspaces keep the app-icon row below; the
                     // number text only appears when there is nothing else.
-                    visible: mod.compact || wsPill.appIconList.length === 0
+                    visible: wsPill.appIconList.length === 0
 
                     readonly property color markerColor: index === bar.wsModel.activeIndex ? mod.wsActiveText
                         : (wsPill.isHovered ? mod.slotMarker : (wsPill.stateLabel === "occupied" ? mod.slotMarker : mod.slotMarkerEmpty))
@@ -199,23 +387,31 @@ ModulePill {
                 Row {
                     anchors.centerIn: parent
                     spacing: bar.s(2)
-                    visible: !mod.compact && wsPill.appIconList.length > 0
+                    visible: wsPill.showIcons
                     Repeater {
                         model: wsPill.appIconList
                         delegate: Text {
                             text: modelData
                             font.family: bar.fontFamily
-                            font.pixelSize: bar.s(12)
+                            // Vertical pills scale the glyph down to the pill
+                            // width so a thin bar keeps at least one icon inside.
+                            font.pixelSize: mod.compact
+                                ? Math.min(bar.s(12), Math.max(bar.s(8), wsPill.width - bar.s(2)))
+                                : bar.s(12)
                             color: wsPill.wsIndex === bar.wsModel.activeIndex ? mod.wsActiveText : mod.slotMarker
                         }
                     }
                     Text {
-                        text: wsPill.hasManyIcons ? "+" + (wsPill.appClassList.length - 2) : ""
+                        // Horizontal bars show the overflow count; a vertical
+                        // pill only fits a compact "+".
+                        text: mod.compact
+                            ? (wsPill.appClassList.length > wsPill.appIconList.length ? "+" : "")
+                            : (wsPill.hasManyIcons ? "+" + (wsPill.appClassList.length - 2) : "")
                         font.family: bar.fontFamily
                         font.pixelSize: bar.s(10)
                         font.weight: Font.Black
                         color: index === bar.wsModel.activeIndex ? mod.wsActiveText : mod.slotMarkerEmpty
-                        visible: wsPill.hasManyIcons
+                        visible: text !== ""
                     }
                 }
             }

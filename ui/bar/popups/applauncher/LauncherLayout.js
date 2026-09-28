@@ -34,8 +34,8 @@ function _clamp(v, lo, hi) {
 // ── Normalización ─────────────────────────────────────────────────────────
 // Acepta cualquier objeto (o null) y devuelve SIEMPRE una config válida:
 //   position ∈ {center,top,bottom,left,right}
-//   width    480..1600   · maxApps 4..20 · margin 0..200 · avoidBar bool
-//   rowHeight 40..80 · showIcons bool · align left|center|right
+//   width    320..1600   · maxApps 4..20 · margin 0..200 · avoidBar bool
+//   rowHeight 28..80 · showIcons bool · align left|center|right
 //   margin -200..200 · radius 0..28 · borderWidth 0..4 · borderColor rol de paleta
 // Keys desconocidas se ignoran; valores no numéricos caen a los defaults.
 function normalize(raw) {
@@ -60,14 +60,14 @@ function normalize(raw) {
 
     return {
         position: pos,
-        width: _clamp(Math.round(width), 480, 1600),
+        width: _clamp(Math.round(width), 320, 1600),
         maxApps: _clamp(Math.round(maxApps), 4, 20),
         // Margen negativo: permite que el panel salga por el lado anclado.
         margin: _clamp(Math.round(margin), -200, 200),
         avoidBar: raw.avoidBar === undefined ? d.avoidBar : !!raw.avoidBar,
         // Solo se acepta un booleano real; cualquier otra cosa cae al default.
         showIcons: typeof raw.showIcons === "boolean" ? raw.showIcons : d.showIcons,
-        rowHeight: _clamp(Math.round(rowHeight), 40, 80),
+        rowHeight: _clamp(Math.round(rowHeight), 28, 80),
         // Alineación del contenido. Compat: el booleano viejo centerAlign:true
         // se migra a "center" cuando no hay un align válido.
         align: ALIGNS.indexOf(String(raw.align === undefined ? "" : raw.align)) !== -1

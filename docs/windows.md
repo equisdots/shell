@@ -15,6 +15,9 @@ Windows mounted by `Shell.qml`:
   `docs/bar.md`.
 - **`ui/Floating.qml`** — floating layer host (notifications, quick actions,
   OSD-like surfaces).
+- **`ui/Mascots.qml`** — click-through overlay (0x0 input mask): the top island
+  that morphs into a dock while the launcher is open, with cursor-following
+  chibi mascots that react to window open/close events.
 - **`ui/widgets/Widgets.qml`** — the desktop-widget system (one `WidgetLoader`
   per screen, Bottom-layer windows). See `docs/desktop-widgets.md`.
 - **`Lock.qml`** (repo root, alternate entry) — PAM session lock (`WlSessionLock`).
@@ -43,7 +46,7 @@ dispatch through `qs_manager.sh` → `Main.qml` → `core/WindowRegistry.js`:
 | Calendar | `ui/timex/TimexPopup.qml` (timex subsystem) | SUPER + S | Top center |
 | Music Player | `ui/bar/popups/music/MusicPopup.qml` | SUPER + M | Top left |
 | Davincix (wallpaper) | `ui/panels/davincix/DavincixPicker.qml` | SUPER + W | Center |
-| Guide / About | `ui/bar/popups/guide/GuidePopup.qml` | SUPER + H | Center |
+| About | Settings panel, About tab (`ui/bar/editor/GuidePage.qml`) | SUPER + H | Center |
 | System Monitor | `ui/bar/popups/system-monitor/SystemMonitor.qml` | SUPER + I | Center |
 | Updater | `ui/bar/popups/updater/UpdaterPopup.qml` | SUPER + U | Center |
 | Quick Notes | `ui/panels/quicknotes/QuickNotes.qml` | SUPER + Y | Center |
@@ -79,6 +82,33 @@ same config: each island capsule (`ui/bar/Zone.qml`) and the optional strip
 (`Bar.qml`); its surface is padded and input-masked so the padding does not
 swallow clicks. Notifications and the lock screen are separate surfaces and
 are not covered.
+
+## Mascots
+
+`settings.json → mascots` (`enabled`, `size`, `species`, `count`, `position`)
+drives the standalone module in `ui/mascots/` (wrapped by `ui/Mascots.qml`,
+which injects the live palette and paths): a small island, tinted from the
+active palette, that fades away while the app launcher is open (the island
+becomes the dock, detected through Main's `current_widget` run file) or when
+any widget overlaps it. `position` moves the island to any of the nine anchors
+(top/center/bottom × left/center/right); the widget dock always unfolds from
+the island toward the screen centre (upwards when the island sits at the
+bottom). The mascots stay in the island and their eyes follow the cursor
+(position polled with `hyprctl cursorpos`, look offset proportional to the eye
+size); hovering the island surprises them and they calm down on leave. They
+react with staggered random moods (angry, surprised, happy, sleepy) when
+windows (`openwindow` / `closewindow` from Hyprland socket2) or widgets open
+and close, and fall asleep after 30 s idle. `count` shows 1, 2 or 3 mascots
+(the island widens or narrows around them). `species` picks the look:
+`flame` (default little fire), `cat` (pointy ears with inner ear, forehead
+stripes, whiskers, pink nose), `dog` (floppy ears, eye patch, muzzle and
+tongue when happy), `eyes` (just a pair of manga eyes with lash, lids and
+tracking irises) or `mixed` (cat / dog / eyes). Clicking the island unfolds
+`MascotDock`: a rectangular panel with three widget miniatures per page
+(chevrons + page dots); picking one launches that widget through the shell's
+`qs_manager.sh open <id>`. Only the island and the open dock capture input;
+the rest of the surface stays click-through. Edited from the editor's
+Theme → Mascots page (position pad included).
 
 ## Glassmorphism
 

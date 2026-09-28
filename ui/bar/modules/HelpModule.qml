@@ -14,7 +14,10 @@ ModulePill {
     idleRole: "text"
     hoverRole: "teal"
 
-    onClicked: Quickshell.execDetached(["bash", "-c", "~/.config/hypr/scripts/qs_manager.sh toggle guide"])
+    // Opens the unified settings panel on the About tab (same page as the
+    // "About" entry at the end of the rail). SUPER+H does the same; the old
+    // standalone guide popup was removed.
+    onClicked: Quickshell.execDetached(["bash", "-c", "~/.config/hypr/scripts/qs_manager.sh toggle bar-editor about"])
 
     Text {
         text: mod.glyph("󰅖")

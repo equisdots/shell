@@ -20,7 +20,7 @@ Item {
     property int tick: 0
     property string doctorOut: ""
     property bool copiedFlash: false
-    property string infoScript: Quickshell.env("HOME") + "/.config/hypr/scripts/quickshell/ui/bar/popups/guide/sysinfo.sh"
+    property string infoScript: Quickshell.env("HOME") + "/.config/hypr/scripts/quickshell/ui/bar/editor/sysinfo.sh"
 
     function val(key) {
         root.tick;
@@ -368,6 +368,12 @@ Item {
                                         delegate: Row {
                                             required property var modelData
                                             visible: !modelData.opt || root.val(modelData.k) !== "—"
+                                            // Explicit width: the value Text binds to
+                                            // parent.width, and without it the Row
+                                            // only had an implicit width built from
+                                            // its children (circular binding -> the
+                                            // value text collapsed to 0 px).
+                                            width: parent.width
                                             height: bar.s(22)
                                             spacing: bar.s(10)
                                             Text {

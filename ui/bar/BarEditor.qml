@@ -46,11 +46,15 @@ Item {
     property var palettes: ([])
     // Palette list helpers: entries carry `category` ("x" built-in, "custom"
     // community/terminal packs, "user" created here); missing = "x".
-    function palettesOf(category) {
+    function palettesOf(category, query) {
+        let q = String(query || "").trim().toLowerCase();
         let out = [];
         for (let i = 0; i < root.palettes.length; i++) {
             let p = root.palettes[i];
-            if (p && String(p.category || "x") === category) out.push(p);
+            if (!p || String(p.category || "x") !== category) continue;
+            if (q !== "" && String(p.name).toLowerCase().indexOf(q) === -1
+                && String(p.slug).toLowerCase().indexOf(q) === -1) continue;
+            out.push(p);
         }
         return out;
     }
@@ -108,7 +112,7 @@ Item {
             "bar": "d_engine", "engine": "d_engine", "launcher": "d_launcher",
             "hyprland": "d_hyprland", "idle": "d_idle", "gpu": "d_gpu",
             "notifications": "d_notifications", "guide": "d_guide", "about": "d_guide",
-            "shadows": "d_shadows", "glass": "d_glass", "palette": "d_palette"
+            "shadows": "d_shadows", "glass": "d_glass", "palette": "d_palette", "mascots": "d_mascots"
         };
         let page = map[root.activeMode] !== undefined ? map[root.activeMode] : root.activeMode;
         if (root.navIndex(page) === -1) return;
@@ -688,7 +692,8 @@ Item {
             "d_animations":    "editor/AnimationsPage.qml",
             "d_input":         "editor/InputPage.qml",
             "d_shadows":       "editor/ShadowsPage.qml",
-            "d_glass":         "editor/GlassPage.qml"
+            "d_glass":         "editor/GlassPage.qml",
+            "d_mascots":       "editor/MascotsPage.qml"
         };
         return map[id] || "";
     }
@@ -717,7 +722,8 @@ Item {
             "d_animations":    animationsLoader,
             "d_input":         inputLoader,
             "d_shadows":       dShadowsLoader,
-            "d_glass":         dGlassLoader
+            "d_glass":         dGlassLoader,
+            "d_mascots":       dMascotsLoader
         };
         return map[id] || null;
     }
@@ -1671,6 +1677,16 @@ Item {
                         property real slideY: visible ? 0 : root.s(10)
                         Behavior on slideY { NumberAnimation { duration: 250; easing.type: Easing.OutQuart } }
                         transform: Translate { y: dGlassLoader.slideY }
+                        Behavior on opacity { NumberAnimation { duration: 250 } }
+                    }
+                    Loader {
+                        id: dMascotsLoader
+                        anchors.fill: parent
+                        visible: root.currentPage === "d_mascots"
+                        opacity: visible ? 1.0 : 0.0
+                        property real slideY: visible ? 0 : root.s(10)
+                        Behavior on slideY { NumberAnimation { duration: 250; easing.type: Easing.OutQuart } }
+                        transform: Translate { y: dMascotsLoader.slideY }
                         Behavior on opacity { NumberAnimation { duration: 250 } }
                     }
                     Loader {
