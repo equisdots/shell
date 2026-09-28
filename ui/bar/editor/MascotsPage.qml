@@ -141,7 +141,7 @@ Item {
                         OptionCard {
                             Layout.fillWidth: true
                             bar: root.bar
-                            icon: "\uf0238"
+                            icon: "󰈸"
                             label: "Flame"
                             active: root.mSpecies !== "cat" && root.mSpecies !== "dog"
                                 && root.mSpecies !== "eyes" && root.mSpecies !== "mixed"
@@ -150,7 +150,7 @@ Item {
                         OptionCard {
                             Layout.fillWidth: true
                             bar: root.bar
-                            icon: "\uf011b"
+                            icon: "󰄛"
                             label: "Cats"
                             active: root.mSpecies === "cat"
                             onActivated: { root.mSpecies = "cat"; root.set("species", "cat"); }
@@ -158,7 +158,7 @@ Item {
                         OptionCard {
                             Layout.fillWidth: true
                             bar: root.bar
-                            icon: "\uf0a43"
+                            icon: "󰩃"
                             label: "Dogs"
                             active: root.mSpecies === "dog"
                             onActivated: { root.mSpecies = "dog"; root.set("species", "dog"); }
@@ -166,7 +166,7 @@ Item {
                         OptionCard {
                             Layout.fillWidth: true
                             bar: root.bar
-                            icon: "\uf0208"
+                            icon: "󰈈"
                             label: "Eyes"
                             active: root.mSpecies === "eyes"
                             onActivated: { root.mSpecies = "eyes"; root.set("species", "eyes"); }
@@ -174,7 +174,7 @@ Item {
                         OptionCard {
                             Layout.fillWidth: true
                             bar: root.bar
-                            icon: "\uf03e9"
+                            icon: "󰏩"
                             label: "Mixed"
                             active: root.mSpecies === "mixed"
                             onActivated: { root.mSpecies = "mixed"; root.set("species", "mixed"); }
@@ -255,7 +255,7 @@ Item {
                         OptionCard {
                             Layout.fillWidth: true
                             bar: root.bar
-                            icon: "\uf0b3a"
+                            icon: "󰬺"
                             label: "One"
                             active: root.mCount === 1
                             onActivated: { root.mCount = 1; root.set("count", 1); }
@@ -263,7 +263,7 @@ Item {
                         OptionCard {
                             Layout.fillWidth: true
                             bar: root.bar
-                            icon: "\uf0b3b"
+                            icon: "󰬻"
                             label: "Two"
                             active: root.mCount === 2
                             onActivated: { root.mCount = 2; root.set("count", 2); }
@@ -271,7 +271,7 @@ Item {
                         OptionCard {
                             Layout.fillWidth: true
                             bar: root.bar
-                            icon: "\uf0b3c"
+                            icon: "󰬼"
                             label: "Three"
                             active: root.mCount === 3
                             onActivated: { root.mCount = 3; root.set("count", 3); }

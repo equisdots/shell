@@ -160,7 +160,7 @@ Item {
 
                 Text {
                     anchors.centerIn: parent
-                    text: "\uf0156"
+                    text: "󰅖"
                     font.family: "Hack Nerd Font"
                     font.pixelSize: dock.s(14)
                     color: closeMa.containsMouse ? dock.accent : dock.cText
@@ -200,6 +200,15 @@ Item {
                         id: card
                         required property int index
                         required property var modelData
+                        // Optional `thumb` (path/URL): when present it replaces
+                        // the icon once the image loads (e.g. a wallpaper
+                        // preview); `thumbReady` is the single switch used by
+                        // both the image and the glyph fallback.
+                        readonly property string thumbUrl: {
+                            const v = dock.field(card.modelData, "thumb");
+                            return (typeof v === "string") ? v : "";
+                        }
+                        readonly property bool thumbReady: card.thumbUrl !== "" && thumbImg.status === Image.Ready
                         width: dock.cardW
                         height: strip.height
                         radius: dock.s(10)
@@ -220,14 +229,46 @@ Item {
                             width: parent.width - dock.s(12)
                             spacing: dock.s(6)
 
-                            Text {
+                            // Icon area: `thumb` thumbnail when it is present
+                            // and loaded, glyph fallback otherwise.
+                            Item {
                                 width: parent.width
-                                horizontalAlignment: Text.AlignHCenter
-                                text: dock.field(card.modelData, "icon")
-                                font.family: "Hack Nerd Font"
-                                font.pixelSize: dock.s(24)
-                                color: cardMa.containsMouse ? dock.accent : dock.cText
-                                Behavior on color { ColorAnimation { duration: 150 } }
+                                height: card.thumbReady ? thumbFrame.height : glyphText.implicitHeight
+
+                                Rectangle {
+                                    id: thumbFrame
+                                    anchors.centerIn: parent
+                                    visible: card.thumbReady
+                                    width: dock.s(52) + 2
+                                    height: dock.s(30) + 2
+                                    radius: dock.s(6)
+                                    color: "transparent"
+                                    border.width: 1
+                                    border.color: Qt.alpha(dock.cSurface1, 0.8)
+
+                                    Image {
+                                        id: thumbImg
+                                        anchors.centerIn: parent
+                                        source: card.thumbUrl
+                                        width: dock.s(52)
+                                        height: dock.s(30)
+                                        sourceSize.width: 160
+                                        asynchronous: true
+                                        fillMode: Image.PreserveAspectCrop
+                                        visible: status === Image.Ready
+                                    }
+                                }
+
+                                Text {
+                                    id: glyphText
+                                    anchors.centerIn: parent
+                                    visible: !card.thumbReady
+                                    text: dock.field(card.modelData, "icon")
+                                    font.family: "Hack Nerd Font"
+                                    font.pixelSize: dock.s(24)
+                                    color: cardMa.containsMouse ? dock.accent : dock.cText
+                                    Behavior on color { ColorAnimation { duration: 150 } }
+                                }
                             }
                             Text {
                                 width: parent.width
@@ -269,7 +310,7 @@ Item {
 
                 Text {
                     anchors.centerIn: parent
-                    text: "\uf0141"
+                    text: "󰅁"
                     font.family: "Hack Nerd Font"
                     font.pixelSize: dock.s(18)
                     color: dock.cText
@@ -298,7 +339,7 @@ Item {
 
                 Text {
                     anchors.centerIn: parent
-                    text: "\uf0142"
+                    text: "󰅂"
                     font.family: "Hack Nerd Font"
                     font.pixelSize: dock.s(18)
                     color: dock.cText

@@ -250,6 +250,13 @@ ModulePill {
                     // Archives
                     "ark": "", "org.kde.ark": "", "file-roller": "", "org.gnome.file-roller": "",
                     "engrampa": "", "xarchiver": "",
+                    // File managers
+                    "nautilus": "", "org.gnome.nautilus": "", "org.gnome.files": "", "gnome-files": "",
+                    "files": "", "nemo": "", "org.kde.dolphin": "", "dolphin": "",
+                    "thunar": "", "pcmanfm": "", "pcmanfm-qt": "", "caja": "",
+                    "krusader": "", "doublecmd": "", "double-commander": "", "mc": "",
+                    "ranger": "", "nnn": "", "yazi": "", "lf": "",
+                    "lfmanager": "", "spacefm": "", "sunflower": "",
                     // System
                     "mission-center": "", "io.missioncenter.missioncenter": "", "gnome-system-monitor": "", "org.gnome.systemmonitor": "",
                     "resources": "", "plasma-systemmonitor": "", "qps": "", "ksysguard": "",
@@ -323,7 +330,15 @@ ModulePill {
                     "lmstudio": "", "gpt4all": "", "anythingllm": "",
                     "": ""
                 };
-                return map[c] || "\uF128";
+                // Explicit map wins; otherwise a conservative file-manager
+                // heuristic (folder glyph) for unmapped classes. "dolphin"
+                // is deliberately excluded so dolphin-emu keeps its explicit
+                // gaming glyph above; everything else keeps the "?" fallback.
+                if (map[c]) return map[c];
+                if (c.indexOf("nautilus") !== -1 || c.indexOf("folder") !== -1
+                    || c.indexOf("explorer") !== -1 || c.indexOf("file-manager") !== -1
+                    || c.indexOf("filemanager") !== -1) return "";
+                return "\uF128";
             }
 
             width: mod.compact
