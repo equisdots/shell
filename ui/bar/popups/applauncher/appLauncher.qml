@@ -47,6 +47,9 @@ Item {
     property real targetMasterX: geo.x
     property real targetMasterY: geo.y
 
+    // Outer radius for the host-drawn panel shadow (launcher bg radius).
+    readonly property real shadowRadius: s(lcfg.radius)
+
     function syncMasterBox() {
         if (typeof masterWindow === "undefined") return;
         masterWindow.animW = window.targetMasterWidth;
@@ -254,7 +257,7 @@ Item {
 
         // Bordes configurables (radius/borderWidth/borderColor de la paleta).
         radius: window.s(window.lcfg.radius)
-        color: Qt.rgba(window.base.r, window.base.g, window.base.b, 1.0)
+        color: Qt.rgba(window.base.r, window.base.g, window.base.b, window.base.a)
         border.color: window[window.lcfg.borderColor] !== undefined ? window[window.lcfg.borderColor] : window.surface1
         border.width: window.s(window.lcfg.borderWidth)
         clip: true

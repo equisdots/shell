@@ -151,6 +151,8 @@ Notes:
 | Modules (`d_modules`)         | `bar.modules.<id>.*`              | modules read `bar.moduleConfig` |
 | Workspaces (`d_workspaces`)   | `bar.workspacesMarker*`           | `WorkspacesModule.qml`       |
 | Palette (`d_palette`, Theme)  | `bar.palette`, `bar.border*`      | `Colors.qml`, `colors.lua`   |
+| Shadows (`d_shadows`, Theme)  | `shadows.*`                       | `ui/Main.qml`, `Bar.qml`/`Zone.qml` |
+| Glass (`d_glass`, Theme)      | `glass.*`                         | `Colors.qml`, `Theme.qml`, hyprland `layers.lua` |
 
 ---
 

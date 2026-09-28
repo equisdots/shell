@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Effects
 import Quickshell
 import "BarLayout.js" as BarLayout
 
@@ -111,6 +112,20 @@ Item {
     // rounded panel that hugs the zone's islands WITHOUT unifying them (each
     // ModulePill keeps its own fill on top). Not drawn when the zone is
     // unified (unify already provides the single background).
+    // Drop shadow for the zone capsule (same shell-wide "shadows" config; the
+    // bar pads its surface so this is never clipped).
+    RectangularShadow {
+        visible: zoneContainer.visible && bar.shadowOn === true
+        anchors.centerIn: parent
+        width: zoneContainer.width
+        height: zoneContainer.height
+        radius: zoneContainer.radius
+        blur: bar.shadowBlur
+        spread: bar.shadowSpread
+        offset: Qt.vector2d(bar.shadowOffX, bar.shadowOffY)
+        color: Qt.rgba(0, 0, 0, bar.shadowOpacity)
+        opacity: zoneContainer.opacity
+    }
     Rectangle {
         id: zoneContainer
         visible: zoneData.zoneBg !== "" && !zoneRoot.unified && zoneRoot.ready
@@ -123,7 +138,7 @@ Item {
         opacity: 0
         color: {
             let c = colors[zoneData.zoneBg] || colors.surface0;
-            return Qt.rgba(c.r, c.g, c.b, zoneData.zoneBgSolid === true ? 1.0 : 0.35);
+            return Qt.rgba(c.r, c.g, c.b, (zoneData.zoneBgSolid === true ? 1.0 : 0.35) * colors.glassAlpha);
         }
         Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
         Behavior on color { ColorAnimation { duration: 200 } }
@@ -131,12 +146,21 @@ Item {
     }
 
     // --- unified pill behind the whole zone ---------------------------------
+    RectangularShadow {
+        visible: unifyPill.visible && bar.shadowOn === true
+        anchors.fill: unifyPill
+        radius: unifyPill.radius
+        blur: bar.shadowBlur
+        spread: bar.shadowSpread
+        offset: Qt.vector2d(bar.shadowOffX, bar.shadowOffY)
+        color: Qt.rgba(0, 0, 0, bar.shadowOpacity)
+    }
     Rectangle {
         id: unifyPill
         visible: zoneRoot.unified && zoneRoot.zoneFillMode !== "off"
         anchors.fill: parent
         radius: isHorizontal ? bar.pillRadius(bar.pillHeight) : bar.pillRadius(bar.pillWidth)
-        color: colors.surface0
+        color: Qt.rgba(colors.surface0.r, colors.surface0.g, colors.surface0.b, colors.glassAlpha)
         border.width: zoneData.borderWidth || 0
         border.color: colors[zoneData.borderColor] || colors.surface1
         Behavior on border.width { NumberAnimation { duration: 200 } }

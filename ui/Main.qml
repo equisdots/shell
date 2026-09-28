@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Window
 import QtQuick.Controls
+import QtQuick.Effects
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
@@ -187,6 +188,26 @@ PanelWindow {
     property real globalUiScale: 1.0
 
     // =========================================================
+    // --- PANEL/POPUP SHADOWS (settings.shadows) ---
+    // Drawn in QML: Hyprland does not decorate layer-shell surfaces. Values
+    // scale with the UI scale; each panel may expose its own `shadowRadius`
+    // (e.g. the launcher) and otherwise the global radius is used.
+    // shadowSettings is refreshed by the settings.json watcher below, so both
+    // page edits and external edits apply live.
+    // =========================================================
+    property var shadowSettings: ({})
+    readonly property real shadowUiScale: masterWindow.screen
+        ? Registry.getScale(masterWindow.screen.width, masterWindow.screen.height, masterWindow.globalUiScale)
+        : 1.0
+    readonly property bool shadowsEnabled: shadowSettings.enabled !== false
+    readonly property real shadowBlur: (shadowSettings.blur !== undefined ? shadowSettings.blur : 26) * shadowUiScale
+    readonly property real shadowSpread: (shadowSettings.spread !== undefined ? shadowSettings.spread : 0) * shadowUiScale
+    readonly property real shadowOffsetX: (shadowSettings.offsetX !== undefined ? shadowSettings.offsetX : 0) * shadowUiScale
+    readonly property real shadowOffsetY: (shadowSettings.offsetY !== undefined ? shadowSettings.offsetY : 6) * shadowUiScale
+    readonly property real shadowRadius: (shadowSettings.radius !== undefined ? shadowSettings.radius : 18) * shadowUiScale
+    readonly property real shadowOpacity: shadowSettings.opacity !== undefined ? shadowSettings.opacity : 0.5
+
+    // =========================================================
     // --- DAEMON: NOTIFICATION HANDLING
     // =========================================================
     ListModel { id: globalNotificationHistory }
@@ -280,6 +301,8 @@ PanelWindow {
                         if (parsed.uiScale !== undefined && masterWindow.globalUiScale !== parsed.uiScale) {
                             masterWindow.globalUiScale = parsed.uiScale;
                         }
+                        masterWindow.shadowSettings = (parsed.shadows && typeof parsed.shadows === "object")
+                            ? parsed.shadows : {};
                     }
                 } catch (e) {
                     console.log("Error parsing settings.json in main.qml:", e);
@@ -409,9 +432,33 @@ PanelWindow {
     }
 
     // =========================================================
+    // --- PANEL/POPUP SHADOW ---
+    // Sits behind the animated box and follows it (the box's Behaviors are
+    // read through the bindings, so the shadow morphs with it). Rectangular
+    // corner radius from the current panel's `shadowRadius` when defined.
+    // =========================================================
+    RectangularShadow {
+        id: panelShadow
+        visible: masterWindow.shadowsEnabled && masterWindow.isVisible && widgetStack.currentItem !== null
+        x: widgetBox.x
+        y: widgetBox.y
+        width: widgetBox.width
+        height: widgetBox.height
+        radius: (widgetStack.currentItem && widgetStack.currentItem.shadowRadius !== undefined)
+                ? widgetStack.currentItem.shadowRadius
+                : masterWindow.shadowRadius
+        blur: masterWindow.shadowBlur
+        spread: masterWindow.shadowSpread
+        offset: Qt.vector2d(masterWindow.shadowOffsetX, masterWindow.shadowOffsetY)
+        color: Qt.rgba(0, 0, 0, masterWindow.shadowOpacity)
+        opacity: widgetBox.opacity
+    }
+
+    // =========================================================
     // --- ANIMATED BOUNDING BOX
     // =========================================================
     Item {
+        id: widgetBox
         x: masterWindow.animX
         y: masterWindow.animY
         width:  masterWindow.animW

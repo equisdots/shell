@@ -102,8 +102,11 @@ Item {
 
     // --- helpers (verbatim port from dock/Colors.qml) --------------------------
     // Normalize a "#rrggbb" / "#rrggbbaa" string into {r,g,b} 0..255.
+    // Colors stringify with alpha as "#aarrggbb": drop the alpha prefix or it
+    // would be parsed as red (glass base bug).
     function toRGB(hex) {
         let h = String(hex || "").replace("#", "").trim();
+        if (h.length === 8) h = h.substring(2);
         if (h.length >= 6) h = h.substring(0, 6);
         let n = parseInt(h, 16);
         if (isNaN(n)) return { r: 0, g: 0, b: 0 };
@@ -155,7 +158,14 @@ Item {
         // (they can differ from color0/color7), derive everything else from them.
         root.background = b.background || root.color0;
         root.foreground = b.foreground || root.color7;
-        root.base = root.background;
+        // Glass: `base` keeps alpha so the layer-rule backdrop blur shows
+        // through; opaque exactly as before when the feature is off.
+        if (root.glassOn) {
+            const bg = Qt.color(root.background);
+            root.base = Qt.rgba(bg.r, bg.g, bg.b, root.glassOpacity);
+        } else {
+            root.base = root.background;
+        }
         root.mantle = root.mix(root.base, "#000000", 0.15);
         root.crust = root.mix(root.base, "#000000", 0.30);
         root.text = root.foreground;
@@ -200,6 +210,13 @@ Item {
     property string lastSettingsJson: ""
     property string lastPaletteKey: ""
 
+    // Glassmorphism (settings.json "glass"): same contract as ui/bar/Colors.qml.
+    property var glassSettings: ({})
+    readonly property bool glassOn: glassSettings.enabled === true
+    readonly property real glassOpacity: glassSettings.opacity !== undefined
+        ? Math.max(0.2, Math.min(1.0, glassSettings.opacity)) : 0.85
+    readonly property real glassAlpha: root.glassOn ? root.glassOpacity : 1.0
+
     // Single choke point for settings.json content (called by the reader and
     // after every directory-watcher wakeup).
     function applySettingsText(txt) {
@@ -220,6 +237,11 @@ Item {
         // Canonical key: "bar" (pre-0.2 "dock"/"topbar" configs are migrated
         // once by BarLayout.getBar(); readers never need a second key).
         let bar = (parsed.bar && typeof parsed.bar === "object") ? parsed.bar : {};
+        let prevGlass = JSON.stringify(root.glassSettings);
+        root.glassSettings = (parsed.glass && typeof parsed.glass === "object") ? parsed.glass : {};
+        // Force a palette re-apply when glass changed (content guard would
+        // otherwise skip an unchanged palette file).
+        if (JSON.stringify(root.glassSettings) !== prevGlass) root.lastPaletteKey = "";
         if (bar.font) root.fontFamily = String(bar.font);
         let want = bar.palette ? String(bar.palette).toLowerCase() : "x";
         want = want.replace(/[^a-zA-Z0-9_-]/g, "");

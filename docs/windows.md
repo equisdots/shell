@@ -62,6 +62,42 @@ Widget geometry is defined in `core/WindowRegistry.js` (`getLayout()` +
 `positionLayout()`), with responsive scaling based on screen size and the user
 UI scale.
 
+## Popup shadows
+
+`Main.qml` draws a drop shadow behind the active widget with
+`RectangularShadow` (QtQuick.Effects). Hyprland does not decorate layer-shell
+surfaces, so `decoration:shadow` never reaches the shell's popups/menus: the
+shadow is drawn in QML and follows the animated box (position, size, morph and
+fade). Panels may expose `shadowRadius` to match their own corners
+(`BarEditor`, `appLauncher`); the rest use the global one.
+
+Config: `settings.json → shadows` (`enabled`, `blur`, `spread`, `offsetX`,
+`offsetY`, `opacity`, `radius`; scaled by the UI scale). Edited from the
+editor's **Theme → Shadows** page (`ui/bar/editor/ShadowsPage.qml`) and applied
+live (settings watcher; no reload). The bar draws its own shadows from the
+same config: each island capsule (`ui/bar/Zone.qml`) and the optional strip
+(`Bar.qml`); its surface is padded and input-masked so the padding does not
+swallow clicks. Notifications and the lock screen are separate surfaces and
+are not covered.
+
+## Glassmorphism
+
+`settings.json → glass` (`enabled`, `opacity`) makes the shell backgrounds
+translucent so the compositor backdrop blur shows through — the same glass
+look as the Hyprland windows. Two pieces:
+
+- **Backdrop blur (Hyprland)**: `hyprland/config/layers.lua` registers
+  `hl.layer_rule` entries with `blur = true` + `ignore_alpha` for the shell
+  namespaces (`qs-master`, `quickshell` bar, `qs-floating-overlay`,
+  `qs-popups`, `qs-widget-*`). Strength comes from the Hyprland tab
+  (Blur Size / Passes). `ignore_alpha` keeps fully transparent regions (host
+  padding, shadow margins) from drawing blurred rectangles.
+- **Transparency (QML)**: `ui/bar/Colors.qml` and `core/Theme.qml` apply the
+  configured opacity to `base` (the panel background); cards and pills that use
+  `surface*` stay opaque, so text stays legible. Edited from the editor's
+  **Theme → Glass** page (`ui/bar/editor/GlassPage.qml`), applied live. With
+  glass off, `base` is byte-identical to before (no visual change).
+
 ## Wallpaper subsystem (davincix)
 
 The wallpaper picker is the frontend of **davincix**, which lives in its own

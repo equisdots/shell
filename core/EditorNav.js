@@ -48,7 +48,9 @@ var GROUPS = [
         icon: "✦",
         items: [
             { id: "d_palette",    icon: "✦", label: "Palette" },
-            { id: "d_animations", icon: "󰔟", label: "Animations" }
+            { id: "d_animations", icon: "󰔟", label: "Animations" },
+            { id: "d_shadows",    icon: "󰹹", label: "Shadows" },
+            { id: "d_glass",      icon: "󰖌", label: "Glass" }
         ]
     },
     {

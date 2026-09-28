@@ -38,6 +38,13 @@ Item {
 
     // Latest parsed "bar" section of settings.json (border overrides, etc.)
     property var barSettings: ({})
+    // Glassmorphism config (settings.json "glass"): when enabled, `base` carries
+    // alpha so the compositor backdrop blur (hyprland layers.lua) shows through.
+    property var glassSettings: ({})
+    readonly property bool glassOn: glassSettings.enabled === true
+    readonly property real glassOpacity: glassSettings.opacity !== undefined
+        ? Math.max(0.2, Math.min(1.0, glassSettings.opacity)) : 0.85
+    readonly property real glassAlpha: root.glassOn ? root.glassOpacity : 1.0
     // Latest explicit per-palette role overrides (borderActive/borderInactive…)
     property var _roles: ({})
     // Content guard for the palette file watcher: text of the last applied
@@ -111,9 +118,12 @@ Item {
     property color workspaceActive: "transparent"
 
     // --- helpers ------------------------------------------------------------------
-    // Normalize a "#rrggbb" / "#rrggbbaa" string into {r,g,b} 0..255.
+    // Normalize a color or "#rgb"/"#rrggbb"/"#aarrggbb" string into {r,g,b}
+    // 0..255. QML stringifies colors with alpha as "#aarrggbb", so the alpha
+    // prefix must be dropped or it would be parsed as red (glass base bug).
     function toRGB(hex) {
         let h = String(hex || "").replace("#", "").trim();
+        if (h.length === 8) h = h.substring(2);
         if (h.length >= 6) h = h.substring(0, 6);
         let n = parseInt(h, 16);
         if (isNaN(n)) return { r: 0, g: 0, b: 0 };
@@ -154,10 +164,31 @@ Item {
         return valid(r.borderInactive) ? r.borderInactive.toLowerCase() : root.hexOf(root.color8);
     }
 
-    // Push the effective border colors to the compositor LIVE (no window
-    // restart) through the core adapter. Only touches the border option.
+    // Effective border SPEC for a given border ("active"|"inactive"):
+    // { hex, alpha, second, angle }. Solid when `second` is empty; otherwise a
+    // two-stop gradient (custom mode + gradient flag). colors.lua builds the
+    // same spec at Hyprland config load from the same settings keys.
+    function borderSpec(which) {
+        const active = which === "active";
+        const spec = { hex: root.borderHex(which), alpha: active ? "ee" : "aa", second: "", angle: 45 };
+        const d = root.barSettings || {};
+        const valid = (s) => typeof s === "string" && /^#[0-9a-fA-F]{6}$/.test(s);
+        if (d.borderFollowPalette === false) {
+            const gradOn = active ? d.borderGradientActive === true : d.borderGradientInactive === true;
+            const second = active ? d.borderActive2 : d.borderInactive2;
+            if (gradOn && valid(second)) {
+                const angle = Number(active ? d.borderAngleActive : d.borderAngleInactive);
+                spec.second = second.toLowerCase();
+                spec.angle = isFinite(angle) ? Math.max(0, Math.min(360, Math.round(angle))) : 45;
+            }
+        }
+        return spec;
+    }
+
+    // Push the effective border specs to the compositor LIVE (no window
+    // restart) through the core adapter. Only touches the border options.
     function syncWindowBorders() {
-        Compositor.setWindowBorderColors(root.borderHex("active").slice(1), root.borderHex("inactive").slice(1));
+        Compositor.setWindowBorders(root.borderSpec("active"), root.borderSpec("inactive"));
         // Sync kitty + nvim themes to the active palette (the SDDM greeter is
         // static, equisdots/login, and does not follow the palette). The engine
         // lives in the equisdots/theme-sync repo, installed by `dots`.
@@ -189,7 +220,14 @@ Item {
         // (they can differ from color0/color7), derive everything else from them.
         root.background = b.background || root.color0;
         root.foreground = b.foreground || root.color7;
-        root.base   = root.background;
+        // Glass: `base` keeps alpha so the layer-rule backdrop blur shows
+        // through; opaque exactly as before when the feature is off.
+        if (root.glassOn) {
+            const bg = Qt.color(root.background);
+            root.base = Qt.rgba(bg.r, bg.g, bg.b, root.glassOpacity);
+        } else {
+            root.base = root.background;
+        }
         root.mantle = root.mix(root.base, "#000000", 0.15);
         root.crust  = root.mix(root.base, "#000000", 0.30);
         root.text   = root.foreground;
@@ -268,6 +306,11 @@ Item {
                     let parsed = JSON.parse(txt);
                     root.lastSettingsJson = txt;
                     root.barSettings = (parsed.bar && typeof parsed.bar === "object") ? parsed.bar : {};
+                    let prevGlass = JSON.stringify(root.glassSettings);
+                    root.glassSettings = (parsed.glass && typeof parsed.glass === "object") ? parsed.glass : {};
+                    // Content guard would skip re-applying an unchanged palette
+                    // file; force the re-apply so glass alpha changes live.
+                    if (JSON.stringify(root.glassSettings) !== prevGlass) root.lastPaletteKey = "";
                     let want = (parsed.bar && parsed.bar.palette)
                              ? String(parsed.bar.palette).toLowerCase() : "x";
                     if (root.paletteName !== want) root.paletteName = want;
@@ -295,7 +338,7 @@ Item {
     // --- palette file reader --------------------------------------------------------
     Process {
         id: paletteReader
-        command: ["bash", "-c", "cat '" + root.palettesDir + "/" + root.paletteName + ".json' 2>/dev/null || cat '" + root.palettesDir + "/x.json'"]
+        command: ["bash", "-c", "cat '" + root.palettesDir + "/" + root.paletteName + ".json' 2>/dev/null || cat '" + root.palettesDir + "/community/" + root.paletteName + ".json' 2>/dev/null || cat '" + root.palettesDir + "/x.json'"]
         running: false
         stdout: StdioCollector {
             onStreamFinished: root.applyPaletteText(this.text)
@@ -313,6 +356,16 @@ Item {
         id: paletteWatcher
         path: root.palettesDir + "/" + root.paletteName + ".json"
         watchChanges: true
+        blockLoading: true
+        onFileChanged: root.readSettings()
+    }
+    // Community palettes live in a subfolder: a second watcher keeps live
+    // edits of an active community palette working (same contract as above).
+    FileView {
+        id: paletteWatcherCommunity
+        path: root.palettesDir + "/community/" + root.paletteName + ".json"
+        watchChanges: true
+        blockLoading: true
         onFileChanged: root.readSettings()
     }
 
