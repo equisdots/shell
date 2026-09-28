@@ -144,7 +144,8 @@ Item {
                             icon: "󰈸"
                             label: "Flame"
                             active: root.mSpecies !== "cat" && root.mSpecies !== "dog"
-                                && root.mSpecies !== "eyes" && root.mSpecies !== "mixed"
+                                && root.mSpecies !== "eyes" && root.mSpecies !== "dots"
+                                && root.mSpecies !== "mixed"
                             onActivated: { root.mSpecies = "flame"; root.set("species", "flame"); }
                         }
                         OptionCard {
@@ -179,11 +180,19 @@ Item {
                             active: root.mSpecies === "mixed"
                             onActivated: { root.mSpecies = "mixed"; root.set("species", "mixed"); }
                         }
+                        OptionCard {
+                            Layout.fillWidth: true
+                            bar: root.bar
+                            icon: "󰇘"
+                            label: "Dots"
+                            active: root.mSpecies === "dots"
+                            onActivated: { root.mSpecies = "dots"; root.set("species", "dots"); }
+                        }
                     }
                     EditLabel {
                         bar: root.bar
                         width: parent.width
-                        text: "Flame is the default little fire; Cats and Dogs are the animal faces (whiskers / muzzle and tongue); Eyes is just a pair of manga eyes. Mixed alternates cat / dog / eyes."
+                        text: "Flame is the default little fire; Cats and Dogs are the animal faces (whiskers / muzzle and tongue); Eyes is just a pair of manga eyes; Dots is a cluster of colored dots that trails the cursor. Mixed alternates cat / dog / eyes."
                         font.pixelSize: bar.s(11)
                         color: bar.colors.subtext0
                         wrapMode: Text.WordWrap

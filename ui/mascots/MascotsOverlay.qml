@@ -84,7 +84,7 @@ Variants {
             readonly property string speciesKind: {
                 let v = String(root.species || "flame").toLowerCase();
                 if (v === "classic") v = "flame";
-                return ["flame", "cat", "dog", "eyes", "mixed"].indexOf(v) !== -1
+                return ["flame", "cat", "dog", "eyes", "dots", "mixed"].indexOf(v) !== -1
                     ? v : "flame";
             }
             readonly property int mascotCount: Math.max(1, Math.min(3, Math.round(root.count)))
@@ -547,6 +547,7 @@ Variants {
                     crust: root.palette.crust
                     text: root.palette.text
                     red: root.palette.red
+                    palette: root.palette
                     clock: overlay.clock
                     xPos: (overlay.mpos[modelData] || {}).x || 0
                     yPos: (overlay.mpos[modelData] || {}).y || 0

@@ -15,6 +15,7 @@ mascots/
   CatMascot.qml        pointy ears, stripes, whiskers, pink nose
   DogMascot.qml        floppy ears, eye patch, muzzle, tongue when happy
   EyesMascot.qml       eyes-only: pair of manga eyes with expressions
+  DotsMascot.qml       colored dots that trail the cursor (no face)
   MascotFaceEyes.qml   shared face eyes/brows (flame / cat / dog)
   MascotDock.qml       widget miniatures panel that unfolds from the island
   MascotMetrics.js     vendored scale helpers (no shell imports)
@@ -25,7 +26,7 @@ mascots/
 | Key | Values | Default | Meaning |
 | --- | --- | --- | --- |
 | `mascots.enabled` | bool | `false` | master switch |
-| `mascots.species` | `flame` `cat` `dog` `eyes` `mixed` | `flame` | look; `classic` maps to `flame` |
+| `mascots.species` | `flame` `cat` `dog` `eyes` `dots` `mixed` | `flame` | look; `classic` maps to `flame` |
 | `mascots.count` | 1..3 | `3` | mascots in the island (width adapts) |
 | `mascots.size` | 0.6..1.6 | `1.0` | mascot scale |
 | `mascots.position` | `top-left` … `bottom-right` | `top-center` | island position; the dock unfolds toward the screen centre (up when the island is at the bottom) |

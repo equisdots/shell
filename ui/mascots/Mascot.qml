@@ -20,6 +20,7 @@ Item {
     property color crust: "#11111b"
     property color text: "#cdd6f4"
     property color red: "#f38ba8"
+    property var palette: ({})
     property real clock: 0
     property real xPos: 0
     property real yPos: 0
@@ -93,6 +94,20 @@ Item {
         red: mascot.red
         blinking: mascot.blinking
         clock: mascot.clock
+    }
+    DotsMascot {
+        anchors.fill: parent
+        visible: mascot.kind === "dots"
+        mood: mascot.mood
+        lookX: mascot.lookX
+        lookY: mascot.lookY
+        tint: mascot.tint
+        crust: mascot.crust
+        text: mascot.text
+        red: mascot.red
+        blinking: mascot.blinking
+        clock: mascot.clock
+        palette: mascot.palette
     }
 
     Text {

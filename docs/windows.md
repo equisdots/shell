@@ -103,7 +103,8 @@ and close, and fall asleep after 30 s idle. `count` shows 1, 2 or 3 mascots
 `flame` (default little fire), `cat` (pointy ears with inner ear, forehead
 stripes, whiskers, pink nose), `dog` (floppy ears, eye patch, muzzle and
 tongue when happy), `eyes` (just a pair of manga eyes with lash, lids and
-tracking irises) or `mixed` (cat / dog / eyes). Clicking the island unfolds
+tracking irises), `dots` (a cluster of colored dots that trails the cursor,
+no face) or `mixed` (cat / dog / eyes). Clicking the island unfolds
 `MascotDock`: a rectangular panel with three widget miniatures per page
 (chevrons + page dots); picking one launches that widget through the shell's
 `qs_manager.sh open <id>`. Only the island and the open dock capture input;

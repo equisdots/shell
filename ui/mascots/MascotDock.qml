@@ -11,9 +11,10 @@ import QtQuick
 // `reveal`, so the panel unfolds from its top edge and retargets smoothly if
 // `open` flips mid-animation.
 //
-// Layout: header (title + close) / strip with prev arrow, up to 3 cards, next
-// arrow / page dots bottom-right. Clicking a card emits launchRequested(id);
-// the host owns the actual launch. Clicking close emits closeRequested().
+// Layout: header (title + close) / sliding strip with prev arrow, a clipped
+// 3-card viewport and next arrow / page dots bottom-right. Clicking a card
+// emits launchRequested(id); the host owns the actual launch. Clicking close
+// emits closeRequested().
 //
 // API: open / widgets / palette / scaleUnit / accent / reveal / panelWidth /
 //      panelHeight / launchRequested(string id) / closeRequested().
@@ -78,12 +79,6 @@ Item {
         else if (dock.page < 0) dock.page = 0;
     }
 
-    readonly property var pageItems: {
-        const list = dock.widgetList;
-        const start = dock.page * dock.pageSize;
-        return list.slice(start, start + dock.pageSize);
-    }
-
     readonly property bool canPrev: dock.page > 0
     readonly property bool canNext: dock.page < dock.pageCount - 1
     function prevPage() { if (dock.canPrev) dock.page -= 1 }
@@ -98,6 +93,9 @@ Item {
     // Three cards, two arrows and the gaps must fit inside panelWidth.
     readonly property real cardW: Math.floor(
         (dock.panelWidth - 2 * dock.sidePad - 2 * dock.arrowW - 2 * dock.arrowGap - 2 * dock.cardGap) / 3)
+    // One page slides by exactly one viewport: `pageSize` cards plus the gaps
+    // between them. The 3*cardW + 2*cardGap strip therefore fits the viewport.
+    readonly property real cardStride: dock.pageSize * (dock.cardW + dock.cardGap)
 
     implicitWidth: dock.panelWidth
     implicitHeight: dock.panelHeight
@@ -188,107 +186,120 @@ Item {
             anchors.bottom: dotsRow.top
             anchors.bottomMargin: dock.s(4)
 
-            Row {
-                id: cardRow
+            // Clipped viewport between the two arrows: the full widget row
+            // slides horizontally, cards outside the viewport are clipped.
+            Item {
+                id: viewport
                 x: dock.arrowW + dock.arrowGap
-                height: parent.height
-                spacing: dock.cardGap
+                width: Math.max(0, strip.width - 2 * (dock.arrowW + dock.arrowGap))
+                height: strip.height
+                clip: true
 
-                Repeater {
-                    model: dock.pageItems
-                    delegate: Rectangle {
-                        id: card
-                        required property int index
-                        required property var modelData
-                        // Optional `thumb` (path/URL): when present it replaces
-                        // the icon once the image loads (e.g. a wallpaper
-                        // preview); `thumbReady` is the single switch used by
-                        // both the image and the glyph fallback.
-                        readonly property string thumbUrl: {
-                            const v = dock.field(card.modelData, "thumb");
-                            return (typeof v === "string") ? v : "";
-                        }
-                        readonly property bool thumbReady: card.thumbUrl !== "" && thumbImg.status === Image.Ready
-                        width: dock.cardW
-                        height: strip.height
-                        radius: dock.s(10)
-                        color: cardMa.containsMouse
-                            ? Qt.alpha(dock.accent, 0.12)
-                            : Qt.alpha(dock.cText, 0.05)
-                        border.width: 1
-                        border.color: cardMa.containsMouse
-                            ? dock.accent
-                            : Qt.alpha(dock.cSurface1, 0.8)
-                        scale: cardMa.pressed ? 0.97 : 1.0
-                        Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutQuart } }
-                        Behavior on color { ColorAnimation { duration: 150 } }
-                        Behavior on border.color { ColorAnimation { duration: 150 } }
+                Row {
+                    id: stripRow
+                    x: -dock.page * dock.cardStride
+                    height: viewport.height
+                    spacing: dock.cardGap
+                    Behavior on x {
+                        NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
+                    }
 
-                        Column {
-                            anchors.centerIn: parent
-                            width: parent.width - dock.s(12)
-                            spacing: dock.s(6)
+                    Repeater {
+                        model: dock.widgetList
+                        delegate: Rectangle {
+                            id: card
+                            required property int index
+                            required property var modelData
+                            // Optional `thumb` (path/URL): when present it replaces
+                            // the icon once the image loads (e.g. a wallpaper
+                            // preview); `thumbReady` is the single switch used by
+                            // both the image and the glyph fallback.
+                            readonly property string thumbUrl: {
+                                const v = dock.field(card.modelData, "thumb");
+                                return (typeof v === "string") ? v : "";
+                            }
+                            readonly property bool thumbReady: card.thumbUrl !== "" && thumbImg.status === Image.Ready
+                            width: dock.cardW
+                            height: strip.height
+                            radius: dock.s(10)
+                            color: cardMa.containsMouse
+                                ? Qt.alpha(dock.accent, 0.12)
+                                : Qt.alpha(dock.cText, 0.05)
+                            border.width: 1
+                            border.color: cardMa.containsMouse
+                                ? dock.accent
+                                : Qt.alpha(dock.cSurface1, 0.8)
+                            scale: cardMa.pressed ? 0.97 : 1.0
+                            Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutQuart } }
+                            Behavior on color { ColorAnimation { duration: 150 } }
+                            Behavior on border.color { ColorAnimation { duration: 150 } }
 
-                            // Icon area: `thumb` thumbnail when it is present
-                            // and loaded, glyph fallback otherwise.
-                            Item {
-                                width: parent.width
-                                height: card.thumbReady ? thumbFrame.height : glyphText.implicitHeight
+                            Column {
+                                anchors.centerIn: parent
+                                width: parent.width - dock.s(12)
+                                spacing: dock.s(6)
 
-                                Rectangle {
-                                    id: thumbFrame
-                                    anchors.centerIn: parent
-                                    visible: card.thumbReady
-                                    width: dock.s(52) + 2
-                                    height: dock.s(30) + 2
-                                    radius: dock.s(6)
-                                    color: "transparent"
-                                    border.width: 1
-                                    border.color: Qt.alpha(dock.cSurface1, 0.8)
+                                // Icon area: `thumb` thumbnail when it is present
+                                // and loaded, glyph fallback otherwise.
+                                Item {
+                                    width: parent.width
+                                    height: card.thumbReady ? thumbFrame.height : glyphText.implicitHeight
 
-                                    Image {
-                                        id: thumbImg
+                                    Rectangle {
+                                        id: thumbFrame
                                         anchors.centerIn: parent
-                                        source: card.thumbUrl
-                                        width: dock.s(52)
-                                        height: dock.s(30)
-                                        sourceSize.width: 160
-                                        asynchronous: true
-                                        fillMode: Image.PreserveAspectCrop
-                                        visible: status === Image.Ready
+                                        visible: card.thumbReady
+                                        width: dock.s(52) + 2
+                                        height: dock.s(30) + 2
+                                        radius: dock.s(6)
+                                        color: "transparent"
+                                        border.width: 1
+                                        border.color: Qt.alpha(dock.cSurface1, 0.8)
+
+                                        Image {
+                                            id: thumbImg
+                                            anchors.centerIn: parent
+                                            source: card.thumbUrl
+                                            width: dock.s(52)
+                                            height: dock.s(30)
+                                            sourceSize.width: 160
+                                            asynchronous: true
+                                            fillMode: Image.PreserveAspectCrop
+                                            visible: status === Image.Ready
+                                        }
+                                    }
+
+                                    Text {
+                                        id: glyphText
+                                        anchors.centerIn: parent
+                                        visible: !card.thumbReady
+                                        text: dock.field(card.modelData, "icon")
+                                        font.family: "Hack Nerd Font"
+                                        font.pixelSize: dock.s(24)
+                                        color: cardMa.containsMouse ? dock.accent : dock.cText
+                                        Behavior on color { ColorAnimation { duration: 150 } }
                                     }
                                 }
-
                                 Text {
-                                    id: glyphText
-                                    anchors.centerIn: parent
-                                    visible: !card.thumbReady
-                                    text: dock.field(card.modelData, "icon")
+                                    width: parent.width
+                                    horizontalAlignment: Text.AlignHCenter
+                                    text: dock.field(card.modelData, "label")
+                                    elide: Text.ElideRight
                                     font.family: "Hack Nerd Font"
-                                    font.pixelSize: dock.s(24)
-                                    color: cardMa.containsMouse ? dock.accent : dock.cText
-                                    Behavior on color { ColorAnimation { duration: 150 } }
+                                    font.pixelSize: dock.s(10)
+                                    color: dock.cText
                                 }
                             }
-                            Text {
-                                width: parent.width
-                                horizontalAlignment: Text.AlignHCenter
-                                text: dock.field(card.modelData, "label")
-                                elide: Text.ElideRight
-                                font.family: "Hack Nerd Font"
-                                font.pixelSize: dock.s(10)
-                                color: dock.cText
-                            }
-                        }
 
-                        MouseArea {
-                            id: cardMa
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: {
-                                if (card.modelData && card.modelData.id !== undefined)
-                                    dock.launchRequested(String(card.modelData.id));
+                            MouseArea {
+                                id: cardMa
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: {
+                                    if (card.modelData && card.modelData.id !== undefined)
+                                        dock.launchRequested(String(card.modelData.id));
+                                }
                             }
                         }
                     }
