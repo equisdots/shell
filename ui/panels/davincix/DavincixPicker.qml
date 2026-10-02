@@ -314,10 +314,18 @@ Item {
 
     property bool showNotification: !window.isStartup && currentNotification !== ""
 
+    // Thumb name → source path relative to the wallpaper dir. Prefixes:
+    // "000_" video, "scn_" interactive scene (thumb is scn_<dir>.jpg); "__"
+    // is the flattened separator for nested paths ("a/b.jpg" → "a__b.jpg").
     function getCleanName(name) {
         if (!name) return "";
         let clean = String(name);
-        return clean.startsWith("000_") ? clean.substring(4) : clean;
+        if (clean.startsWith("scn_")) {
+            clean = clean.substring(4).replace(/\.jpg$/i, "");
+        } else if (clean.startsWith("000_")) {
+            clean = clean.substring(4);
+        }
+        return clean.split("__").join("/");
     }
 
     function isDownloaded(name) {

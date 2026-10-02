@@ -29,6 +29,8 @@ Item {
     readonly property bool isFakeSelected: ctx.isScrollingBlocked && index === 0
     readonly property bool isVisuallyEnlarged: isCurrent || isFakeSelected
     readonly property bool isLocalVideo: safeFileName.startsWith("000_")
+    // Escena interactiva de xwww (thumb "scn_<dir>.jpg", ver davincix/thumbs.sh).
+    readonly property bool isScene: safeFileName.startsWith("scn_")
     // Vídeo local o resultado de una búsqueda de vídeo (badge; el preview
     // MediaPlayer solo corre para vídeos locales).
     readonly property bool isVideo: isLocalVideo || (ctx.currentFilter === "Search" && ctx.searchKind === "video")
@@ -258,6 +260,34 @@ Item {
                         c.closePath();
                         c.fill();
                     }
+                }
+            }
+
+            // ═══════════════════════════════════════════════════════════════
+            // Escena interactiva de xwww (mismo sitio que el badge de play).
+            // ═══════════════════════════════════════════════════════════════
+            Rectangle {
+                visible: cardRoot.isScene
+                anchors.top: parent.top
+                anchors.right: parent.right
+                anchors.margins: ctx.s(10)
+                width: ctx.s(32)
+                height: ctx.s(32)
+                radius: ctx.s(8)
+                color: Qt.rgba(theme.mauve.r, theme.mauve.g, theme.mauve.b, 0.8)
+
+                transform: Matrix4x4 {
+                    property real s: -cardRoot.effSkew
+                    matrix: Qt.matrix4x4(1, s, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
+                }
+
+                Text {
+                    anchors.centerIn: parent
+                    text: "JS"
+                    font.family: "Hack Nerd Font"
+                    font.pixelSize: ctx.s(12)
+                    font.bold: true
+                    color: theme.crust
                 }
             }
 
