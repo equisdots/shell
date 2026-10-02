@@ -3,6 +3,18 @@
 All notable changes to the equisdots shell are documented here.
 Dates use YYYY-MM-DD.
 
+## [2026-10-02]
+
+### Added
+- **Wallpaper picker: interactive scenes** (`ui/panels/davincix/`): `scn_<name>.jpg` thumbnails are listed like any wallpaper, marked with a `JS` badge and applied through the davincix kernel. `getCleanName()` resolves the `scn_` and `000_` prefixes and the flattened `__` paths used by nested media.
+- **New transition set**: the filter-bar transition selector offers the reveal effects (`pixelate`, `ripple`, `blinds`, `spiral`, `static`, `parallax`, `parallax-left`, `parallax-right`, `parallax-invert`, `melt`, `shatter`) alongside the existing ones.
+
+### Changed
+- Wallpaper deletion supports scene directories and flattened nested paths.
+
+### Documentation
+- `docs/davincix-scenes.md` documents the picker integration (entry naming, badge, apply and delete flows).
+
 ## [2026-09-28]
 
 ### Added

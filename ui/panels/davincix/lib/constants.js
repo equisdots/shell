@@ -21,7 +21,7 @@ var FILTERS = [
     { name: "Search", hex: "", label: "Search" }
 ];
 
-var TRANSITIONS = ["simple", "fade", "left", "right", "top", "bottom", "wipe", "grow", "center", "outer", "random", "wave", "glitch", "decrypt", "dissolve", "clock", "zoom"];
+var TRANSITIONS = ["simple", "fade", "left", "right", "top", "bottom", "wipe", "grow", "center", "outer", "random", "wave", "glitch", "decrypt", "dissolve", "clock", "zoom", "pixelate", "ripple", "blinds", "spiral", "static", "parallax", "parallax-left", "parallax-right", "parallax-invert", "melt", "shatter"];
 
 var FILTER_ORDER = ["All", "Video", "Favorites", "Red", "Orange", "Yellow", "Green", "Blue", "Purple", "Pink", "Monochrome"];
 
