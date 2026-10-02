@@ -65,6 +65,7 @@ Item {
             { id: "network",        label: "Network",   icon: "󰖩" },
             { id: "volume",         label: "Volume",    icon: "󰕾" },
             { id: "battery",        label: "Battery",   icon: "󰁹" },
+            { id: "palette",        label: "Palettes",  icon: "󰏘" },
             { id: "bar-editor",     label: "Settings",  icon: "󰒓" },
             { id: "widgets-redactor", label: "Widgets", icon: "󱇙" }
         ]

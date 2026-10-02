@@ -56,6 +56,7 @@ dispatch through `qs_manager.sh` → `Main.qml` → `core/WindowRegistry.js`:
 | Display Scale | `ui/panels/scale/ScalePicker.qml` | SUPER + Z | Center |
 | Idle | `ui/panels/idle/IdlePopup.qml` | SUPER + P | Center |
 | Window Controls | `ui/panels/window-controls/WindowControls.qml` | SUPER + SHIFT + B | Center |
+| Palette | `ui/panels/palette/PaletteWidget.qml` | SUPER + SHIFT + P | Center (configurable) |
 | Quick Actions | `ui/panels/quickactions/` (`DrawAction.qml`, `SystemUsage.qml`, `Timer.qml`) | (internal) | Varies |
 | Bar Editor | `ui/bar/BarEditor.qml` | SUPER + SHIFT + S / D | Center |
 | Widget Redactor | `ui/widgets/WidgetRedactor.qml` | SUPER + SHIFT + W | Center |
@@ -63,7 +64,18 @@ dispatch through `qs_manager.sh` → `Main.qml` → `core/WindowRegistry.js`:
 
 Widget geometry is defined in `core/WindowRegistry.js` (`getLayout()` +
 `positionLayout()`), with responsive scaling based on screen size and the user
-UI scale.
+UI scale. Any popup can override its anchor with
+`settings.json → widgets.<id>.position` (nine anchors plus `default`, which
+keeps the registry position); the palette widget ships centered and is meant to
+be moved that way, for example
+`{"widgets":{"palette":{"position":"bottom-right"}}}`.
+
+The **Palette** widget (`SUPER + SHIFT + P`) is the standalone version of the
+editor's Palette page: the same X / Custom / User sections, filter and cards,
+backed by `dock/palettes/index.json`. Selecting a palette writes
+`bar.palette` through `Config.setSetting` (the same path the editor uses), so
+the bar, window borders and desktop widgets recolor live, and the widget closes
+itself like a quick switcher. It is also listed in the mascot dock.
 
 ## Popup shadows
 

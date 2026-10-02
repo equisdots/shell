@@ -76,6 +76,7 @@ function getLayout(name, mx, my, mw, mh, userScale) {
         "quicknotes": { w: s(480, scale), h: s(460, scale), rx: Math.floor((mw/2)-(s(480, scale)/2)), ry: Math.floor((mh/2)-(s(460, scale)/2)), comp: "ui/panels/quicknotes/QuickNotes.qml" },
         "rss-reader": { w: s(650, scale), h: s(560, scale), rx: Math.floor((mw/2)-(s(650, scale)/2)), ry: Math.floor((mh/2)-(s(560, scale)/2)), comp: "ui/panels/rss-reader/RssReader.qml" },
         "file-search": { w: s(600, scale), h: s(500, scale), rx: Math.floor((mw/2)-(s(600, scale)/2)), ry: Math.floor((mh/2)-(s(500, scale)/2)), comp: "ui/panels/file-search/FileSearch.qml" },
+        "palette": { w: s(620, scale), h: s(650, scale), rx: Math.floor((mw/2)-(s(620, scale)/2)), ry: Math.floor((mh/2)-(s(650, scale)/2)), comp: "ui/panels/palette/PaletteWidget.qml" },
         "scale": { w: s(520, scale), h: s(560, scale), rx: Math.floor((mw/2)-(s(520, scale)/2)), ry: Math.floor((mh/2)-(s(560, scale)/2)), comp: "ui/panels/scale/ScalePicker.qml" },
         "window-controls": { w: s(480, scale), h: s(800, scale), rx: Math.floor((mw/2)-(s(480, scale)/2)), ry: Math.floor((mh/2)-(s(800, scale)/2)), comp: "ui/panels/window-controls/WindowControls.qml" },
         "bar-editor": { w: Math.min(s(1260, scale), mw - s(40, scale)), h: s(760, scale), rx: Math.floor((mw - Math.min(s(1260, scale), mw - s(40, scale))) / 2), ry: Math.floor((mh/2)-(s(760, scale)/2)), comp: "ui/bar/BarEditor.qml" },
