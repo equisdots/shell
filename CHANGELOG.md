@@ -16,6 +16,9 @@ Dates use YYYY-MM-DD.
 ### Documentation
 - `docs/davincix-scenes.md` documents the picker integration (entry naming, badge, apply and delete flows).
 
+### Fixed
+- **Palette widget previews**: the second swatch row used `model: [2, 3]` with `colors[index]`, so every card repainted `color0`/`color1` on the bottom row; it now uses `model: [0, 1]` with `colors[2 + index]`, matching the editor's cards and the real palette files.
+
 ## [2026-09-28]
 
 ### Added

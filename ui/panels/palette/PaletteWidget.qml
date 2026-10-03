@@ -276,11 +276,11 @@ Item {
                     Row {
                         spacing: window.s(2)
                         Repeater {
-                            model: [2, 3]
+                            model: [0, 1]
                             delegate: Rectangle {
                                 width: window.s(9); height: window.s(9)
                                 radius: window.s(2)
-                                color: palCard.pal.colors[index]
+                                color: palCard.pal.colors[2 + index]
                             }
                         }
                     }
