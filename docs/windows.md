@@ -98,8 +98,9 @@ are not covered.
 ## Mascots
 
 `settings.json → mascots` (`enabled`, `size`, `species`, `count`, `position`)
-drives the standalone module in `ui/mascots/` (wrapped by `ui/Mascots.qml`,
-which injects the live palette and paths): a small island, tinted from the
+drives the standalone Nyx module deployed by the dots installer to `ui/nyx/`
+(wrapped by `ui/Mascots.qml`, which injects the live palette and paths): a
+small island, tinted from the
 active palette, that fades away while the app launcher is open (the island
 becomes the dock, detected through Main's `current_widget` run file) or when
 any widget overlaps it. `position` moves the island to any of the nine anchors
