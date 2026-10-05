@@ -1,2 +1,4 @@
 __pycache__/
 *.pyc
+# Nyx (mascot module) is a separate repo deployed here by the dots installer.
+ui/nyx/
