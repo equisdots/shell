@@ -29,6 +29,18 @@ Item {
     property string mSpecies: "flame"
     property int mCount: 3
     property string mPosition: "top-center"
+    property string mAppearance: "island"
+    property real mNotchWidth: 260
+    property real mNotchHeight: 0
+    property real mNotchOffset: 0
+    property bool mNotchReserve: true
+    property string mDockStyle: "floating"
+    property string mDockSize: "large"
+    property int mDockColumns: 5
+    property int mDockRows: 2
+    property bool mDockHero: true
+    property bool mDockQuick: true
+    property bool mDockSearch: true
 
     readonly property var flickable: body.item ? body.item.flickable : null
 
@@ -41,6 +53,19 @@ Item {
         root.mSpecies = (sp === "classic") ? "flame" : sp;
         root.mCount = Math.max(1, Math.min(3, Math.round(s.count !== undefined ? s.count : 3)));
         root.mPosition = (typeof s.position === "string" && s.position !== "") ? s.position : "top-center";
+        root.mAppearance = (s.appearance === "notch") ? "notch" : "island";
+        root.mNotchWidth = (typeof s.notchWidth === "number") ? s.notchWidth : 260;
+        root.mNotchHeight = (typeof s.notchHeight === "number") ? s.notchHeight : 0;
+        root.mNotchOffset = (typeof s.notchOffset === "number") ? s.notchOffset : 0;
+        root.mNotchReserve = s.notchReserve !== false;
+        let dk = (s.dock && typeof s.dock === "object") ? s.dock : {};
+        root.mDockStyle = (dk.style === "joined") ? "joined" : "floating";
+        root.mDockSize = (typeof dk.size === "string") ? dk.size : "large";
+        root.mDockColumns = (typeof dk.columns === "number") ? dk.columns : 5;
+        root.mDockRows = (typeof dk.rows === "number") ? dk.rows : 2;
+        root.mDockHero = dk.hero !== false;
+        root.mDockQuick = dk.quick !== false;
+        root.mDockSearch = dk.search !== false;
     }
     Component.onCompleted: root.syncFromConfig()
 
@@ -59,7 +84,24 @@ Item {
         Config.setSetting("mascots", Object.assign({}, base, root._pending));
         root._pending = {};
     }
-    Component.onDestruction: root.flush()
+    // Nested "mascots.dock" commits (merged into the existing dock object).
+    property var _pendingDock: ({})
+    Timer { id: saveDockTimer; interval: 300; onTriggered: root.flushDock() }
+    function setDock(key, v) {
+        root._pendingDock[key] = v;
+        saveDockTimer.restart();
+    }
+    function flushDock() {
+        let keys = Object.keys(root._pendingDock);
+        if (keys.length === 0) return;
+        let base = (Config.rawSettings.mascots && typeof Config.rawSettings.mascots === "object")
+                   ? Config.rawSettings.mascots : {};
+        let dock = (base.dock && typeof base.dock === "object") ? base.dock : {};
+        Config.setSetting("mascots", Object.assign({}, base,
+            { dock: Object.assign({}, dock, root._pendingDock) }));
+        root._pendingDock = {};
+    }
+    Component.onDestruction: { root.flush(); root.flushDock(); }
 
     Loader {
         id: body
@@ -145,6 +187,7 @@ Item {
                             label: "Flame"
                             active: root.mSpecies !== "cat" && root.mSpecies !== "dog"
                                 && root.mSpecies !== "eyes" && root.mSpecies !== "dots"
+                                && root.mSpecies !== "watcher"
                                 && root.mSpecies !== "mixed"
                             onActivated: { root.mSpecies = "flame"; root.set("species", "flame"); }
                         }
@@ -188,11 +231,124 @@ Item {
                             active: root.mSpecies === "dots"
                             onActivated: { root.mSpecies = "dots"; root.set("species", "dots"); }
                         }
+                        OptionCard {
+                            Layout.fillWidth: true
+                            bar: root.bar
+                            icon: ""
+                            label: "Watcher"
+                            active: root.mSpecies === "watcher"
+                            onActivated: { root.mSpecies = "watcher"; root.set("species", "watcher"); }
+                        }
                     }
                     EditLabel {
                         bar: root.bar
                         width: parent.width
-                        text: "Flame is the default little fire; Cats and Dogs are the animal faces (whiskers / muzzle and tongue); Eyes is just a pair of manga eyes; Dots is a cluster of colored dots that trails the cursor. Mixed alternates cat / dog / eyes."
+                        text: "Flame is the default little fire; Cats and Dogs are the animal faces (whiskers / muzzle and tongue); Eyes is just a pair of manga eyes; Dots is a cluster of colored dots that trails the cursor; Watcher is a digital clock that retypes each field with a typewriter cursor. Mixed alternates cat / dog / eyes."
+                        font.pixelSize: bar.s(11)
+                        color: bar.colors.subtext0
+                        wrapMode: Text.WordWrap
+                    }
+
+                    Text {
+                        text: "Appearance"
+                        font.family: "Hack Nerd Font"
+                        font.weight: Font.Black
+                        font.pixelSize: bar.s(16)
+                        color: bar.colors.text
+                    }
+                    GridLayout {
+                        width: parent.width
+                        columns: 2
+                        columnSpacing: bar.s(10)
+                        rowSpacing: bar.s(10)
+                        OptionCard {
+                            Layout.fillWidth: true
+                            bar: root.bar
+                            icon: ""
+                            label: "Island"
+                            active: root.mAppearance !== "notch"
+                            onActivated: { root.mAppearance = "island"; root.set("appearance", "island"); }
+                        }
+                        OptionCard {
+                            Layout.fillWidth: true
+                            bar: root.bar
+                            icon: ""
+                            label: "Notch"
+                            active: root.mAppearance === "notch"
+                            onActivated: { root.mAppearance = "notch"; root.set("appearance", "notch"); }
+                        }
+                    }
+                    EditLabel {
+                        bar: root.bar
+                        width: parent.width
+                        text: "Island is the floating pill. Notch snaps to the very top edge with a macOS-style silhouette (concave top fillets, rounded bottom, no coloured border) and is only available at the top. The widget dock still unfolds as a floating panel below and retracts the notch while it is open."
+                        font.pixelSize: bar.s(11)
+                        color: bar.colors.subtext0
+                        wrapMode: Text.WordWrap
+                    }
+
+                    EffectSlider {
+                        visible: root.mAppearance === "notch"
+                        width: parent.width
+                        bar: root.bar
+                        icon: ""
+                        label: "Notch width"
+                        from: 140; to: 640; step: 10
+                        decimals: 0
+                        suffix: "px"
+                        accentColor: bar.colors.mauve
+                        value: root.mNotchWidth
+                        onEdited: (v) => { root.mNotchWidth = v; root.set("notchWidth", v); }
+                    }
+                    EffectSlider {
+                        visible: root.mAppearance === "notch"
+                        width: parent.width
+                        bar: root.bar
+                        icon: ""
+                        label: "Notch height"
+                        from: 0; to: 120; step: 1
+                        decimals: 0
+                        suffix: "px"
+                        accentColor: bar.colors.mauve
+                        value: root.mNotchHeight
+                        onEdited: (v) => { root.mNotchHeight = v; root.set("notchHeight", v); }
+                    }
+                    EffectSlider {
+                        visible: root.mAppearance === "notch"
+                        width: parent.width
+                        bar: root.bar
+                        icon: ""
+                        label: "Notch offset Y"
+                        from: -60; to: 60; step: 1
+                        decimals: 0
+                        suffix: "px"
+                        accentColor: bar.colors.mauve
+                        value: root.mNotchOffset
+                        onEdited: (v) => { root.mNotchOffset = v; root.set("notchOffset", v); }
+                    }
+                    EditLabel {
+                        visible: root.mAppearance === "notch"
+                        bar: root.bar
+                        width: parent.width
+                        text: "Height 0 keeps the automatic height. Offset Y moves the notch up (negative) or down (positive); a negative value tucks the top fillets above the screen edge for a flatter top."
+                        font.pixelSize: bar.s(11)
+                        color: bar.colors.subtext0
+                        wrapMode: Text.WordWrap
+                    }
+                    ToggleCard {
+                        visible: root.mAppearance === "notch"
+                        width: parent.width
+                        bar: root.bar
+                        icon: ""
+                        label: "Reserve top space"
+                        checked: root.mNotchReserve
+                        onToggled: { root.mNotchReserve = !root.mNotchReserve; root.set("notchReserve", root.mNotchReserve); }
+                    }
+                    EditLabel {
+                        visible: root.mAppearance === "notch"
+                        bar: root.bar
+                        width: parent.width
+                        text: "Reserve top space keeps maximized windows clear of the notch (an exclusive zone, like real hardware). Turn it off to let windows slide underneath."
                         font.pixelSize: bar.s(11)
                         color: bar.colors.subtext0
                         wrapMode: Text.WordWrap
@@ -309,6 +465,130 @@ Item {
                         font.pixelSize: bar.s(11)
                         color: bar.colors.subtext0
                         wrapMode: Text.WordWrap
+                    }
+
+                    Text {
+                        text: "Dock"
+                        font.family: "Hack Nerd Font"
+                        font.weight: Font.Black
+                        font.pixelSize: bar.s(16)
+                        color: bar.colors.text
+                    }
+                    EditLabel {
+                        bar: root.bar
+                        width: parent.width
+                        text: "The control center that unfolds when you click the island/notch: search, clock + now-playing, quick actions and a widget grid."
+                        font.pixelSize: bar.s(11)
+                        color: bar.colors.subtext0
+                        wrapMode: Text.WordWrap
+                    }
+                    GridLayout {
+                        width: parent.width
+                        columns: 2
+                        columnSpacing: bar.s(10)
+                        rowSpacing: bar.s(10)
+                        OptionCard {
+                            Layout.fillWidth: true
+                            bar: root.bar
+                            icon: ""
+                            label: "Floating"
+                            active: root.mDockStyle !== "joined"
+                            onActivated: { root.mDockStyle = "floating"; root.setDock("style", "floating"); }
+                        }
+                        OptionCard {
+                            Layout.fillWidth: true
+                            bar: root.bar
+                            icon: ""
+                            label: "Joined to notch"
+                            active: root.mDockStyle === "joined"
+                            onActivated: { root.mDockStyle = "joined"; root.setDock("style", "joined"); }
+                        }
+                    }
+                    GridLayout {
+                        width: parent.width
+                        columns: 4
+                        columnSpacing: bar.s(8)
+                        rowSpacing: bar.s(8)
+                        OptionCard {
+                            Layout.fillWidth: true
+                            bar: root.bar
+                            icon: ""
+                            label: "S"
+                            active: root.mDockSize === "compact"
+                            onActivated: { root.mDockSize = "compact"; root.setDock("size", "compact"); }
+                        }
+                        OptionCard {
+                            Layout.fillWidth: true
+                            bar: root.bar
+                            icon: ""
+                            label: "M"
+                            active: root.mDockSize === "medium"
+                            onActivated: { root.mDockSize = "medium"; root.setDock("size", "medium"); }
+                        }
+                        OptionCard {
+                            Layout.fillWidth: true
+                            bar: root.bar
+                            icon: ""
+                            label: "L"
+                            active: root.mDockSize === "large"
+                            onActivated: { root.mDockSize = "large"; root.setDock("size", "large"); }
+                        }
+                        OptionCard {
+                            Layout.fillWidth: true
+                            bar: root.bar
+                            icon: ""
+                            label: "XL"
+                            active: root.mDockSize === "wide"
+                            onActivated: { root.mDockSize = "wide"; root.setDock("size", "wide"); }
+                        }
+                    }
+                    EffectSlider {
+                        width: parent.width
+                        bar: root.bar
+                        icon: ""
+                        label: "Grid columns"
+                        from: 3; to: 7; step: 1
+                        decimals: 0
+                        suffix: ""
+                        accentColor: bar.colors.mauve
+                        value: root.mDockColumns
+                        onEdited: (v) => { root.mDockColumns = v; root.setDock("columns", v); }
+                    }
+                    EffectSlider {
+                        width: parent.width
+                        bar: root.bar
+                        icon: ""
+                        label: "Grid rows"
+                        from: 1; to: 3; step: 1
+                        decimals: 0
+                        suffix: ""
+                        accentColor: bar.colors.mauve
+                        value: root.mDockRows
+                        onEdited: (v) => { root.mDockRows = v; root.setDock("rows", v); }
+                    }
+                    ToggleCard {
+                        width: parent.width
+                        bar: root.bar
+                        icon: ""
+                        label: "Hero (clock + now playing)"
+                        checked: root.mDockHero
+                        onToggled: { root.mDockHero = !root.mDockHero; root.setDock("hero", root.mDockHero); }
+                    }
+                    ToggleCard {
+                        width: parent.width
+                        bar: root.bar
+                        icon: ""
+                        label: "Quick actions"
+                        checked: root.mDockQuick
+                        onToggled: { root.mDockQuick = !root.mDockQuick; root.setDock("quick", root.mDockQuick); }
+                    }
+                    ToggleCard {
+                        width: parent.width
+                        bar: root.bar
+                        icon: ""
+                        label: "Search field"
+                        checked: root.mDockSearch
+                        onToggled: { root.mDockSearch = !root.mDockSearch; root.setDock("search", root.mDockSearch); }
                     }
                 }
             }

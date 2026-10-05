@@ -16,6 +16,7 @@ mascots/
   DogMascot.qml        floppy ears, eye patch, muzzle, tongue when happy
   EyesMascot.qml       eyes-only: pair of manga eyes with expressions
   DotsMascot.qml       colored dots that trail the cursor (no face)
+  WatcherMascot.qml    digital clock retyped with a typewriter cursor
   MascotFaceEyes.qml   shared face eyes/brows (flame / cat / dog)
   MascotDock.qml       widget miniatures panel that unfolds from the island
   MascotMetrics.js     vendored scale helpers (no shell imports)
@@ -26,17 +27,30 @@ mascots/
 | Key | Values | Default | Meaning |
 | --- | --- | --- | --- |
 | `mascots.enabled` | bool | `false` | master switch |
-| `mascots.species` | `flame` `cat` `dog` `eyes` `dots` `mixed` | `flame` | look; `classic` maps to `flame` |
+| `mascots.species` | `flame` `cat` `dog` `eyes` `dots` `watcher` `mixed` | `flame` | look; `classic` maps to `flame` |
 | `mascots.count` | 1..3 | `3` | mascots in the island (width adapts) |
 | `mascots.size` | 0.6..1.6 | `1.0` | mascot scale |
 | `mascots.position` | `top-left` … `bottom-right` | `top-center` | island position; the dock unfolds toward the screen centre (up when the island is at the bottom) |
+| `mascots.appearance` | `island` `notch` | `island` | `notch` snaps to the top edge with a macOS-style silhouette (no coloured border); dock still floats |
+| `mascots.notchWidth` | px (design units) | `260` | notch width; clamped to fit the mascots and to half the screen |
+| `mascots.notchHeight` | px (design units) | `0` | notch height; `0` = automatic (mascot height + padding) |
+| `mascots.notchOffset` | px (design units) | `0` | vertical offset; negative tucks the notch up into the screen edge |
+| `mascots.notchReserve` | bool | `true` | in notch mode, reserve the top strip so maximized windows clear it (exclusive zone) |
+| `mascots.dock.size` | `compact` `medium` `large` `wide` | `large` | control-center panel width preset |
+| `mascots.dock.width` | px (design units) | `0` | explicit panel width (`0` = use the preset) |
+| `mascots.dock.style` | `floating` `joined` | `floating` | `joined` welds the panel under the notch (notch widens + squares off) |
+| `mascots.dock.columns` / `rows` | 3..7 / 1..3 | `5` / `2` | widget grid shape (page size = columns × rows) |
+| `mascots.dock.hero` / `quick` / `search` | bool | `true` | show the clock + now-playing hero, quick actions and search |
 | `uiScale` | number | `1.0` | extra user scale |
 | `bar.position` / `bar.thickness` | string / px | `top` / 48 | island margin below the bar band |
 
 ## Public API (per screen)
 
 `MascotsOverlay` exposes `enabled`, `species`, `count`, `size`, `uiScale`,
-`position`, `barPosition`, `barThickness`, `palette`, `settingsPath`,
+`position`, `barPosition`, `barThickness`, `appearance`, `notchWidth`,
+`notchHeight`, `notchOffset`, `notchReserve`, `dockSize`, `dockWidth`,
+`dockStyle`, `dockColumns`, `dockRows`, `dockShowHero`, `dockShowQuick`,
+`dockShowSearch`, `quickActions`, `palette`, `settingsPath`,
 `widgetStatePath`, `dockWidgetName`, `widgetRectProvider`, `widgetList` and
 `widgetLauncher`. The palette object needs `base`, `surface1`, `text`, `crust`,
 `red`, `yellow`, `green`, `blue`, `mauve` (colors) and `glassOn` (bool); a
