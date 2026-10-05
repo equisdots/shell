@@ -23,7 +23,7 @@ Item {
 
     property var bar: null
 
-    // Same defaults ui/mascots/MascotsOverlay.qml falls back to.
+    // Same defaults Nyx's front/MascotsOverlay.qml falls back to.
     property bool mEnabled: false
     property real mSize: 1.0
     property string mSpecies: "flame"
