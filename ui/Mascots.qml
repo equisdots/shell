@@ -4,17 +4,17 @@ import Quickshell.Io
 import "../core"
 import "../core/WindowRegistry.js" as Registry
 import "./bar"
-import "./mascots"
+import "./nyx/front"
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Mascots — equisdots integration for the standalone mascots module.
+// Mascots — equisdots integration for the Nyx mascot module.
 //
-// The module lives in ui/mascots/ (MascotsOverlay + one file per species +
-// MascotFaceEyes + MascotDock) and never imports the shell: this thin wrapper
-// injects the live palette, the settings file path, the widget-occlusion hooks,
-// the widget list/launcher used by the click dock, plus live data (quick-action
-// states, system stats, persisted favorites). Moving the module to its own repo
-// means reimplementing this wrapper (pass any palette/settings/data source).
+// Nyx is a separate repo (equisdots/nyx) deployed by the dots installer to
+// ui/nyx/ (front/ = island/notch window + control-center dock; mascots/ = the
+// species). It never imports the shell: this thin wrapper injects the live
+// palette, the settings file path, the widget-occlusion hooks, the widget
+// list/launcher used by the dock, plus live data (quick-action states, system
+// stats, persisted favorites).
 // ═══════════════════════════════════════════════════════════════════════════
 
 Item {
