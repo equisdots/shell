@@ -11,10 +11,10 @@ import "./mascots"
 //
 // The module lives in ui/mascots/ (MascotsOverlay + one file per species +
 // MascotFaceEyes + MascotDock) and never imports the shell: this thin wrapper
-// injects the live palette, the settings file path, the widget-occlusion hooks
-// and the widget list/launcher used by the click dock. Moving the module to
-// its own repo means dropping ui/mascots/ and reimplementing this wrapper
-// there (pass any palette/settings/widgets source you like).
+// injects the live palette, the settings file path, the widget-occlusion hooks,
+// the widget list/launcher used by the click dock, plus live data (quick-action
+// states, system stats, persisted favorites). Moving the module to its own repo
+// means reimplementing this wrapper (pass any palette/settings/data source).
 // ═══════════════════════════════════════════════════════════════════════════
 
 Item {
@@ -26,6 +26,81 @@ Item {
     Colors { id: themeColors }
 
     Caching { id: paths }
+
+    // ── favorites (persisted in settings.json → mascots.dock.favorites) ────
+    readonly property var favorites: {
+        Config.rev; // re-evaluate whenever settings mutate
+        let m = Config.rawSettings.mascots || {};
+        let d = m.dock || {};
+        return (d.favorites && d.favorites.length !== undefined) ? d.favorites : [];
+    }
+    function toggleFavorite(id) {
+        let m = Object.assign({}, Config.rawSettings.mascots || {});
+        let d = Object.assign({}, m.dock || {});
+        let f = (d.favorites && d.favorites.length !== undefined) ? d.favorites.slice() : [];
+        let i = f.indexOf(String(id));
+        if (i >= 0) f.splice(i, 1); else f.push(String(id));
+        d.favorites = f;
+        m.dock = d;
+        Config.setSetting("mascots", m);
+    }
+
+    // ── quick-action states (Wi-Fi / Bluetooth / mute), polled ─────────────
+    property var qaState: ({ wifi: false, bt: false, mute: false })
+    function refreshQuick() { qaProc.running = false; qaProc.running = true; }
+    Process {
+        id: qaProc
+        command: ["bash", "-c",
+            "w=$(nmcli -t -f WIFI g 2>/dev/null); " +
+            "b=$(bluetoothctl show 2>/dev/null | grep -c 'Powered: yes'); " +
+            "m=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null | grep -c MUTED); " +
+            "printf '%s|%s|%s' \"$w\" \"$b\" \"$m\""]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                let p = this.text.trim().split("|");
+                root.qaState = {
+                    wifi: p[0] === "enabled",
+                    bt: parseInt(p[1]) > 0,
+                    mute: parseInt(p[2]) > 0
+                };
+            }
+        }
+    }
+    Timer {
+        interval: 4000
+        repeat: true
+        running: true
+        onTriggered: root.refreshQuick()
+    }
+    function runQuick(id) {
+        const mgr = Quickshell.env("HOME") + "/.config/hypr/scripts/qs_manager.sh";
+        let args = null;
+        if (id === "network") args = ["toggle", "network", "wifi"];
+        else if (id === "bluetooth") args = ["toggle", "network", "bt"];
+        else if (id === "volume") args = ["toggle", "volume"];
+        else if (id === "music") args = ["toggle", "music"];
+        if (args) Quickshell.execDetached([mgr].concat(args));
+        else Quickshell.execDetached([mgr, "open", String(id)]);
+        refreshTimer.restart();
+    }
+    Timer { id: refreshTimer; interval: 300; onTriggered: root.refreshQuick() }
+
+    readonly property var quickActions: [
+        { id: "network",        label: "Wi-Fi",  icon: "󰖩", active: root.qaState.wifi },
+        { id: "bluetooth",      label: "BT",     icon: "󰂯", active: root.qaState.bt },
+        { id: "volume",         label: "Volume", icon: "󰕾", active: !root.qaState.mute },
+        { id: "music",          label: "Music",  icon: "󰝚", active: false },
+        { id: "system-monitor", label: "Stats",  icon: "󰨇", active: false }
+    ]
+
+    // ── live system stats ──────────────────────────────────────────────────
+    readonly property var stats: [
+        { id: "cpu",  label: "CPU",  icon: "", value: SysData.cpu + "%",         frac: SysData.cpu / 100 },
+        { id: "ram",  label: "RAM",  icon: "", value: SysData.ramPercent + "%",  frac: SysData.ramPercent / 100 },
+        { id: "temp", label: "TEMP", icon: "", value: SysData.temp + "°",        frac: Math.min(1, SysData.temp / 100) }
+    ]
+    Component.onCompleted: SysData.subscribe()
+    Component.onDestruction: SysData.unsubscribe()
 
     // Live wallpaper preview for the Davincix card: davincix repaints
     // current_wallpaper.png whenever the background changes; watching the file
@@ -69,13 +144,11 @@ Item {
             { id: "bar-editor",     label: "Settings",  icon: "󰒓" },
             { id: "widgets-redactor", label: "Widgets", icon: "󱇙" }
         ]
-        quickActions: [
-            { id: "network",        label: "Wi-Fi",   icon: "󰖩" },
-            { id: "bluetooth",      label: "Bluetooth", icon: "󰂯" },
-            { id: "volume",         label: "Volume",  icon: "󰕾" },
-            { id: "music",          label: "Music",   icon: "󰝚" },
-            { id: "system-monitor", label: "Stats",   icon: "󰨇" }
-        ]
+        quickActions: root.quickActions
+        quickHandler: function(id) { root.runQuick(id); }
+        stats: root.stats
+        favorites: root.favorites
+        onFavoriteToggled: (id) => root.toggleFavorite(id)
         widgetLauncher: function(id) {
             Quickshell.execDetached([
                 Quickshell.env("HOME") + "/.config/hypr/scripts/qs_manager.sh",
