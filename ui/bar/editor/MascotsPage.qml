@@ -41,6 +41,55 @@ Item {
     property bool mDockHero: true
     property bool mDockQuick: true
     property bool mDockSearch: true
+    property string mWatcherFormat: "24"
+    property bool mWatcherSeconds: true
+    property real mWatcherSpeed: 1.0
+    property bool mWatcherMoods: true
+    property bool mWatcherEye: false
+    property string mProfileName: ""
+
+    // ── profiles ───────────────────────────────────────────────────────────
+    readonly property var profilesObj: {
+        Config.rev;
+        let m = Config.rawSettings.mascots || {};
+        return (m.profiles && typeof m.profiles === "object") ? m.profiles : {};
+    }
+    readonly property var profileNames: Object.keys(root.profilesObj)
+    function currentBlock() {
+        let m = Config.rawSettings.mascots || {};
+        let b = {};
+        ["enabled", "species", "count", "size", "position", "appearance",
+         "notchWidth", "notchHeight", "notchOffset", "notchReserve"].forEach(function (k) {
+            if (m[k] !== undefined) b[k] = m[k];
+        });
+        if (m.dock) b.dock = m.dock;
+        if (m.watcher) b.watcher = m.watcher;
+        return b;
+    }
+    function saveProfile(name) {
+        if (!name) return;
+        let m = Object.assign({}, Config.rawSettings.mascots || {});
+        let p = Object.assign({}, root.profilesObj);
+        p[name] = root.currentBlock();
+        m.profiles = p;
+        Config.setSetting("mascots", m);
+    }
+    function loadProfile(name) {
+        let m = Object.assign({}, Config.rawSettings.mascots || {});
+        let block = root.profilesObj[name];
+        if (!block) return;
+        let next = Object.assign({}, block);
+        next.profiles = m.profiles;
+        Config.setSetting("mascots", next);
+        root.syncFromConfig();
+    }
+    function deleteProfile(name) {
+        let m = Object.assign({}, Config.rawSettings.mascots || {});
+        let p = Object.assign({}, root.profilesObj);
+        delete p[name];
+        m.profiles = p;
+        Config.setSetting("mascots", m);
+    }
 
     readonly property var flickable: body.item ? body.item.flickable : null
 
@@ -66,6 +115,12 @@ Item {
         root.mDockHero = dk.hero !== false;
         root.mDockQuick = dk.quick !== false;
         root.mDockSearch = dk.search !== false;
+        let wt = (s.watcher && typeof s.watcher === "object") ? s.watcher : {};
+        root.mWatcherFormat = (wt.format === "12") ? "12" : "24";
+        root.mWatcherSeconds = wt.seconds !== false;
+        root.mWatcherSpeed = (typeof wt.speed === "number") ? wt.speed : 1.0;
+        root.mWatcherMoods = wt.moods !== false;
+        root.mWatcherEye = wt.eye === true;
     }
     Component.onCompleted: root.syncFromConfig()
 
@@ -101,7 +156,24 @@ Item {
             { dock: Object.assign({}, dock, root._pendingDock) }));
         root._pendingDock = {};
     }
-    Component.onDestruction: { root.flush(); root.flushDock(); }
+    // Nested "mascots.watcher" commits.
+    property var _pendingWatcher: ({})
+    Timer { id: saveWatcherTimer; interval: 300; onTriggered: root.flushWatcher() }
+    function setWatcher(key, v) {
+        root._pendingWatcher[key] = v;
+        saveWatcherTimer.restart();
+    }
+    function flushWatcher() {
+        let keys = Object.keys(root._pendingWatcher);
+        if (keys.length === 0) return;
+        let base = (Config.rawSettings.mascots && typeof Config.rawSettings.mascots === "object")
+                   ? Config.rawSettings.mascots : {};
+        let watcher = (base.watcher && typeof base.watcher === "object") ? base.watcher : {};
+        Config.setSetting("mascots", Object.assign({}, base,
+            { watcher: Object.assign({}, watcher, root._pendingWatcher) }));
+        root._pendingWatcher = {};
+    }
+    Component.onDestruction: { root.flush(); root.flushDock(); root.flushWatcher(); }
 
     Loader {
         id: body
@@ -234,7 +306,7 @@ Item {
                         OptionCard {
                             Layout.fillWidth: true
                             bar: root.bar
-                            icon: ""
+                            icon: "󰅐"
                             label: "Watcher"
                             active: root.mSpecies === "watcher"
                             onActivated: { root.mSpecies = "watcher"; root.set("species", "watcher"); }
@@ -589,6 +661,171 @@ Item {
                         label: "Search field"
                         checked: root.mDockSearch
                         onToggled: { root.mDockSearch = !root.mDockSearch; root.setDock("search", root.mDockSearch); }
+                    }
+
+                    Text {
+                        text: "Watcher"
+                        font.family: "Hack Nerd Font"
+                        font.weight: Font.Black
+                        font.pixelSize: bar.s(16)
+                        color: bar.colors.text
+                    }
+                    EditLabel {
+                        bar: root.bar
+                        width: parent.width
+                        text: "Options for the Watcher species: a digital clock retyped with a typewriter cursor."
+                        font.pixelSize: bar.s(11)
+                        color: bar.colors.subtext0
+                        wrapMode: Text.WordWrap
+                    }
+                    GridLayout {
+                        width: parent.width
+                        columns: 2
+                        columnSpacing: bar.s(10)
+                        rowSpacing: bar.s(10)
+                        OptionCard {
+                            Layout.fillWidth: true
+                            bar: root.bar
+                            icon: ""
+                            label: "24-hour"
+                            active: root.mWatcherFormat !== "12"
+                            onActivated: { root.mWatcherFormat = "24"; root.setWatcher("format", "24"); }
+                        }
+                        OptionCard {
+                            Layout.fillWidth: true
+                            bar: root.bar
+                            icon: ""
+                            label: "12-hour"
+                            active: root.mWatcherFormat === "12"
+                            onActivated: { root.mWatcherFormat = "12"; root.setWatcher("format", "12"); }
+                        }
+                    }
+                    ToggleCard {
+                        width: parent.width
+                        bar: root.bar
+                        icon: ""
+                        label: "Show seconds"
+                        checked: root.mWatcherSeconds
+                        onToggled: { root.mWatcherSeconds = !root.mWatcherSeconds; root.setWatcher("seconds", root.mWatcherSeconds); }
+                    }
+                    EffectSlider {
+                        width: parent.width
+                        bar: root.bar
+                        icon: ""
+                        label: "Typewriter speed"
+                        from: 0.5; to: 2.5; step: 0.1
+                        decimals: 1
+                        suffix: "x"
+                        accentColor: bar.colors.mauve
+                        value: root.mWatcherSpeed
+                        onEdited: (v) => { root.mWatcherSpeed = v; root.setWatcher("speed", v); }
+                    }
+                    ToggleCard {
+                        width: parent.width
+                        bar: root.bar
+                        icon: ""
+                        label: "Mood effects"
+                        checked: root.mWatcherMoods
+                        onToggled: { root.mWatcherMoods = !root.mWatcherMoods; root.setWatcher("moods", root.mWatcherMoods); }
+                    }
+                    ToggleCard {
+                        width: parent.width
+                        bar: root.bar
+                        icon: ""
+                        label: "Watcher eye"
+                        checked: root.mWatcherEye
+                        onToggled: { root.mWatcherEye = !root.mWatcherEye; root.setWatcher("eye", root.mWatcherEye); }
+                    }
+
+                    Text {
+                        text: "Profiles"
+                        font.family: "Hack Nerd Font"
+                        font.weight: Font.Black
+                        font.pixelSize: bar.s(16)
+                        color: bar.colors.text
+                    }
+                    EditLabel {
+                        bar: root.bar
+                        width: parent.width
+                        text: "Save the current mascot + notch + dock + watcher settings as a named profile and load it later."
+                        font.pixelSize: bar.s(11)
+                        color: bar.colors.subtext0
+                        wrapMode: Text.WordWrap
+                    }
+                    FieldCard {
+                        width: parent.width
+                        bar: root.bar
+                        label: "Name"
+                        value: root.mProfileName
+                        placeholder: "e.g. minimal"
+                        onEdited: (t) => { root.mProfileName = t; }
+                    }
+                    OptionCard {
+                        width: parent.width
+                        bar: root.bar
+                        icon: ""
+                        label: "Save current as profile"
+                        active: false
+                        onActivated: root.saveProfile(root.mProfileName)
+                    }
+                    Repeater {
+                        model: root.profileNames
+                        delegate: Item {
+                            required property string modelData
+                            width: parent.width
+                            height: bar.s(28)
+                            Text {
+                                anchors.left: parent.left
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: modelData
+                                font.family: "Hack Nerd Font"
+                                font.pixelSize: bar.s(12)
+                                color: bar.colors.text
+                            }
+                            Rectangle {
+                                anchors.right: parent.right
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: bar.s(58); height: bar.s(22); radius: bar.s(7)
+                                color: ldMa.containsMouse ? Qt.alpha(bar.colors.green, 0.2) : Qt.alpha(bar.colors.surface0, 0.4)
+                                border.width: 1; border.color: bar.colors.surface1
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: "Load"
+                                    font.family: "Hack Nerd Font"
+                                    font.pixelSize: bar.s(10)
+                                    color: bar.colors.text
+                                }
+                                MouseArea {
+                                    id: ldMa
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: root.loadProfile(modelData)
+                                }
+                            }
+                            Rectangle {
+                                anchors.right: parent.right
+                                anchors.rightMargin: bar.s(64)
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: bar.s(58); height: bar.s(22); radius: bar.s(7)
+                                color: dlMa.containsMouse ? Qt.alpha(bar.colors.red, 0.2) : Qt.alpha(bar.colors.surface0, 0.4)
+                                border.width: 1; border.color: bar.colors.surface1
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: "Delete"
+                                    font.family: "Hack Nerd Font"
+                                    font.pixelSize: bar.s(10)
+                                    color: bar.colors.text
+                                }
+                                MouseArea {
+                                    id: dlMa
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: root.deleteProfile(modelData)
+                                }
+                            }
+                        }
                     }
                 }
             }
