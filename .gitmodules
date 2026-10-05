@@ -1,0 +1,3 @@
+[submodule "ui/mascots"]
+	path = ui/mascots
+	url = https://github.com/equisdots/nyx.git
