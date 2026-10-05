@@ -12,7 +12,7 @@ Item {
     id: mascot
 
     property int index: 0
-    property string species: "flame"      // flame | cat | dog | eyes | mixed
+    property string species: "flame"      // flame | cat | dog | eyes | dots | watcher | mixed
     property string mood: "idle"
     property real lookX: 0
     property real lookY: 0
@@ -98,6 +98,20 @@ Item {
     DotsMascot {
         anchors.fill: parent
         visible: mascot.kind === "dots"
+        mood: mascot.mood
+        lookX: mascot.lookX
+        lookY: mascot.lookY
+        tint: mascot.tint
+        crust: mascot.crust
+        text: mascot.text
+        red: mascot.red
+        blinking: mascot.blinking
+        clock: mascot.clock
+        palette: mascot.palette
+    }
+    WatcherMascot {
+        anchors.fill: parent
+        visible: mascot.kind === "watcher"
         mood: mascot.mood
         lookX: mascot.lookX
         lookY: mascot.lookY

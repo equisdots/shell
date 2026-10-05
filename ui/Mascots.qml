@@ -69,6 +69,13 @@ Item {
             { id: "bar-editor",     label: "Settings",  icon: "󰒓" },
             { id: "widgets-redactor", label: "Widgets", icon: "󱇙" }
         ]
+        quickActions: [
+            { id: "network",        label: "Wi-Fi",   icon: "󰖩" },
+            { id: "bluetooth",      label: "Bluetooth", icon: "󰂯" },
+            { id: "volume",         label: "Volume",  icon: "󰕾" },
+            { id: "music",          label: "Music",   icon: "󰝚" },
+            { id: "system-monitor", label: "Stats",   icon: "󰨇" }
+        ]
         widgetLauncher: function(id) {
             Quickshell.execDetached([
                 Quickshell.env("HOME") + "/.config/hypr/scripts/qs_manager.sh",
