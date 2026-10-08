@@ -72,7 +72,7 @@ function getLayout(name, mx, my, mw, mh, userScale) {
         // --- Extralarge / Custom Centered ---
         "calendar": { w: s(1450, scale), h: s(750, scale), rx: Math.floor((mw/2)-(s(1450, scale)/2)), ry: Math.floor((mh/2)-(s(750, scale)/2)), comp: "ui/timex/TimexPopup.qml" },
         "updater": { w: s(950, scale), h: s(850, scale), rx: Math.floor((mw/2)-(s(950, scale)/2)), ry: Math.floor((mh/2)-(s(850, scale)/2)), comp: "ui/bar/popups/updater/UpdaterPopup.qml" },
-        "system-monitor": { w: s(580, scale), h: s(480, scale), rx: Math.floor((mw/2)-(s(580, scale)/2)), ry: Math.floor((mh/2)-(s(480, scale)/2)), comp: "ui/bar/popups/system-monitor/SystemMonitor.qml" },
+        "system-monitor": { w: s(720, scale), h: s(600, scale), rx: Math.floor((mw/2)-(s(720, scale)/2)), ry: Math.floor((mh/2)-(s(600, scale)/2)), comp: "ui/bar/popups/system-monitor/SystemMonitor.qml" },
         "quicknotes": { w: s(480, scale), h: s(460, scale), rx: Math.floor((mw/2)-(s(480, scale)/2)), ry: Math.floor((mh/2)-(s(460, scale)/2)), comp: "ui/panels/quicknotes/QuickNotes.qml" },
         "rss-reader": { w: s(650, scale), h: s(560, scale), rx: Math.floor((mw/2)-(s(650, scale)/2)), ry: Math.floor((mh/2)-(s(560, scale)/2)), comp: "ui/panels/rss-reader/RssReader.qml" },
         "file-search": { w: s(600, scale), h: s(500, scale), rx: Math.floor((mw/2)-(s(600, scale)/2)), ry: Math.floor((mh/2)-(s(500, scale)/2)), comp: "ui/panels/file-search/FileSearch.qml" },

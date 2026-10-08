@@ -85,8 +85,8 @@ var SECTIONS = {
         showIcons: false
     },
     "system-monitor": {
-        popupWidth: 580,
-        popupHeight: 480,
+        popupWidth: 720,
+        popupHeight: 600,
         pollMs: 5000,
         historyLength: 30
     },
