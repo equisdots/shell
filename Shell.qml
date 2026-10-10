@@ -3,6 +3,7 @@ import QtQuick
 import Quickshell
 import "./ui"
 import "./ui/bar"
+import "./ui/frame"
 import "./ui/widgets"
 
 ShellRoot {
@@ -13,6 +14,7 @@ ShellRoot {
     }
 
     Main {}
+    Frame {}
     Bar {}
     Floating {}
     Widgets {}

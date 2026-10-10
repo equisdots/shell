@@ -35,6 +35,9 @@ Lock.qml                   alternate entry: PAM session lock (WlSessionLock,
     │                      quickactions, quicknotes, rss-reader, scale,
     │                      window-controls
     ├── notifications/     NotificationPopups
+    ├── frame/             screen frame: ScreenFrame per edge/fullscreen
+    │                      (Frame.qml) + geometry in core/FrameGeometry.js and
+    │                      the live morph box in core/FrameBus.qml
     ├── settings/tabs/     shared tabs (General, Keybind, Monitors, Startup,
     │                      Weather) with the `host` contract
     └── widgets/           floating widget system (faces, redactor, loader)
