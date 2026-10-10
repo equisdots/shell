@@ -228,14 +228,14 @@ Item {
             readonly property color bandColor: withAlpha(roleColor(gcfg.fillColor), gcfg.fillAlpha)
 
             // ---- reservation ----
-            // Edge the nyx notch already reserves (mirrors MascotsOverlay: notch
-            // mode + notchReserve + enabled). The frame must not reserve it too,
-            // or the compositor stacks the zones and pushes the notch down.
+            // Edge the mascot overlay occupies (from its position). The frame
+            // must never reserve this edge: the mascot is anchored to it, so a
+            // frame strut would push the notch/island off the edge (a gap). This
+            // holds for notch and island modes and regardless of notchReserve
+            // (which may be absent in settings.json; the overlay defaults it on).
             readonly property string mascotEdge: {
                 var m = mcfg;
-                if (m && m.enabled === true
-                    && String(m.appearance || "island").toLowerCase() === "notch"
-                    && m.notchReserve === true) {
+                if (m && m.enabled === true) {
                     var pos = String(m.position || "top-center");
                     if (pos.indexOf("top") !== -1) return "top";
                     if (pos.indexOf("bottom") !== -1) return "bottom";
