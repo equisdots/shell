@@ -692,6 +692,7 @@ Item {
             "d_animations":    "editor/AnimationsPage.qml",
             "d_input":         "editor/InputPage.qml",
             "d_shadows":       "editor/ShadowsPage.qml",
+            "d_frame":         "editor/FramePage.qml",
             "d_glass":         "editor/GlassPage.qml",
             "d_mascots":       "editor/MascotsPage.qml"
         };
@@ -722,6 +723,7 @@ Item {
             "d_animations":    animationsLoader,
             "d_input":         inputLoader,
             "d_shadows":       dShadowsLoader,
+            "d_frame":         dFrameLoader,
             "d_glass":         dGlassLoader,
             "d_mascots":       dMascotsLoader
         };
@@ -1667,6 +1669,16 @@ Item {
                         property real slideY: visible ? 0 : root.s(10)
                         Behavior on slideY { NumberAnimation { duration: 250; easing.type: Easing.OutQuart } }
                         transform: Translate { y: dShadowsLoader.slideY }
+                        Behavior on opacity { NumberAnimation { duration: 250 } }
+                    }
+                    Loader {
+                        id: dFrameLoader
+                        anchors.fill: parent
+                        visible: root.currentPage === "d_frame"
+                        opacity: visible ? 1.0 : 0.0
+                        property real slideY: visible ? 0 : root.s(10)
+                        Behavior on slideY { NumberAnimation { duration: 250; easing.type: Easing.OutQuart } }
+                        transform: Translate { y: dFrameLoader.slideY }
                         Behavior on opacity { NumberAnimation { duration: 250 } }
                     }
                     Loader {

@@ -47,6 +47,11 @@ Item {
     property real targetMasterX: geo.x
     property real targetMasterY: geo.y
 
+    // Screen edge the launcher is anchored to, read by ui/Main.qml and
+    // forwarded to core/FrameBus.qml so the screen frame carves its notch
+    // where the launcher meets the border. Centered = no notch.
+    readonly property string frameEdge: (lcfg.position === "center") ? "" : lcfg.position
+
     // Outer radius for the host-drawn panel shadow (launcher bg radius).
     readonly property real shadowRadius: s(lcfg.radius)
 

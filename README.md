@@ -25,6 +25,11 @@ Running subsystems:
   (`settings.json → glass`, hyprland `layers.lua`; Theme → Glass page).
 - **Mascots** — click-through top island + chibi cursor-following mascots that
   morph into a dock with the launcher (`ui/Mascots.qml`; Theme → Mascots page).
+- **Frame** — a bezel hugging all four screen edges, drawn on the Bottom layer
+  and reserving space so tiled windows never cross it; it hugs the bar, the nyx
+  notch and edge-anchored widgets (launcher/panels) with rounded corners and
+  morphs live with them (`ui/frame/Frame.qml`, `core/FrameGeometry.js`,
+  `core/FrameBus.qml`; `settings.json → frame`; Theme → Frame page).
 - **Panels** — clipboard, davincix, file-search, focustime, idle,
   quickactions, quicknotes, rss-reader, scale, window-controls.
 - **Lock**, **notifications** (server + history + popups) and the **floating

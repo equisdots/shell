@@ -427,6 +427,33 @@ PanelWindow {
         function onTargetMasterYChanged()      { masterWindow.applyMasterTargets(); }
     }
 
+    // =========================================================
+    // --- SCREEN FRAME BUS (core/FrameBus.qml)
+    // Publishes the live morph box of the active widget so the screen frame
+    // (ui/frame/Frame.qml) can carve its notch in sync with the open/close
+    // animation. `edge` comes from the widget when it exposes a `frameEdge`
+    // property (edge-anchored panels like the launcher); centred panels omit it.
+    // =========================================================
+    function publishFrameBox() {
+        if (isVisible && currentActive !== "hidden") {
+            let it = widgetStack.currentItem;
+            let edge = (it && it.frameEdge !== undefined) ? it.frameEdge : "";
+            FrameBus.publish(animX, animY, animW, animH, edge);
+        } else {
+            FrameBus.clear();
+        }
+    }
+
+    Connections {
+        target: masterWindow
+        function onAnimXChanged()        { masterWindow.publishFrameBox(); }
+        function onAnimYChanged()        { masterWindow.publishFrameBox(); }
+        function onAnimWChanged()        { masterWindow.publishFrameBox(); }
+        function onAnimHChanged()        { masterWindow.publishFrameBox(); }
+        function onIsVisibleChanged()    { masterWindow.publishFrameBox(); }
+        function onCurrentActiveChanged() { masterWindow.publishFrameBox(); }
+    }
+
     onIsVisibleChanged: {
         if (isVisible) widgetStack.forceActiveFocus();
     }
