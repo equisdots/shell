@@ -228,7 +228,23 @@ Item {
             readonly property color bandColor: withAlpha(roleColor(gcfg.fillColor), gcfg.fillAlpha)
 
             // ---- reservation ----
-            readonly property var reserveEdges: FG.reserveEdges(gcfg, barCfg ? barCfg.position : "")
+            // Edge the nyx notch already reserves (mirrors MascotsOverlay: notch
+            // mode + notchReserve + enabled). The frame must not reserve it too,
+            // or the compositor stacks the zones and pushes the notch down.
+            readonly property string mascotEdge: {
+                var m = mcfg;
+                if (m && m.enabled === true
+                    && String(m.appearance || "island").toLowerCase() === "notch"
+                    && m.notchReserve === true) {
+                    var pos = String(m.position || "top-center");
+                    if (pos.indexOf("top") !== -1) return "top";
+                    if (pos.indexOf("bottom") !== -1) return "bottom";
+                    if (pos.indexOf("left") !== -1) return "left";
+                    if (pos.indexOf("right") !== -1) return "right";
+                }
+                return "";
+            }
+            readonly property var reserveEdges: FG.reserveEdges(gcfg, barCfg ? barCfg.position : "", mascotEdge)
             readonly property real reservePx: FG.reservePx(gcfg)
             function reserves(edge) {
                 return on && gcfg.reserve && reservePx > 0 && reserveEdges.indexOf(edge) !== -1;

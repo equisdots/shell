@@ -97,15 +97,15 @@ function normalize(raw) {
 }
 
 // ── Reserva de espacio ────────────────────────────────────────────────────
-// Un lado no debe reservar si ya lo reserva otro elemento: por defecto se
-// omite el lado ocupado por la barra (que ya reserva su banda). Devuelve la
-// lista de lados a reservar.
-function reserveEdges(cfg, barPosition) {
+// Un lado no debe reservar si ya lo reserva otro elemento: el de la barra y el
+// de la mascota (notch con notchReserve) se omiten para no empujar su capa.
+function reserveEdges(cfg, barPosition, mascotEdge) {
     if (!cfg || cfg.reserve === false) return [];
     var out = [];
     for (var i = 0; i < EDGES.length; i++) {
         var e = EDGES[i];
         if (barPosition && barPosition === e) continue;
+        if (mascotEdge && mascotEdge === e) continue;
         out.push(e);
     }
     return out;
