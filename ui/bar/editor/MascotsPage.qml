@@ -188,32 +188,71 @@ Item {
     Component.onDestruction: { root.flush(); root.flushDock(); root.flushWatcher(); }
 
     // ── mascot lineup (discovered species) ─────────────────────────────────
-    function catalogIndex(id) {
+    // The editor always shows an ordered lineup (top -> bottom = left -> right
+    // in the island). Editing it switches to the array form of `species`.
+    readonly property var editorLineup: root.mLineupMode ? root.mLineup
+        : (root.mSpecies ? [String(root.mSpecies)] : [])
+    readonly property var availableSpecies: {
+        let all = MascotsCatalog.mascots || [];
+        let have = root.editorLineup;
+        let out = [];
+        for (let i = 0; i < all.length; i++)
+            if (have.indexOf(String(all[i].id)) < 0) out.push(all[i]);
+        return out;
+    }
+    function catInfo(id) {
         let m = MascotsCatalog.mascots || [];
-        for (let i = 0; i < m.length; i++) if (String(m[i].id) === id) return i;
-        return 9999;
+        for (let i = 0; i < m.length; i++) if (String(m[i].id) === String(id)) return m[i];
+        return { id: String(id), label: String(id), icon: "" };
     }
-    function lineupEnabled(id) {
-        id = String(id);
-        if (root.mLineupMode) return root.mLineup.indexOf(id) !== -1;
-        return root.mSpecies === id;
-    }
-    function toggleLineup(id) {
-        id = String(id);
-        let arr = root.mLineupMode ? root.mLineup.slice()
-            : (root.mSpecies ? [String(root.mSpecies)] : []);
-        let i = arr.indexOf(id);
-        if (i >= 0) {
-            if (arr.length <= 1) return;   // keep at least one mascot
-            arr.splice(i, 1);
-        } else {
-            arr.push(id);
-        }
-        arr.sort((a, b) => root.catalogIndex(a) - root.catalogIndex(b));
+    function writeLineup(arr) {
+        let a = arr.slice();
         root.mLineupMode = true;
-        root.mLineup = arr;
-        root.set("species", arr);
+        root.mLineup = a;
+        root.set("species", a);
     }
+    function addSpecies(id) {
+        id = String(id);
+        let a = root.editorLineup.slice();
+        if (a.indexOf(id) < 0) a.push(id);
+        root.writeLineup(a);
+    }
+    function removeSpecies(id) {
+        id = String(id);
+        let a = root.editorLineup.slice();
+        let i = a.indexOf(id);
+        if (i >= 0 && a.length > 1) { a.splice(i, 1); root.writeLineup(a); }
+    }
+    function reorderLineup(from, to) {
+        let a = root.editorLineup.slice();
+        if (from < 0 || from >= a.length) return;
+        let moved = a.splice(from, 1)[0];
+        to = Math.max(0, Math.min(a.length, to));
+        a.splice(to, 0, moved);
+        root.writeLineup(a);
+    }
+
+    // ── drag & drop state (reorder the lineup) ─────────────────────────────
+    property bool dndActive: false
+    property string dndId: ""
+    property int dndGap: 0
+    property real dndX: 0
+    property real dndY: 0
+    function gapAt(listY) {
+        let n = root.editorLineup.length;
+        let rowH = root.bar ? root.bar.s(44) : 44;
+        let step = rowH + (root.bar ? root.bar.s(6) : 6);
+        for (let i = 0; i < n; i++) if (listY < i * step + rowH / 2) return i;
+        return n;
+    }
+    function commitDnd() {
+        let from = root.editorLineup.indexOf(String(root.dndId));
+        if (from < 0) return;
+        let to = root.dndGap;
+        if (to > from) to -= 1;
+        if (to !== from) root.reorderLineup(from, to);
+    }
+    function cancelDnd() { root.dndActive = false; root.dndId = ""; }
 
     Loader {
         id: body
@@ -225,8 +264,41 @@ Item {
     Component {
         id: pageBody
         Item {
+            id: pageHost
             anchors.fill: parent
             property alias flickable: pageFlick
+
+            // Drag ghost for the lineup reorder (rendered above the page via z).
+            Rectangle {
+                visible: root.dndActive
+                x: root.dndX - width / 2
+                y: root.dndY - height / 2
+                width: bar.s(160); height: bar.s(40)
+                radius: bar.s(11)
+                color: bar.colors.surface2
+                border.width: 1
+                border.color: bar.colors.mauve
+                opacity: 0.96
+                z: 1000
+                Row {
+                    anchors.centerIn: parent
+                    spacing: bar.s(8)
+                    Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: root.catInfo(root.dndId).icon || ""
+                        font.family: "Hack Nerd Font"
+                        font.pixelSize: bar.s(18)
+                        color: bar.colors.mauve
+                    }
+                    Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: root.catInfo(root.dndId).label || root.dndId
+                        font.family: "Hack Nerd Font"
+                        font.pixelSize: bar.s(13)
+                        color: bar.colors.text
+                    }
+                }
+            }
 
             Flickable {
                 id: pageFlick
@@ -287,31 +359,186 @@ Item {
                         font.pixelSize: bar.s(16)
                         color: bar.colors.text
                     }
-                    GridLayout {
+
+                    // Ordered lineup: drag the handle to reorder. Top -> bottom
+                    // maps to left -> right in the island.
+                    Item {
+                        id: lineupHost
                         width: parent.width
-                        columns: 3
-                        columnSpacing: bar.s(10)
-                        rowSpacing: bar.s(10)
-                        Repeater {
-                            model: MascotsCatalog.mascots
-                            delegate: OptionCard {
-                                required property var modelData
-                                Layout.fillWidth: true
-                                bar: root.bar
-                                icon: modelData.icon || ""
-                                label: modelData.label || modelData.id
-                                active: root.lineupEnabled(modelData.id)
-                                onActivated: root.toggleLineup(String(modelData.id))
+                        height: lineupList.height
+
+                        Column {
+                            id: lineupList
+                            width: parent.width
+                            spacing: bar.s(6)
+                            readonly property int rowH: bar.s(44)
+
+                            Repeater {
+                                model: root.editorLineup
+                                delegate: Rectangle {
+                                    id: lineupRow
+                                    required property string modelData
+                                    required property int index
+
+                                    readonly property var info: root.catInfo(modelData)
+                                    width: lineupList.width
+                                    height: lineupList.rowH
+                                    radius: bar.s(11)
+                                    color: bar.colors.surface0
+                                    border.width: 1
+                                    border.color: bar.colors.surface1
+                                    opacity: (root.dndActive && root.dndId === modelData) ? 0.35 : 1.0
+                                    Behavior on opacity { NumberAnimation { duration: 120 } }
+
+                                    Row {
+                                        anchors.left: parent.left
+                                        anchors.leftMargin: bar.s(12)
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        spacing: bar.s(10)
+                                        Text {
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            text: "󰹽"
+                                            font.family: "Hack Nerd Font"
+                                            font.pixelSize: bar.s(18)
+                                            color: handleHover.containsMouse ? bar.colors.mauve : bar.colors.overlay1
+                                        }
+                                        Text {
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            text: lineupRow.info.icon || ""
+                                            font.family: "Hack Nerd Font"
+                                            font.pixelSize: bar.s(20)
+                                            color: bar.colors.mauve
+                                        }
+                                        Text {
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            text: lineupRow.info.label || modelData
+                                            font.family: "Hack Nerd Font"
+                                            font.pixelSize: bar.s(14)
+                                            color: bar.colors.text
+                                        }
+                                    }
+
+                                    // remove
+                                    Item {
+                                        width: bar.s(22); height: bar.s(22)
+                                        anchors.right: parent.right
+                                        anchors.rightMargin: bar.s(12)
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        Text {
+                                            anchors.centerIn: parent
+                                            text: "󰅖"
+                                            font.family: "Hack Nerd Font"
+                                            font.pixelSize: bar.s(16)
+                                            color: removeHover.containsMouse ? bar.colors.red : bar.colors.overlay1
+                                        }
+                                        MouseArea {
+                                            id: removeHover
+                                            anchors.fill: parent
+                                            hoverEnabled: true
+                                            onClicked: root.removeSpecies(modelData)
+                                        }
+                                    }
+
+                                    // drag handle only, so the page can still scroll
+                                    MouseArea {
+                                        id: handleHover
+                                        width: bar.s(34)
+                                        height: parent.height
+                                        anchors.left: parent.left
+                                        hoverEnabled: true
+                                        preventStealing: true
+                                        property point pressPt: Qt.point(0, 0)
+                                        onPressed: mouse => { pressPt = Qt.point(mouse.x, mouse.y); }
+                                        onPositionChanged: mouse => {
+                                            if (!pressed) return;
+                                            let dist = Math.abs(mouse.x - pressPt.x) + Math.abs(mouse.y - pressPt.y);
+                                            if (!root.dndActive && dist > bar.s(8)) {
+                                                root.dndActive = true;
+                                                root.dndId = String(modelData);
+                                                root.dndGap = lineupRow.index;
+                                            }
+                                            if (root.dndActive) {
+                                                let local = handleHover.mapToItem(lineupList, mouse.x, mouse.y);
+                                                root.dndGap = root.gapAt(local.y);
+                                                let p = handleHover.mapToItem(root, mouse.x, mouse.y);
+                                                root.dndX = p.x; root.dndY = p.y;
+                                            }
+                                        }
+                                        onReleased: { if (root.dndActive) root.commitDnd(); root.cancelDnd(); }
+                                        onCanceled: root.cancelDnd()
+                                    }
+                                }
                             }
+                        }
+
+                        // insertion indicator
+                        Rectangle {
+                            visible: root.dndActive
+                            width: lineupHost.width
+                            height: bar.s(3)
+                            radius: height / 2
+                            color: bar.colors.mauve
+                            y: Math.max(0, Math.min(lineupList.height,
+                                root.dndGap * (lineupList.rowH + lineupList.spacing) - lineupList.spacing / 2))
                         }
                     }
                     EditLabel {
                         bar: root.bar
                         width: parent.width
-                        text: "Each enabled species adds one mascot to the island (the width follows the selection); they line up in the order shown here. Species are discovered from the shipped module and from ~/.config/hypr/mascots/species/ — drop a manifest .json + a QML file there to add your own."
+                        text: "Drag the handle to reorder (top → bottom = left → right in the island); tap ✕ to remove. Species are discovered from the shipped module and from ~/.config/hypr/mascots/species/ — drop a manifest .json + a QML file there to add your own."
                         font.pixelSize: bar.s(11)
                         color: bar.colors.subtext0
                         wrapMode: Text.WordWrap
+                    }
+
+                    Text {
+                        visible: root.availableSpecies.length > 0
+                        text: "Add"
+                        font.family: "Hack Nerd Font"
+                        font.weight: Font.Black
+                        font.pixelSize: bar.s(16)
+                        color: bar.colors.text
+                    }
+                    Flow {
+                        width: parent.width
+                        spacing: bar.s(8)
+                        Repeater {
+                            model: root.availableSpecies
+                            delegate: Rectangle {
+                                required property var modelData
+                                width: addRow.implicitWidth + bar.s(22)
+                                height: bar.s(36)
+                                radius: height / 2
+                                color: addHover.containsMouse ? bar.colors.surface2 : bar.colors.surface0
+                                border.width: 1
+                                border.color: bar.colors.surface1
+                                Row {
+                                    id: addRow
+                                    anchors.centerIn: parent
+                                    spacing: bar.s(8)
+                                    Text {
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: modelData.icon || "󰐕"
+                                        font.family: "Hack Nerd Font"
+                                        font.pixelSize: bar.s(16)
+                                        color: bar.colors.mauve
+                                    }
+                                    Text {
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: modelData.label || modelData.id
+                                        font.family: "Hack Nerd Font"
+                                        font.pixelSize: bar.s(13)
+                                        color: bar.colors.text
+                                    }
+                                }
+                                MouseArea {
+                                    id: addHover
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    onClicked: root.addSpecies(String(modelData.id))
+                                }
+                            }
+                        }
                     }
 
                     Text {
