@@ -4,10 +4,10 @@
 #
 # Emits a single JSON object: { "mascots": [ ... ], "things": [ ... ] }.
 #
-#   mascots  one *.json manifest per species, under the shipped (nyx) and user
-#            species dirs. A manifest may carry "entry" (a QML file resolved
-#            relative to the manifest dir) for a custom species; without it the
-#            species is one of the built-in kinds (id == kind).
+#   mascots  one manifest per species, under the shipped (nyx) and user species
+#            dirs. A species is either a per-species folder with a manifest.json
+#            (its `entry`/`popover` resolve relative to that folder) or a flat
+#            *.json file. `_base` is set to the manifest's directory.
 #   things   one *.json descriptor per notch card, under the shipped (repo) and
 #            user notch dirs: { id, label, icon, thumb?, exec?, enabled? }.
 #
@@ -25,19 +25,32 @@ if ! command -v jq >/dev/null 2>&1; then
     exit 0
 fi
 
+# Normalize a JSON manifest file to one object with a "_base" dir. A file may
+# hold a single object or an array of them.
+manifest() {
+    local file="$1" base="$2"
+    jq -c --arg base "$base" '
+        if type == "array" then
+            .[] | (if type == "object" then . + { _base: $base } else empty end)
+        elif type == "object" then . + { _base: $base }
+        else empty end' "$file" 2>/dev/null || true
+}
+
 scan_dir() {
     local dir="$1"
     [ -n "$dir" ] && [ -d "$dir" ] || return 0
     local f
+    # Flat *.json manifests (legacy / user drop-in files).
     for f in "$dir"/*.json; do
         [ -f "$f" ] || continue
-        # A file may hold one object or an array of them (repo defaults ship an
-        # array; a user drops a single object).
-        jq -c --arg base "$dir" '
-            if type == "array" then
-                .[] | (if type == "object" then . + { _base: $base } else empty end)
-            elif type == "object" then . + { _base: $base }
-            else empty end' "$f" 2>/dev/null || true
+        manifest "$f" "$dir"
+    done
+    # Per-species folders: <dir>/<id>/manifest.json (entry/popover relative to
+    # the folder). Only manifest.json is read, so stray JSON in a species folder
+    # is ignored.
+    for f in "$dir"/*/manifest.json; do
+        [ -f "$f" ] || continue
+        manifest "$f" "$(dirname "$f")"
     done
 }
 
