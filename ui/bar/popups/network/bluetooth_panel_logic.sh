@@ -4,9 +4,12 @@
 STRICT_SPAM_FILTER=true
 # ---------------------
 
-SCRIPT_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
-source "$SCRIPT_DIR/../../caching.sh"
-qs_ensure_cache "network"
+# caching.sh ships outside the shell tree and its old relative path broke after
+# the core/ui split. Resolve the network dirs directly, self-contained.
+QS_CACHE_NETWORK="${QS_CACHE_NETWORK:-$HOME/.cache/quickshell/network}"
+QS_RUN_DIR="${QS_RUN_DIR:-${XDG_RUNTIME_DIR:-/tmp}/quickshell}"
+mkdir -p "$QS_CACHE_NETWORK" "$QS_RUN_DIR"
+export QS_CACHE_NETWORK QS_RUN_DIR
 
 CACHE_DIR="$QS_CACHE_NETWORK"
 PID_FILE="$QS_RUN_DIR/bt_scan_pid"

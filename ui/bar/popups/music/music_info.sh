@@ -3,8 +3,15 @@
 # -----------------------------------------------------------------------------
 # CACHING
 # -----------------------------------------------------------------------------
-source "$(dirname "${BASH_SOURCE[0]}")/../../caching.sh"
-qs_ensure_cache "music"
+# caching.sh ships outside the shell tree (hyprland/niri scripts/), so the old
+# relative source broke after the core/ui split: the script now lives at
+# quickshell/ui/bar/popups/music/, QS_RUN_MUSIC stayed unset, artUrl became a
+# non-existent "/covers/..." path and the bar cover rendered black. Resolve the
+# canonical dirs here instead (same contract as ui/widgets/faces/MusicFace.qml).
+QS_RUN_MUSIC="${QS_RUN_MUSIC:-${XDG_RUNTIME_DIR:-/tmp}/quickshell/music}"
+QS_STATE_MUSIC="${QS_STATE_MUSIC:-$HOME/.local/state/quickshell/music}"
+mkdir -p "$QS_RUN_MUSIC" "$QS_STATE_MUSIC"
+export QS_RUN_MUSIC QS_STATE_MUSIC
 
 TMP_DIR="$QS_RUN_MUSIC/covers"
 STATE_FILE="$QS_STATE_MUSIC/last_state.json"

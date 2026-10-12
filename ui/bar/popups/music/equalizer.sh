@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 
-source "$(dirname "${BASH_SOURCE[0]}")/../../caching.sh"
-qs_ensure_cache "music"
+# caching.sh ships outside the shell tree; resolve the music run dir directly
+# (QS_RUN_MUSIC), matching the contract in ui/widgets/faces/MusicFace.qml.
+QS_RUN_MUSIC="${QS_RUN_MUSIC:-${XDG_RUNTIME_DIR:-/tmp}/quickshell/music}"
+mkdir -p "$QS_RUN_MUSIC"
+export QS_RUN_MUSIC
 
 STATE_FILE="$QS_RUN_MUSIC/eq_state.json"
 PRESET_DIR="$HOME/.config/easyeffects/output"
