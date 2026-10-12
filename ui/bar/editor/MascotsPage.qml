@@ -47,6 +47,11 @@ Item {
     property bool mWatcherMoods: true
     property bool mWatcherEye: false
     property string mProfileName: ""
+    // Lineup mode: `mascots.species` is an array of enabled species ids (one
+    // mascot each, in catalog order). When false, it is the legacy single
+    // string and `count` repeats it.
+    property bool mLineupMode: false
+    property var mLineup: []
 
     // ── profiles ───────────────────────────────────────────────────────────
     readonly property var profilesObj: {
@@ -100,6 +105,13 @@ Item {
         root.mSize = s.size !== undefined ? s.size : 1.0;
         let sp = (typeof s.species === "string") ? s.species : "flame";
         root.mSpecies = (sp === "classic") ? "flame" : sp;
+        if (Array.isArray(s.species)) {
+            root.mLineupMode = true;
+            root.mLineup = s.species.map(function (x) { return String(x); });
+        } else {
+            root.mLineupMode = false;
+            root.mLineup = [];
+        }
         root.mCount = Math.max(1, Math.min(3, Math.round(s.count !== undefined ? s.count : 3)));
         root.mPosition = (typeof s.position === "string" && s.position !== "") ? s.position : "top-center";
         root.mAppearance = (s.appearance === "notch") ? "notch" : "island";
@@ -174,6 +186,34 @@ Item {
         root._pendingWatcher = {};
     }
     Component.onDestruction: { root.flush(); root.flushDock(); root.flushWatcher(); }
+
+    // ── mascot lineup (discovered species) ─────────────────────────────────
+    function catalogIndex(id) {
+        let m = MascotsCatalog.mascots || [];
+        for (let i = 0; i < m.length; i++) if (String(m[i].id) === id) return i;
+        return 9999;
+    }
+    function lineupEnabled(id) {
+        id = String(id);
+        if (root.mLineupMode) return root.mLineup.indexOf(id) !== -1;
+        return root.mSpecies === id;
+    }
+    function toggleLineup(id) {
+        id = String(id);
+        let arr = root.mLineupMode ? root.mLineup.slice()
+            : (root.mSpecies ? [String(root.mSpecies)] : []);
+        let i = arr.indexOf(id);
+        if (i >= 0) {
+            if (arr.length <= 1) return;   // keep at least one mascot
+            arr.splice(i, 1);
+        } else {
+            arr.push(id);
+        }
+        arr.sort((a, b) => root.catalogIndex(a) - root.catalogIndex(b));
+        root.mLineupMode = true;
+        root.mLineup = arr;
+        root.set("species", arr);
+    }
 
     Loader {
         id: body
@@ -252,70 +292,23 @@ Item {
                         columns: 3
                         columnSpacing: bar.s(10)
                         rowSpacing: bar.s(10)
-                        OptionCard {
-                            Layout.fillWidth: true
-                            bar: root.bar
-                            icon: "󰈸"
-                            label: "Flame"
-                            active: root.mSpecies !== "cat" && root.mSpecies !== "dog"
-                                && root.mSpecies !== "eyes" && root.mSpecies !== "dots"
-                                && root.mSpecies !== "watcher"
-                                && root.mSpecies !== "mixed"
-                            onActivated: { root.mSpecies = "flame"; root.set("species", "flame"); }
-                        }
-                        OptionCard {
-                            Layout.fillWidth: true
-                            bar: root.bar
-                            icon: "󰄛"
-                            label: "Cats"
-                            active: root.mSpecies === "cat"
-                            onActivated: { root.mSpecies = "cat"; root.set("species", "cat"); }
-                        }
-                        OptionCard {
-                            Layout.fillWidth: true
-                            bar: root.bar
-                            icon: "󰩃"
-                            label: "Dogs"
-                            active: root.mSpecies === "dog"
-                            onActivated: { root.mSpecies = "dog"; root.set("species", "dog"); }
-                        }
-                        OptionCard {
-                            Layout.fillWidth: true
-                            bar: root.bar
-                            icon: "󰈈"
-                            label: "Eyes"
-                            active: root.mSpecies === "eyes"
-                            onActivated: { root.mSpecies = "eyes"; root.set("species", "eyes"); }
-                        }
-                        OptionCard {
-                            Layout.fillWidth: true
-                            bar: root.bar
-                            icon: "󰏩"
-                            label: "Mixed"
-                            active: root.mSpecies === "mixed"
-                            onActivated: { root.mSpecies = "mixed"; root.set("species", "mixed"); }
-                        }
-                        OptionCard {
-                            Layout.fillWidth: true
-                            bar: root.bar
-                            icon: "󰇘"
-                            label: "Dots"
-                            active: root.mSpecies === "dots"
-                            onActivated: { root.mSpecies = "dots"; root.set("species", "dots"); }
-                        }
-                        OptionCard {
-                            Layout.fillWidth: true
-                            bar: root.bar
-                            icon: "󰅐"
-                            label: "Watcher"
-                            active: root.mSpecies === "watcher"
-                            onActivated: { root.mSpecies = "watcher"; root.set("species", "watcher"); }
+                        Repeater {
+                            model: MascotsCatalog.mascots
+                            delegate: OptionCard {
+                                required property var modelData
+                                Layout.fillWidth: true
+                                bar: root.bar
+                                icon: modelData.icon || ""
+                                label: modelData.label || modelData.id
+                                active: root.lineupEnabled(modelData.id)
+                                onActivated: root.toggleLineup(String(modelData.id))
+                            }
                         }
                     }
                     EditLabel {
                         bar: root.bar
                         width: parent.width
-                        text: "Flame is the default little fire; Cats and Dogs are the animal faces (whiskers / muzzle and tongue); Eyes is just a pair of manga eyes; Dots is a cluster of colored dots that trails the cursor; Watcher is a digital clock that retypes each field with a typewriter cursor. Mixed alternates cat / dog / eyes."
+                        text: "Each enabled species adds one mascot to the island (the width follows the selection); they line up in the order shown here. Species are discovered from the shipped module and from ~/.config/hypr/mascots/species/ — drop a manifest .json + a QML file there to add your own."
                         font.pixelSize: bar.s(11)
                         color: bar.colors.subtext0
                         wrapMode: Text.WordWrap
@@ -478,6 +471,7 @@ Item {
                     }
 
                     Text {
+                        visible: !root.mLineupMode
                         text: "How many"
                         font.family: "Hack Nerd Font"
                         font.weight: Font.Black
@@ -485,6 +479,7 @@ Item {
                         color: bar.colors.text
                     }
                     GridLayout {
+                        visible: !root.mLineupMode
                         width: parent.width
                         columns: 3
                         columnSpacing: bar.s(10)

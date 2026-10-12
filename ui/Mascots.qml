@@ -115,6 +115,31 @@ Item {
         onFileChanged: root.wallpaperRev++
     }
 
+    // ── notch cards ("things") ─────────────────────────────────────────────
+    // Discovered from the shipped (repo) and user dirs by MascotsCatalog; a
+    // user file can add a card or override a shipped one. An entry may carry
+    // "exec" (a shell command) instead of opening a shell panel.
+    readonly property var notchWidgets: {
+        let t = MascotsCatalog.things || [];
+        let out = [];
+        for (let i = 0; i < t.length; i++) {
+            let x = t[i];
+            if (!x || x.enabled === false || !x.id) continue;
+            let e = { id: String(x.id), label: x.label || String(x.id), icon: x.icon || "" };
+            if (x.thumb) e.thumb = x.thumb;
+            if (String(x.id) === "wallpaper")
+                e.thumb = "file://" + root.wallpaperPreviewPath + "?v=" + root.wallpaperRev;
+            out.push(e);
+        }
+        return out;
+    }
+    function thingExec(id) {
+        let t = MascotsCatalog.things || [];
+        for (let i = 0; i < t.length; i++)
+            if (t[i] && String(t[i].id) === String(id) && t[i].exec) return String(t[i].exec);
+        return "";
+    }
+
     MascotsOverlay {
         palette: themeColors
         settingsPath: Quickshell.env("HOME") + "/.config/hypr/settings.json"
@@ -123,33 +148,16 @@ Item {
         widgetRectProvider: function(name, sw, sh, scale) {
             return Registry.getLayout(name, 0, 0, sw, sh, scale);
         }
-        widgetList: [
-            { id: "calendar",       label: "Timex",     icon: "󰅐" },
-            { id: "wallpaper",      label: "Davincix",  icon: "󰥶",
-              thumb: "file://" + root.wallpaperPreviewPath + "?v=" + root.wallpaperRev },
-            { id: "applauncher",    label: "Launcher",  icon: "󰀻" },
-            { id: "clipboard",      label: "Clipboard", icon: "󰨸" },
-            { id: "idle",           label: "Idle",      icon: "󰤄" },
-            { id: "focustime",      label: "Focus",     icon: "󰔛" },
-            { id: "updater",        label: "Updater",   icon: "󰇚" },
-            { id: "system-monitor", label: "Monitor",   icon: "󰨇" },
-            { id: "quicknotes",     label: "Notes",     icon: "󱇗" },
-            { id: "rss-reader",     label: "RSS",       icon: "󰑫" },
-            { id: "file-search",    label: "Files",     icon: "󰮗" },
-            { id: "music",          label: "Music",     icon: "󰝚" },
-            { id: "network",        label: "Network",   icon: "󰖩" },
-            { id: "volume",         label: "Volume",    icon: "󰕾" },
-            { id: "battery",        label: "Battery",   icon: "󰁹" },
-            { id: "palette",        label: "Palettes",  icon: "󰏘" },
-            { id: "bar-editor",     label: "Settings",  icon: "󰒓" },
-            { id: "widgets-redactor", label: "Widgets", icon: "󱇙" }
-        ]
+        mascotCatalog: MascotsCatalog.mascots
+        widgetList: root.notchWidgets
         quickActions: root.quickActions
         quickHandler: function(id) { root.runQuick(id); }
         stats: root.stats
         favorites: root.favorites
         onFavoriteToggled: (id) => root.toggleFavorite(id)
         widgetLauncher: function(id) {
+            let exec = root.thingExec(id);
+            if (exec !== "") { Quickshell.execDetached(["bash", "-c", exec]); return; }
             Quickshell.execDetached([
                 Quickshell.env("HOME") + "/.config/hypr/scripts/qs_manager.sh",
                 "open", String(id)

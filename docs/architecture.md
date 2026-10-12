@@ -16,7 +16,10 @@ Lock.qml                   alternate entry: PAM session lock (WlSessionLock,
 │   ├── Personalization.js option tables for every subsystem
 │   ├── EditorNav.js       Settings panel groups/pages model
 │   ├── Theme.qml / SysData.qml / Cava.qml / WidgetSync.qml
-│   └── scripts/watchers/  data_fetchers (executable, feed the bar)
+│   ├── MascotsCatalog.qml discovery for the Nyx notch: scans the shipped +
+│   │                      user dirs (mascots and notch cards) for the UI
+│   ├── scripts/watchers/  data_fetchers (executable, feed the bar)
+│   └── scripts/mascots_scan.sh  the mascot/notch-card discovery probe
 └── ui/                    everything visible
     ├── Main.qml           master window: widget stack + morph + IPC handler
     ├── Floating.qml       floating widget host
