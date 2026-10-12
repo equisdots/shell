@@ -97,32 +97,12 @@ are not covered.
 
 ## Mascots
 
-`settings.json → mascots` (`enabled`, `size`, `species`, `count`, `position`)
-drives the standalone Nyx module deployed by the dots installer to `ui/nyx/`
-(wrapped by `ui/Mascots.qml`, which injects the live palette and paths): a
-small island, tinted from the
-active palette, that fades away while the app launcher is open (the island
-becomes the dock, detected through Main's `current_widget` run file) or when
-any widget overlaps it. `position` moves the island to any of the nine anchors
-(top/center/bottom × left/center/right); the widget dock always unfolds from
-the island toward the screen centre (upwards when the island sits at the
-bottom). The mascots stay in the island and their eyes follow the cursor
-(position polled with `hyprctl cursorpos`, look offset proportional to the eye
-size); hovering the island surprises them and they calm down on leave. They
-react with staggered random moods (angry, surprised, happy, sleepy) when
-windows (`openwindow` / `closewindow` from Hyprland socket2) or widgets open
-and close, and fall asleep after 30 s idle. `count` shows 1, 2 or 3 mascots
-(the island widens or narrows around them). `species` picks the look:
-`flame` (default little fire), `cat` (pointy ears with inner ear, forehead
-stripes, whiskers, pink nose), `dog` (floppy ears, eye patch, muzzle and
-tongue when happy), `eyes` (just a pair of manga eyes with lash, lids and
-tracking irises), `dots` (a cluster of colored dots that trails the cursor,
-no face) or `mixed` (cat / dog / eyes). Clicking the island unfolds
-`MascotDock`: a rectangular panel with three widget miniatures per page
-(chevrons + page dots); picking one launches that widget through the shell's
-`qs_manager.sh open <id>`. Only the island and the open dock capture input;
-the rest of the surface stays click-through. Edited from the editor's
-Theme → Mascots page (position pad included).
+The click-through island / notch is the standalone **Nyx** module (deployed to
+`ui/nyx/`, wrapped by `ui/Mascots.qml`, which injects the palette, the paths and
+the discovered catalogs). Its species and the notch "cards" are **discovered
+from folders** and edited from Theme → Mascots (ordered lineup with drag-and-drop
+reordering). See `docs/mascots.md` for the shell integration (discovery, cards,
+editor) and `ui/nyx/README.md` for the overlay API and species authoring.
 
 ## Glassmorphism
 
