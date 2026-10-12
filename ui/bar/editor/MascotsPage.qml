@@ -250,6 +250,15 @@ Item {
         let info = root.catInfo(String(id));
         return Array.isArray(info.customizable) && info.customizable.indexOf(what) !== -1;
     }
+    // Controls to render for a species: the manifest's `controls` array if
+    // present, else one control per `customizable` entry (color / size).
+    function speciesControls(id) {
+        let info = root.catInfo(String(id));
+        if (Array.isArray(info.controls)) return info.controls;
+        if (Array.isArray(info.customizable))
+            return info.customizable.map(function (t) { return { type: t }; });
+        return [];
+    }
     readonly property var colorRoles: ["", "text", "subtext0", "red", "green", "yellow", "blue", "mauve", "teal", "peach"]
     function patchSpeciesOpts(id, patch) {
         id = String(id);
@@ -418,6 +427,7 @@ Item {
                                     required property int index
 
                                     readonly property var info: root.catInfo(modelData)
+                                    readonly property string sid: String(modelData)
                                     width: lineupList.width
                                     height: lineupList.rowH
                                     radius: bar.s(11)
@@ -455,69 +465,108 @@ Item {
                                         }
                                     }
 
-                                    // per-species appearance + remove
+                                    // per-species controls (from the manifest) + remove
                                     Row {
                                         anchors.right: parent.right
                                         anchors.rightMargin: bar.s(12)
                                         anchors.verticalCenter: parent.verticalCenter
                                         spacing: bar.s(10)
 
-                                        // color (species that accept it)
-                                        Item {
-                                            id: colorCell
-                                            visible: root.canCustomize(modelData, "color")
-                                            width: bar.s(24); height: bar.s(24)
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            readonly property string col: root.speciesColor(modelData)
-                                            Rectangle {
-                                                anchors.fill: parent
-                                                radius: width / 2
-                                                color: colorCell.col === "" ? bar.colors.surface1
-                                                    : (bar.colors[colorCell.col] !== undefined ? bar.colors[colorCell.col] : colorCell.col)
-                                                border.width: 1
-                                                border.color: ccHover.containsMouse ? bar.colors.mauve : bar.colors.surface1
-                                                Text {
-                                                    anchors.centerIn: parent
-                                                    visible: colorCell.col === ""
-                                                    text: "A"
-                                                    font.family: "Hack Nerd Font"
-                                                    font.pixelSize: bar.s(11)
-                                                    color: bar.colors.subtext0
-                                                }
-                                            }
-                                            MouseArea {
-                                                id: ccHover
-                                                anchors.fill: parent
-                                                hoverEnabled: true
-                                                cursorShape: Qt.PointingHandCursor
-                                                onClicked: root.cycleSpeciesColor(modelData)
-                                            }
-                                        }
-
-                                        // size
-                                        Row {
-                                            visible: root.canCustomize(modelData, "size")
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            spacing: bar.s(4)
-                                            Rectangle {
-                                                width: bar.s(20); height: width; radius: width / 2
-                                                color: szDownHover.containsMouse ? Qt.alpha(bar.colors.mauve, 0.15) : Qt.alpha(bar.colors.surface0, 0.5)
-                                                border.width: 1; border.color: bar.colors.surface1
-                                                Text { anchors.centerIn: parent; text: "−"; font.family: "Hack Nerd Font"; font.pixelSize: bar.s(14); color: bar.colors.text }
-                                                MouseArea { id: szDownHover; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: root.nudgeSpeciesSize(modelData, -0.1) }
-                                            }
-                                            Text {
+                                        Repeater {
+                                            model: root.speciesControls(lineupRow.sid)
+                                            delegate: Item {
+                                                id: ctl
+                                                required property var modelData
                                                 anchors.verticalCenter: parent.verticalCenter
-                                                width: bar.s(32); horizontalAlignment: Text.AlignHCenter
-                                                text: root.speciesSize(modelData).toFixed(1) + "x"
-                                                font.family: "Hack Nerd Font"; font.pixelSize: bar.s(11); color: bar.colors.subtext0
-                                            }
-                                            Rectangle {
-                                                width: bar.s(20); height: width; radius: width / 2
-                                                color: szUpHover.containsMouse ? Qt.alpha(bar.colors.mauve, 0.15) : Qt.alpha(bar.colors.surface0, 0.5)
-                                                border.width: 1; border.color: bar.colors.surface1
-                                                Text { anchors.centerIn: parent; text: "+"; font.family: "Hack Nerd Font"; font.pixelSize: bar.s(14); color: bar.colors.text }
-                                                MouseArea { id: szUpHover; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: root.nudgeSpeciesSize(modelData, 0.1) }
+                                                width: modelData.type === "size" ? bar.s(80)
+                                                     : modelData.type === "text" ? bar.s(160) : bar.s(24)
+                                                height: bar.s(26)
+
+                                                // colour
+                                                Item {
+                                                    id: ccCell
+                                                    visible: modelData.type === "color"
+                                                    anchors.fill: parent
+                                                    readonly property string col: root.speciesColor(lineupRow.sid)
+                                                    Rectangle {
+                                                        anchors.centerIn: parent
+                                                        width: bar.s(24); height: bar.s(24); radius: width / 2
+                                                        color: ccCell.col === "" ? bar.colors.surface1
+                                                            : (bar.colors[ccCell.col] !== undefined ? bar.colors[ccCell.col] : ccCell.col)
+                                                        border.width: 1
+                                                        border.color: ccHover.containsMouse ? bar.colors.mauve : bar.colors.surface1
+                                                        Text {
+                                                            anchors.centerIn: parent
+                                                            visible: ccCell.col === ""
+                                                            text: "A"
+                                                            font.family: "Hack Nerd Font"
+                                                            font.pixelSize: bar.s(11)
+                                                            color: bar.colors.subtext0
+                                                        }
+                                                    }
+                                                    MouseArea {
+                                                        id: ccHover
+                                                        anchors.fill: parent
+                                                        hoverEnabled: true
+                                                        cursorShape: Qt.PointingHandCursor
+                                                        onClicked: root.cycleSpeciesColor(lineupRow.sid)
+                                                    }
+                                                }
+
+                                                // size
+                                                Row {
+                                                    visible: modelData.type === "size"
+                                                    anchors.centerIn: parent
+                                                    spacing: bar.s(4)
+                                                    Rectangle {
+                                                        width: bar.s(20); height: width; radius: width / 2
+                                                        color: szDownHover.containsMouse ? Qt.alpha(bar.colors.mauve, 0.15) : Qt.alpha(bar.colors.surface0, 0.5)
+                                                        border.width: 1; border.color: bar.colors.surface1
+                                                        Text { anchors.centerIn: parent; text: "−"; font.family: "Hack Nerd Font"; font.pixelSize: bar.s(14); color: bar.colors.text }
+                                                        MouseArea { id: szDownHover; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: root.nudgeSpeciesSize(lineupRow.sid, -0.1) }
+                                                    }
+                                                    Text {
+                                                        anchors.verticalCenter: parent.verticalCenter
+                                                        width: bar.s(32); horizontalAlignment: Text.AlignHCenter
+                                                        text: root.speciesSize(lineupRow.sid).toFixed(1) + "x"
+                                                        font.family: "Hack Nerd Font"; font.pixelSize: bar.s(11); color: bar.colors.subtext0
+                                                    }
+                                                    Rectangle {
+                                                        width: bar.s(20); height: width; radius: width / 2
+                                                        color: szUpHover.containsMouse ? Qt.alpha(bar.colors.mauve, 0.15) : Qt.alpha(bar.colors.surface0, 0.5)
+                                                        border.width: 1; border.color: bar.colors.surface1
+                                                        Text { anchors.centerIn: parent; text: "+"; font.family: "Hack Nerd Font"; font.pixelSize: bar.s(14); color: bar.colors.text }
+                                                        MouseArea { id: szUpHover; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: root.nudgeSpeciesSize(lineupRow.sid, 0.1) }
+                                                    }
+                                                }
+
+                                                // text (e.g. a username)
+                                                TextField {
+                                                    id: tf
+                                                    visible: modelData.type === "text"
+                                                    anchors.fill: parent
+                                                    text: {
+                                                        let v = root.speciesOpts(lineupRow.sid)[modelData.key];
+                                                        return (typeof v === "string") ? v : (modelData.default !== undefined ? String(modelData.default) : "");
+                                                    }
+                                                    placeholderText: modelData.placeholder || modelData.label || ""
+                                                    font.family: "Hack Nerd Font"
+                                                    font.pixelSize: bar.s(12)
+                                                    color: bar.colors.text
+                                                    placeholderTextColor: Qt.alpha(bar.colors.subtext0, 0.6)
+                                                    selectByMouse: true
+                                                    leftPadding: bar.s(8); rightPadding: bar.s(8)
+                                                    background: Rectangle {
+                                                        color: Qt.alpha(bar.colors.surface1, 0.35)
+                                                        border.width: 1; border.color: bar.colors.surface1
+                                                        radius: bar.s(8)
+                                                    }
+                                                    onEditingFinished: {
+                                                        let patch = {};
+                                                        patch[String(modelData.key)] = tf.text;
+                                                        root.patchSpeciesOpts(lineupRow.sid, patch);
+                                                    }
+                                                }
                                             }
                                         }
 
@@ -536,7 +585,7 @@ Item {
                                                 id: removeHover
                                                 anchors.fill: parent
                                                 hoverEnabled: true
-                                                onClicked: root.removeSpecies(modelData)
+                                                onClicked: root.removeSpecies(lineupRow.sid)
                                             }
                                         }
                                     }

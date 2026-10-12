@@ -47,10 +47,15 @@ A species manifest (`*.json`):
   `dots`, `watcher`) rendered by `Mascot.qml`'s own components.
 - `customizable` — array of option names the species accepts (`"color"`,
   `"size"`); the editor shows one control per entry. Omitted = none.
+- `controls` — the richer form of the same idea, when a species needs more than
+  colour/size: `[{"type":"color"},{"type":"size"},{"type":"text","key":"user",
+  "label":"User","placeholder":"…","default":"…"}]`. A `text` control stores a
+  string under `options.<key>` (e.g. the GitHub username).
+- `popover` — optional QML file next to the manifest. A species that declares
+  one becomes **clickable**: clicking its mascot opens that popover (see below).
 - Shipped species (built-ins + the shell-agnostic "info" species: `battery`,
-  `cpu`, `memory`, `wifi`, `volume`, `temperature`) are declared in
-  `ui/nyx/mascots/species.json`. The info species declare
-  `customizable: ["color", "size"]`.
+  `cpu`, `memory`, `wifi`, `volume`, `temperature`, and `github`) are declared in
+  `ui/nyx/mascots/species.json`.
 
 Which species are shown, and in which order, comes from
 `settings.json → mascots.species`:
@@ -79,8 +84,18 @@ injected into each mascot through the `options` contract:
 
 The species receives these via `options` and applies them (the info species do
 it in `InfoMascot`: `options.color` overrides the accent, `options.size` scales
-the content). Only options listed in a species' `customizable` manifest field
-get an editor control.
+the content). Only options listed in a species' `customizable`/`controls`
+manifest fields get an editor control; a `text` control (e.g. the GitHub
+username) is written on the field's `editingFinished`.
+
+## Clickable mascots & popovers
+
+A mascot whose species declares a `popover` is **clickable individually**:
+clicking it opens its popover in the same panel slot as the dock. The panel
+sizes itself to the popover's `implicitWidth/Height` and grows/shrinks with the
+reveal. The popover closes when you click the island again, or anywhere outside
+(the overlay uses a `HyprlandFocusGrab`); clicking the island elsewhere opens the
+dock as before.
 
 ## Notch cards ("things")
 
@@ -112,8 +127,9 @@ ordered, drag-reorderable lineup:
   array. Only the handle starts a drag, so the page can still scroll.
 - **Add** — chips for the discovered species that are not in the lineup yet;
   clicking one appends it.
-- **Appearance** — a colour dot (tap to cycle palette roles; `A` = auto) and a
-  size stepper (− / +) on rows whose species declare the capability; they write
+- **Appearance** — controls per row for the species' declared `customizable`/
+  `controls`: a colour dot (tap to cycle palette roles; `A` = auto), a size
+  stepper (− / +) and/or a text field (e.g. the GitHub username). They write
   `mascots.options.<id>`.
 - The legacy string + `count` mode is still read; editing switches to the array
   form.
