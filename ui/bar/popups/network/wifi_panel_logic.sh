@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 
-SCRIPT_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
-source "$SCRIPT_DIR/../../caching.sh"
-qs_ensure_cache "network"
+# caching.sh ships outside the shell tree and its old relative path broke after
+# the core/ui split (this script now lives at quickshell/ui/bar/popups/network/).
+# Resolve the network cache dir directly, self-contained.
+QS_CACHE_NETWORK="${QS_CACHE_NETWORK:-$HOME/.cache/quickshell/network}"
+mkdir -p "$QS_CACHE_NETWORK"
+export QS_CACHE_NETWORK
 
 # Zero-latency hardware presence check via sysfs (Instant, no nmcli hang)
 if ! ls -1d /sys/class/net/*/wireless &>/dev/null; then

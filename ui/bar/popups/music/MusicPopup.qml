@@ -29,6 +29,7 @@ Item {
 
     // Theme Colors
     readonly property color base: _theme.base
+    readonly property color background: _theme.background
     readonly property color surface0: _theme.surface0
     readonly property color surface1: _theme.surface1
     readonly property color surface2: _theme.surface2
@@ -77,14 +78,6 @@ Item {
     NumberAnimation on catppuccinFlowOffset {
         from: 0; to: 1.0
         duration: 8000 // Slowed down significantly for a graceful, constant flow
-        loops: Animation.Infinite
-        running: true
-    }
-
-    property real globalOrbitAngle: 0
-    NumberAnimation on globalOrbitAngle {
-        from: 0; to: Math.PI * 2
-        duration: 90000
         loops: Animation.Infinite
         running: true
     }
@@ -451,71 +444,16 @@ Item {
             id: innerBg
             anchors.fill: parent
             anchors.margins: root.s(3)
-            color: root.base
+            color: root.background
             radius: root.s(13)
 
             // FIX: This forces the entire background to render as a single hardware texture,
             // preventing the UI from dragging and causing "shadow boxes" during the StackView transition!
             layer.enabled: true
 
-            // Provide a perfectly rounded mask for the inner content
-            Rectangle {
-                id: innerBgMask
-                anchors.fill: parent
-                radius: root.s(13)
-                visible: false
-                
-                // FIX: Masks in MultiEffect strictly require layer.enabled to correctly capture the radius during scaling!
-                layer.enabled: true 
-            }
-
-            Item {
-                id: bgEffectsLayer
-                anchors.fill: parent
-                
-                // This correctly clamps the blur and orbit circles to the 10px radius corners
-                layer.enabled: true
-                layer.effect: MultiEffect {
-                    maskEnabled: true
-                    maskSource: innerBgMask
-                }
-
-                // LAYER 1: Background Blur (Smooth fade-in)
-                Image {
-                    anchors.fill: parent
-                    source: root.musicData.blur ? "file://" + root.musicData.blur : ""
-                    fillMode: Image.PreserveAspectCrop
-                    
-                    // Fixed: Ensures blur is completely hidden when stopped so the pure base color matches the calendar
-                    opacity: (status === Image.Ready && root.musicData.status !== "Stopped" && root.musicData.status !== "Offline") ? 0.9 : 0.0
-                    Behavior on opacity { NumberAnimation { duration: 800; easing.type: Easing.InOutQuad } }
-                }
-
-                // LAYER 1.5: Flowing Orbits
-                Rectangle {
-                    width: parent.width * 0.8; height: width; radius: width / 2
-                    x: (parent.width / 2 - width / 2) + Math.cos(root.globalOrbitAngle * 2) * root.s(150)
-                    y: (parent.height / 2 - height / 2) + Math.sin(root.globalOrbitAngle * 2) * root.s(100)
-                    
-                    // Fixed: Hides orbits when stopped
-                    opacity: root.musicData.status === "Playing" ? 0.08 : (root.musicData.status === "Paused" ? 0.04 : 0.0)
-                    color: root.musicData.status === "Playing" ? root.mauve : root.surface2
-                    Behavior on color { ColorAnimation { duration: 1000 } }
-                    Behavior on opacity { NumberAnimation { duration: 1000 } }
-                }
-                
-                Rectangle {
-                    width: parent.width * 0.9; height: width; radius: width / 2
-                    x: (parent.width / 2 - width / 2) + Math.sin(root.globalOrbitAngle * 1.5) * root.s(-150)
-                    y: (parent.height / 2 - height / 2) + Math.cos(root.globalOrbitAngle * 1.5) * root.s(-100)
-                    
-                    // Fixed: Hides orbits when stopped
-                    opacity: root.musicData.status === "Playing" ? 0.08 : (root.musicData.status === "Paused" ? 0.02 : 0.0)
-                    color: root.musicData.status === "Playing" ? root.blue : root.surface1
-                    Behavior on color { ColorAnimation { duration: 1000 } }
-                    Behavior on opacity { NumberAnimation { duration: 1000 } }
-                }
-            }
+            // Background: the active palette's background color (innerBg fills
+            // with root.background). The old album-cover blur and the two
+            // floating "orbit" circles were removed on request.
 
             // LAYER 2: UI Content
             ColumnLayout {

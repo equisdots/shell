@@ -174,9 +174,9 @@ through Quickshell IPC:
 Background scripts in `core/scripts/watchers/` feed real-time data into QML
 (they run on demand from the bar pollers):
 
-- `audio_fetch.sh` / `audio_wait.sh` — audio devices state
-- `battery_fetch.sh` / `battery_wait.sh` — battery percentage and status
-- `bt_fetch.sh` / `bt_wait.sh` — Bluetooth state
-- `network_fetch.sh` / `network_wait.sh` — WiFi and Ethernet status
-- `kb_fetch.sh` / `kb_wait.sh` — keyboard layout
+- `audio_fetch.sh` — audio devices state
+- `battery_fetch.sh` — battery percentage and status
+- `bt_fetch.sh` — Bluetooth state
+- `network_fetch.sh` — WiFi and Ethernet status
+- `kb_fetch.sh` — keyboard layout
 - `sys_fetcher.sh` — CPU, RAM, temperature, network I/O

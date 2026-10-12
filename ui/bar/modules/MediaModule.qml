@@ -12,6 +12,12 @@ ModulePill {
     fullHeight: true
     showState: bar.isMediaActive
 
+    // The music script emits the placeholder path when a track has no cover
+    // (or the file failed to download). Treat it as "no art" so the island
+    // shows the note glyph instead of a dark placeholder square.
+    readonly property bool artAvailable: bar.displayArtUrl !== ""
+        && bar.displayArtUrl.indexOf("placeholder_blank") === -1
+
     // --- horizontal: art + info + controls -------------------------------------
     Row {
         visible: mod.horizontal
@@ -39,12 +45,21 @@ ModulePill {
                     clip: true
                     Image {
                         anchors.fill: parent
+                        visible: mod.artAvailable
                         source: bar.displayArtUrl || ""
                         fillMode: Image.PreserveAspectCrop
                     }
                     Rectangle {
                         anchors.fill: parent
                         color: Qt.rgba(colors.mauve.r, colors.mauve.g, colors.mauve.b, 0.2)
+                    }
+                    Text {
+                        anchors.centerIn: parent
+                        visible: !mod.artAvailable
+                        text: bar.musicData.status === "Playing" ? "󰝚" : "󰝛"
+                        font.family: bar.fontFamily
+                        font.pixelSize: bar.s(16)
+                        color: colors.mauve
                     }
                 }
 
@@ -132,12 +147,13 @@ ModulePill {
 
         Image {
             anchors.fill: parent
+            visible: mod.artAvailable
             source: bar.displayArtUrl || ""
             fillMode: Image.PreserveAspectCrop
         }
         Text {
             anchors.centerIn: parent
-            visible: !bar.displayArtUrl || bar.displayArtUrl === ""
+            visible: !mod.artAvailable
             text: bar.musicData.status === "Playing" ? "󰝚" : "󰝛"
             font.family: bar.fontFamily
             font.pixelSize: bar.s(16)
