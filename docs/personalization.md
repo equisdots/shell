@@ -224,3 +224,11 @@ scalars (`uiScale`, `workspaceCount`, `appScale`) persist through
 ipc call topbar queueReload`. The three scales are distinct: UI Scale = shell
 only, App scale = global display scale (`scripts/scale-menu.sh`), monitor
 scale = Hyprland monitors.
+
+## Mascots / notch
+
+`settings.mascots` (`enabled`, `size`, `species`, `count`, `position`,
+`appearance`, `notch*`, `dock.*`, `watcher.*`) drives the Nyx island. `species`
+is a string (every mascot that kind, repeated `count` times) or an array (the
+lineup, one per id, in order). Species and notch cards are discovered from
+folders and edited from Theme → Mascots; see `docs/mascots.md`.

@@ -83,6 +83,7 @@ scripts/check.sh
 - `docs/bar-modules.md` — module contract, `ModulePill` API, compact mode,
   per-module personalization.
 - `docs/windows.md` — windows, widget popups, IPC and watchers.
+- `docs/mascots.md` — the Nyx notch: species/card discovery, folders, editor.
 - `docs/desktop-widgets.md` — floating widget subsystem and redactor.
 - `docs/themes.md` — palette system, live editing and theme-sync.
 - `docs/personalization.md` — configuration surface (bar engines, modules,
