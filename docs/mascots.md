@@ -93,9 +93,9 @@ username) is written on the field's `editingFinished`.
 A mascot whose species declares a `popover` is **clickable individually**:
 clicking it opens its popover in the same panel slot as the dock. The panel
 sizes itself to the popover's `implicitWidth/Height` and grows/shrinks with the
-reveal. The popover closes when you click the island again, or anywhere outside
-(the overlay uses a `HyprlandFocusGrab`); clicking the island elsewhere opens the
-dock as before.
+reveal. The popover closes when you click the island again; clicking the island
+elsewhere opens the dock as before. (Outside-click-to-close would need a
+full-screen input grab, which conflicts with the click-through layer.)
 
 ## Notch cards ("things")
 
