@@ -232,6 +232,43 @@ Item {
         root.writeLineup(a);
     }
 
+    // ── per-species appearance (settings → mascots.options.<id>) ───────────
+    // A species declares what it accepts in its manifest (`customizable`).
+    function speciesOpts(id) {
+        let m = Config.rawSettings.mascots || {};
+        return (m.options && m.options[id]) ? m.options[id] : {};
+    }
+    function speciesColor(id) {
+        let c = root.speciesOpts(String(id)).color;
+        return (typeof c === "string") ? c : "";
+    }
+    function speciesSize(id) {
+        let s = root.speciesOpts(String(id)).size;
+        return (typeof s === "number") ? s : 1.0;
+    }
+    function canCustomize(id, what) {
+        let info = root.catInfo(String(id));
+        return Array.isArray(info.customizable) && info.customizable.indexOf(what) !== -1;
+    }
+    readonly property var colorRoles: ["", "text", "subtext0", "red", "green", "yellow", "blue", "mauve", "teal", "peach"]
+    function patchSpeciesOpts(id, patch) {
+        id = String(id);
+        let opts = Object.assign({}, (Config.rawSettings.mascots || {}).options || {});
+        let next = Object.assign({}, opts[id] || {}, patch);
+        if (!next.color) delete next.color;
+        if (typeof next.size !== "number" || Math.abs(next.size - 1.0) < 0.001) delete next.size;
+        if (Object.keys(next).length === 0) delete opts[id]; else opts[id] = next;
+        root.set("options", opts);
+    }
+    function cycleSpeciesColor(id) {
+        let i = root.colorRoles.indexOf(root.speciesColor(id));
+        root.patchSpeciesOpts(id, { color: root.colorRoles[(i + 1) % root.colorRoles.length] });
+    }
+    function nudgeSpeciesSize(id, d) {
+        let s = Math.round((root.speciesSize(id) + d) * 10) / 10;
+        root.patchSpeciesOpts(id, { size: Math.max(0.6, Math.min(1.8, s)) });
+    }
+
     // ── drag & drop state (reorder the lineup) ─────────────────────────────
     property bool dndActive: false
     property string dndId: ""
@@ -418,24 +455,89 @@ Item {
                                         }
                                     }
 
-                                    // remove
-                                    Item {
-                                        width: bar.s(22); height: bar.s(22)
+                                    // per-species appearance + remove
+                                    Row {
                                         anchors.right: parent.right
                                         anchors.rightMargin: bar.s(12)
                                         anchors.verticalCenter: parent.verticalCenter
-                                        Text {
-                                            anchors.centerIn: parent
-                                            text: "󰅖"
-                                            font.family: "Hack Nerd Font"
-                                            font.pixelSize: bar.s(16)
-                                            color: removeHover.containsMouse ? bar.colors.red : bar.colors.overlay1
+                                        spacing: bar.s(10)
+
+                                        // color (species that accept it)
+                                        Item {
+                                            id: colorCell
+                                            visible: root.canCustomize(modelData, "color")
+                                            width: bar.s(24); height: bar.s(24)
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            readonly property string col: root.speciesColor(modelData)
+                                            Rectangle {
+                                                anchors.fill: parent
+                                                radius: width / 2
+                                                color: colorCell.col === "" ? bar.colors.surface1
+                                                    : (bar.colors[colorCell.col] !== undefined ? bar.colors[colorCell.col] : colorCell.col)
+                                                border.width: 1
+                                                border.color: ccHover.containsMouse ? bar.colors.mauve : bar.colors.surface1
+                                                Text {
+                                                    anchors.centerIn: parent
+                                                    visible: colorCell.col === ""
+                                                    text: "A"
+                                                    font.family: "Hack Nerd Font"
+                                                    font.pixelSize: bar.s(11)
+                                                    color: bar.colors.subtext0
+                                                }
+                                            }
+                                            MouseArea {
+                                                id: ccHover
+                                                anchors.fill: parent
+                                                hoverEnabled: true
+                                                cursorShape: Qt.PointingHandCursor
+                                                onClicked: root.cycleSpeciesColor(modelData)
+                                            }
                                         }
-                                        MouseArea {
-                                            id: removeHover
-                                            anchors.fill: parent
-                                            hoverEnabled: true
-                                            onClicked: root.removeSpecies(modelData)
+
+                                        // size
+                                        Row {
+                                            visible: root.canCustomize(modelData, "size")
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            spacing: bar.s(4)
+                                            Rectangle {
+                                                width: bar.s(20); height: width; radius: width / 2
+                                                color: szDownHover.containsMouse ? Qt.alpha(bar.colors.mauve, 0.15) : Qt.alpha(bar.colors.surface0, 0.5)
+                                                border.width: 1; border.color: bar.colors.surface1
+                                                Text { anchors.centerIn: parent; text: "−"; font.family: "Hack Nerd Font"; font.pixelSize: bar.s(14); color: bar.colors.text }
+                                                MouseArea { id: szDownHover; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: root.nudgeSpeciesSize(modelData, -0.1) }
+                                            }
+                                            Text {
+                                                anchors.verticalCenter: parent.verticalCenter
+                                                width: bar.s(32); horizontalAlignment: Text.AlignHCenter
+                                                text: root.speciesSize(modelData).toFixed(1) + "x"
+                                                font.family: "Hack Nerd Font"; font.pixelSize: bar.s(11); color: bar.colors.subtext0
+                                            }
+                                            Rectangle {
+                                                width: bar.s(20); height: width; radius: width / 2
+                                                color: szUpHover.containsMouse ? Qt.alpha(bar.colors.mauve, 0.15) : Qt.alpha(bar.colors.surface0, 0.5)
+                                                border.width: 1; border.color: bar.colors.surface1
+                                                Text { anchors.centerIn: parent; text: "+"; font.family: "Hack Nerd Font"; font.pixelSize: bar.s(14); color: bar.colors.text }
+                                                MouseArea { id: szUpHover; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: root.nudgeSpeciesSize(modelData, 0.1) }
+                                            }
+                                        }
+
+                                        // remove
+                                        Item {
+                                            width: bar.s(22); height: bar.s(22)
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            Text {
+                                                anchors.centerIn: parent
+                                                text: "󰅖"
+                                                font.family: "Hack Nerd Font"
+                                                font.pixelSize: bar.s(16)
+                                                color: removeHover.containsMouse ? bar.colors.red : bar.colors.overlay1
+                                            }
+                                            MouseArea {
+                                                id: removeHover
+                                                anchors.fill: parent
+                                                hoverEnabled: true
+                                                onClicked: root.removeSpecies(modelData)
+                                            }
                                         }
                                     }
 
@@ -485,7 +587,7 @@ Item {
                     EditLabel {
                         bar: root.bar
                         width: parent.width
-                        text: "Drag the handle to reorder (top → bottom = left → right in the island); tap ✕ to remove. Species are discovered from the shipped module and from ~/.config/hypr/mascots/species/ — drop a manifest .json + a QML file there to add your own."
+                        text: "Drag the handle to reorder (top → bottom = left → right in the island); tap ✕ to remove. Colour and size apply to species that support them (they persist to mascots.options). Species are discovered from the shipped module and from ~/.config/hypr/mascots/species/ — drop a manifest .json + a QML file there to add your own."
                         font.pixelSize: bar.s(11)
                         color: bar.colors.subtext0
                         wrapMode: Text.WordWrap

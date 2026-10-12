@@ -45,9 +45,12 @@ A species manifest (`*.json`):
   `tint`, `crust`, `text`, `red`, `blinking`, `clock`, `palette`, `options`).
 - Without `entry`, `id` is a **built-in kind** (`flame`, `cat`, `dog`, `eyes`,
   `dots`, `watcher`) rendered by `Mascot.qml`'s own components.
+- `customizable` — array of option names the species accepts (`"color"`,
+  `"size"`); the editor shows one control per entry. Omitted = none.
 - Shipped species (built-ins + the shell-agnostic "info" species: `battery`,
   `cpu`, `memory`, `wifi`, `volume`, `temperature`) are declared in
-  `ui/nyx/mascots/species.json`.
+  `ui/nyx/mascots/species.json`. The info species declare
+  `customizable: ["color", "size"]`.
 
 Which species are shown, and in which order, comes from
 `settings.json → mascots.species`:
@@ -58,6 +61,26 @@ Which species are shown, and in which order, comes from
 | `["cat","dog","battery"]` (array) | one mascot per id, in order; the island width follows the array length |
 
 Ids not present in the catalog fall back to a built-in kind when possible.
+
+## Appearance (colour & size)
+
+Per-species overrides live in `settings.json → mascots.options.<id>` and are
+injected into each mascot through the `options` contract:
+
+```json
+{ "mascots": { "options": {
+    "battery": { "color": "green", "size": 1.2 },
+    "cpu": { "color": "#f9e2af" } } } }
+```
+
+- `color` — a palette role name (`red`, `green`, …) or a `#hex`; empty/absent
+  uses the species' own accent (which may be dynamic, e.g. battery by level).
+- `size` — a content scale (0.6..1.8; default 1.0).
+
+The species receives these via `options` and applies them (the info species do
+it in `InfoMascot`: `options.color` overrides the accent, `options.size` scales
+the content). Only options listed in a species' `customizable` manifest field
+get an editor control.
 
 ## Notch cards ("things")
 
@@ -89,6 +112,9 @@ ordered, drag-reorderable lineup:
   array. Only the handle starts a drag, so the page can still scroll.
 - **Add** — chips for the discovered species that are not in the lineup yet;
   clicking one appends it.
+- **Appearance** — a colour dot (tap to cycle palette roles; `A` = auto) and a
+  size stepper (− / +) on rows whose species declare the capability; they write
+  `mascots.options.<id>`.
 - The legacy string + `count` mode is still read; editing switches to the array
   form.
 
