@@ -762,11 +762,16 @@ Item {
         }
         return "";
     }
+    property var _dynamicPageEntry: null
     function ensurePage(id) {
         if (id.indexOf("p_") === 0) {
             let pid = id.substring(2);
             let file = root.pluginPageFile(pid);
             if (file === "" || root._dynamicPageId === pid) return;
+            let entry = null;
+            let list = PluginsCatalog.plugins || [];
+            for (let i = 0; i < list.length; i++) if (list[i] && list[i].id === pid) { entry = list[i]; break; }
+            root._dynamicPageEntry = entry;
             dynamicPageLoader.setSource(file, { bar: root });
             root._dynamicPageId = pid;
             return;
@@ -1753,6 +1758,8 @@ Item {
                     Loader {
                         id: dynamicPageLoader
                         anchors.fill: parent
+                        onLoaded: if (item && item.host !== undefined && root._dynamicPageEntry)
+                            item.host = HostApi.forPlugin(root._dynamicPageEntry)
                         visible: root.currentPage.indexOf("p_") === 0
                         opacity: visible ? 1.0 : 0.0
                         property real slideY: visible ? 0 : root.s(10)
