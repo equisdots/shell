@@ -25,7 +25,7 @@ Item {
 
     readonly property string home: Quickshell.env("HOME")
     readonly property string script: home + "/.config/hypr/scripts/quickshell/core/scripts/mascots_scan.sh"
-    readonly property string mascotsShipped: home + "/.config/hypr/scripts/quickshell/ui/nyx/mascots"
+    readonly property string mascotsShipped: home + "/.config/hypr/scripts/quickshell/ui/plugins/nyx/mascots"
     readonly property string mascotsUser: home + "/.config/hypr/mascots/species"
     readonly property string thingsShipped: home + "/.config/hypr/scripts/quickshell/notch"
     readonly property string thingsUser: home + "/.config/hypr/mascots/notch"

@@ -1,11 +1,11 @@
 # Mascots & the notch (Nyx)
 
 The notch / mascot island is the **Nyx** module (a separate repo, deployed by
-the dots installer to `ui/nyx/`, git-ignored here) wrapped by `ui/Mascots.qml`.
+the dots installer to `ui/plugins/nyx/`, git-ignored here) wrapped by `ui/Mascots.qml`.
 Nyx never imports the shell: the wrapper injects the live palette, the settings
 path, the widget-occlusion hooks and — new — the two discovered catalogs below.
 Authoring the species QML and the overlay API is documented in the Nyx README
-(`ui/nyx/README.md`); this file documents the **shell-side integration**:
+(`ui/plugins/nyx/README.md`); this file documents the **shell-side integration**:
 discovery, the notch cards and the editor.
 
 ## Discovery (folders)
@@ -17,7 +17,7 @@ drop a file and have it recognised without touching a repo. The scan lives in
 
 | What | Shipped (repo) | User |
 |---|---|---|
-| Species | `ui/nyx/mascots/` | `~/.config/hypr/mascots/species/` |
+| Species | `ui/plugins/nyx/mascots/` | `~/.config/hypr/mascots/species/` |
 | Notch cards | `notch/` | `~/.config/hypr/mascots/notch/` |
 
 Rules:
@@ -55,7 +55,7 @@ A species manifest (`*.json`):
   one becomes **clickable**: clicking its mascot opens that popover (see below).
 - Shipped species (built-ins + the shell-agnostic "info" species: `battery`,
   `cpu`, `memory`, `wifi`, `volume`, `temperature`, and `github`) are declared in
-  `ui/nyx/mascots/species.json`.
+  `ui/plugins/nyx/mascots/species.json`.
 
 Which species are shown, and in which order, comes from
 `settings.json → mascots.species`:

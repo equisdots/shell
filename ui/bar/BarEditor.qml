@@ -113,7 +113,7 @@ Item {
             "hyprland": "d_hyprland", "idle": "d_idle", "gpu": "d_gpu",
             "notifications": "d_notifications", "guide": "d_guide", "about": "d_guide",
             "shadows": "d_shadows", "glass": "d_glass", "palette": "d_palette",
-            "mascots": "d_nyx", "nyx": "d_nyx", "plugins": "d_plugins"
+            "mascots": "p_nyx", "nyx": "p_nyx", "plugins": "d_plugins"
         };
         let page = map[root.activeMode] !== undefined ? map[root.activeMode] : root.activeMode;
         if (root.navIndex(page) === -1) return;
@@ -568,12 +568,16 @@ Item {
 
     // ════ FASE B: RAIL CON GRUPOS ════
     // Grupos colapsables definidos en core/EditorNav.js (Shell, Bar, Theme,
-    // Behavior, System): orden, visibilidad y estado vienen de settings.editor.
+    // Plugins, Behavior, Widgets, System): orden, visibilidad y estado vienen
+    // de settings.editor. Los plugins instalados aportan su ítem (p_<id>).
     // currentPage usa ids prefijados:
     // s_* = settings/tabs/*.qml + ui/timex (host = settingsHost) · d_* = bar/editor/*.qml
-    // (bar = root). La píldora mauve sigue al item activo por su POSICIÓN REAL
+    // p_* = plugin pages (ui/plugins/<id>/, loaded on demand; bar = root).
+    // La píldora mauve sigue al item activo por su POSICIÓN REAL
     // (navItemMap + mapToItem) con scroll-follow por contentY.
     property string currentPage: "s_general"
+    // Last plugin page loaded by dynamicPageLoader (p_<id>; see ensurePage).
+    property string _dynamicPageId: ""
 
     // Panel width: doubled (2 x 1120) with a screen margin cap so it always
     // fits; Main follows this target live and animates the morph.
@@ -583,7 +587,9 @@ Item {
     readonly property real shadowRadius: root.s(21)
     // Grupos de navegación: definidos en core/EditorNav.js (7 grupos
     // colapsables, orden/visibilidad/estado desde settings.editor).
-    property var navGroups: EditorNav.configure(EditorNav.groups(), Config.rawSettings.editor)
+    property var navGroups: EditorNav.configure(
+        EditorNav.withPlugins(EditorNav.groups(), PluginsCatalog.plugins),
+        Config.rawSettings.editor)
     // Colapsar/desplegar un grupo: persiste en settings.editor.collapsed.
     function toggleGroup(id) {
         let cfg = (Config.rawSettings.editor && typeof Config.rawSettings.editor === "object")
@@ -599,7 +605,8 @@ Item {
         // Config.setSetting muta rawSettings SIN reasignar la propiedad (los
         // bindings que leen Config.rawSettings no re-evaluan): refrescamos el
         // modelo de navegacion de forma imperativa para plegar/desplegar ya.
-        root.navGroups = EditorNav.configure(EditorNav.groups(), next);
+        root.navGroups = EditorNav.configure(
+            EditorNav.withPlugins(EditorNav.groups(), PluginsCatalog.plugins), next);
         Qt.callLater(root.syncNavPill);
     }
     // Item del rail por id (lo registran los delegates): la píldora se coloca
@@ -695,7 +702,6 @@ Item {
             "d_shadows":       "editor/ShadowsPage.qml",
             "d_frame":         "editor/FramePage.qml",
             "d_glass":         "editor/GlassPage.qml",
-            "d_nyx":           "editor/NyxPage.qml",
             "d_plugins":       "editor/PluginsPage.qml"
         };
         return map[id] || "";
@@ -727,12 +733,31 @@ Item {
             "d_shadows":       dShadowsLoader,
             "d_frame":         dFrameLoader,
             "d_glass":         dGlassLoader,
-            "d_nyx":           dNyxLoader,
             "d_plugins":       dPluginsLoader
         };
         return map[id] || null;
     }
+    // Plugin-contributed pages (p_<id>): loaded on demand from the plugin's
+    // deployed UI dir (../plugins/<id>/<settings.page> in the shell tree).
+    function pluginPageFile(pid) {
+        let list = PluginsCatalog.plugins || [];
+        for (let i = 0; i < list.length; i++) {
+            let p = list[i] || {};
+            let s = (p.settings && typeof p.settings === "object") ? p.settings : null;
+            if (p.id === pid && s && s.page)
+                return "../plugins/" + pid + "/" + String(s.page).replace(/^\.\//, "");
+        }
+        return "";
+    }
     function ensurePage(id) {
+        if (id.indexOf("p_") === 0) {
+            let pid = id.substring(2);
+            let file = root.pluginPageFile(pid);
+            if (file === "" || root._dynamicPageId === pid) return;
+            dynamicPageLoader.setSource(file, { bar: root });
+            root._dynamicPageId = pid;
+            return;
+        }
         let loader = root.pageLoader(id);
         if (!loader) return;
         // NOTE: Loader.source is a QUrl — strict-compare its string form, a
@@ -752,6 +777,14 @@ Item {
         }
     }
     onCurrentPageChanged: root.ensurePage(root.currentPage)
+    // Plugin pages can be requested before the first scan finishes; retry
+    // when the catalog updates.
+    Connections {
+        target: PluginsCatalog
+        function onRevChanged() {
+            if (root.currentPage.indexOf("p_") === 0) root.ensurePage(root.currentPage);
+        }
+    }
 
 
 
@@ -1695,16 +1728,6 @@ Item {
                         Behavior on opacity { NumberAnimation { duration: 250 } }
                     }
                     Loader {
-                        id: dNyxLoader
-                        anchors.fill: parent
-                        visible: root.currentPage === "d_nyx"
-                        opacity: visible ? 1.0 : 0.0
-                        property real slideY: visible ? 0 : root.s(10)
-                        Behavior on slideY { NumberAnimation { duration: 250; easing.type: Easing.OutQuart } }
-                        transform: Translate { y: dNyxLoader.slideY }
-                        Behavior on opacity { NumberAnimation { duration: 250 } }
-                    }
-                    Loader {
                         id: dPluginsLoader
                         anchors.fill: parent
                         visible: root.currentPage === "d_plugins"
@@ -1712,6 +1735,16 @@ Item {
                         property real slideY: visible ? 0 : root.s(10)
                         Behavior on slideY { NumberAnimation { duration: 250; easing.type: Easing.OutQuart } }
                         transform: Translate { y: dPluginsLoader.slideY }
+                        Behavior on opacity { NumberAnimation { duration: 250 } }
+                    }
+                    Loader {
+                        id: dynamicPageLoader
+                        anchors.fill: parent
+                        visible: root.currentPage.indexOf("p_") === 0
+                        opacity: visible ? 1.0 : 0.0
+                        property real slideY: visible ? 0 : root.s(10)
+                        Behavior on slideY { NumberAnimation { duration: 250; easing.type: Easing.OutQuart } }
+                        transform: Translate { y: dynamicPageLoader.slideY }
                         Behavior on opacity { NumberAnimation { duration: 250 } }
                     }
                     Loader {

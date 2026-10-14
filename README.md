@@ -24,8 +24,9 @@ Running subsystems:
 - **Glass** — translucent shell backgrounds + compositor backdrop blur
   (`settings.json → glass`, hyprland `layers.lua`; Theme → Glass page).
 - **Mascots / Nyx** — click-through top island + chibi cursor-following
-  mascots that morph into a dock with the launcher (`ui/Mascots.qml`;
-  Plugins → Nyx page — Nyx is plugin #1 of the equisdots plugin standard).
+  mascots that morph into a dock with the launcher (`ui/Mascots.qml`; the
+  whole plugin UI — island + its own Plugins → Nyx settings page — ships in
+  equisdots/nyx and deploys to `ui/plugins/nyx/`).
 - **Plugins** — installed-plugin registry and manager: folder discovery
   (`~/.config/hypr/plugins` + `plugins-user`), enable/disable and a Configure
   shortcut per plugin (`ui/bar/editor/PluginsPage.qml`; standard, samples and

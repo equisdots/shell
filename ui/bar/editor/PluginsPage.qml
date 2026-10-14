@@ -13,7 +13,8 @@ import "../../../core"
 // (~/.config/hypr/plugins managed by dots + ~/.config/hypr/plugins-user, the
 // user dir wins on id collisions): identity, type badge, description, an
 // enable/disable switch and a Configure shortcut that jumps to the plugin's
-// own settings page (plugin.json → settingsTab, e.g. nyx → d_nyx).
+// own settings page (plugin.json → settings.page, e.g. nyx → p_nyx; the
+// legacy settingsTab key is still honored).
 //
 // The switch writes the plugin's effective toggle in settings.json
 // (plugin.json → toggle, default plugins.<id>.enabled). Shell plugins react
@@ -61,6 +62,15 @@ Item {
         Config.setSetting(top, obj);
         if (p.type === "hypr" || p.type === "mixed") root.reloadCompositor();
         refreshTimer.restart();
+    }
+
+    // Where Configure goes: the plugin's own deployed page (settings.page →
+    // dynamic p_<id>) or the legacy fixed settings tab.
+    function configureTarget(p) {
+        if (p && p.settings && typeof p.settings === "object" && p.settings.page)
+            return "p_" + p.id;
+        if (p && p.settingsTab) return String(p.settingsTab);
+        return "";
     }
     function reloadCompositor() { hyprReload.running = false; hyprReload.running = true; }
     Process { id: hyprReload; command: ["hyprctl", "reload"] }
@@ -236,10 +246,11 @@ Item {
                                         compact: true
                                         icon: "󰒓"
                                         label: "Configure"
-                                        visible: !!card.modelData.settingsTab
+                                        visible: root.configureTarget(card.modelData) !== ""
                                         onActivated: {
-                                            if (card.modelData.settingsTab && root.bar.gotoPage)
-                                                root.bar.gotoPage(String(card.modelData.settingsTab));
+                                            let target = root.configureTarget(card.modelData);
+                                            if (target !== "" && root.bar.gotoPage)
+                                                root.bar.gotoPage(target);
                                         }
                                     }
                                     Item { Layout.fillWidth: true }

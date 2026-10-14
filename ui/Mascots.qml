@@ -4,13 +4,13 @@ import Quickshell.Io
 import "../core"
 import "../core/WindowRegistry.js" as Registry
 import "./bar"
-import "./nyx/front"
+import "./plugins/nyx/front"
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Mascots — equisdots integration for the Nyx mascot module.
 //
 // Nyx is a separate repo (equisdots/nyx) deployed by the dots installer to
-// ui/nyx/ (front/ = island/notch window + control-center dock; mascots/ = the
+// ui/plugins/nyx/ (front/ = island/notch window + control-center dock; mascots/ = the
 // species). It never imports the shell: this thin wrapper injects the live
 // palette, the settings file path, the widget-occlusion hooks, the widget
 // list/launcher used by the dock, plus live data (quick-action states, system

@@ -59,8 +59,7 @@ var GROUPS = [
         label: "Plugins",
         icon: "󰏗",
         items: [
-            { id: "d_plugins", icon: "󰏗", label: "Plugins" },
-            { id: "d_nyx",     icon: "",  label: "Nyx" }
+            { id: "d_plugins", icon: "󰏗", label: "Plugins" }
         ]
     },
     {
@@ -103,6 +102,32 @@ function groups() {
             let it = {};
             for (let k in g.items[j]) it[k] = g.items[j][k];
             items.push(it);
+        }
+        out.push({ id: g.id, label: g.label, icon: g.icon, items: items });
+    }
+    return out;
+}
+
+// Inject one nav item per installed plugin that ships its own settings page
+// (plugin.json → settings.page). The page id is "p_<id>": the editor loads
+// it on demand from the plugin's deployed UI dir (ui/plugins/<id>/).
+function withPlugins(groups, plugins) {
+    if (!plugins || plugins.length === 0) return groups;
+    let out = [];
+    for (let i = 0; i < groups.length; i++) {
+        let g = groups[i];
+        let items = g.items.slice(0);
+        if (g.id === "plugins") {
+            for (let k = 0; k < plugins.length; k++) {
+                let p = plugins[k] || {};
+                let s = (p.settings && typeof p.settings === "object") ? p.settings : null;
+                if (!s || !s.page || !p.id) continue;
+                items.push({
+                    id: "p_" + p.id,
+                    icon: s.icon || "",
+                    label: s.label || p.name || p.id
+                });
+            }
         }
         out.push({ id: g.id, label: g.label, icon: g.icon, items: items });
     }
