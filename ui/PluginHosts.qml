@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import "../core"
+import "../core/sdk"
 
 // ═══════════════════════════════════════════════════════════════════════════
 // PluginHosts — mounts the host adapters of installed plugins.
@@ -64,12 +65,19 @@ Item {
                 // (incremental migration: plugins without it are untouched).
                 if (item && item.host !== undefined)
                     item.host = HostApi.forPlugin(modelData.entry || modelData);
+                // Register plugin-declared surfaces with the manager.
+                if (item && item.surfaces !== undefined) {
+                    Surfaces.register(String(modelData.id), item.surfaces, item);
+                    item.surfacesChanged.connect(function () {
+                        Surfaces.update(String(modelData.id), item.surfaces);
+                    });
+                }
                 if (item && item.frameObstacleChanged)
                     item.frameObstacleChanged.connect(root.refreshObstacles);
                 root.refreshObstacles();
             }
             onStatusChanged: if (status !== Loader.Ready) root.refreshObstacles()
-            Component.onDestruction: root.refreshObstacles()
+            Component.onDestruction: { Surfaces.unregister(String(modelData.id)); root.refreshObstacles(); }
         }
     }
 
