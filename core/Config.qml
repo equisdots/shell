@@ -2,6 +2,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import "sdk"
 
 Item {
     id: config
@@ -18,9 +19,9 @@ Item {
     
     readonly property string settingsJsonPath: hyprDir + "/settings.json"
 
-    // State Tracking
-    property bool dataReady: false
-    property var rawSettings: ({})
+    // State Tracking — delegated to the equisdots SDK Settings store.
+    readonly property bool dataReady: Settings.ready
+    readonly property var rawSettings: Settings.data
 
     // =========================================================================
     // Generic Utilities (Use these in ANY widget!)
@@ -33,39 +34,21 @@ Item {
 
     // --- JSON Operations ---
     function getSetting(key, fallbackValue) {
-        return rawSettings.hasOwnProperty(key) ? rawSettings[key] : fallbackValue;
+        return Settings.get(key, fallbackValue);
     }
 
     // Uses a unique temp file per call (mktemp) so concurrent saves never
     // overwrite each other's temp file, preventing JSON corruption.
     // Bumped on every settings mutation: bindings that must react to
     // in-place rawSettings changes depend on this counter.
-    property int rev: 0
+    readonly property int rev: Settings.revision
 
     function setSetting(key, value) {
-        rev++;
-        rawSettings[key] = value;
-        let safeValue = typeof value === "string" ? `"${value}"` : value;
-        if (typeof value === "object") safeValue = JSON.stringify(value).replace(/'/g, "'\\''");
-
-        let cmd = `mkdir -p "$(dirname '${settingsJsonPath}')" && ` +
-                  `[ ! -f '${settingsJsonPath}' ] && echo '{}' > '${settingsJsonPath}'; ` +
-                  `tmp=$(mktemp '${settingsJsonPath}'.tmp.XXXXXX) && ` +
-                  `jq '. + {"${key}": ${safeValue}}' '${settingsJsonPath}' > "$tmp" && ` +
-                  `mv "$tmp" '${settingsJsonPath}'`;
-        sh(cmd);
+        Settings.set(key, value);
     }
 
     function updateJsonBulk(dataObj) {
-        let jsonStr = JSON.stringify(dataObj).replace(/'/g, "'\\''");
-        let cmd = `mkdir -p "$(dirname '${settingsJsonPath}')" && ` +
-                  `[ ! -f '${settingsJsonPath}' ] && echo '{}' > '${settingsJsonPath}'; ` +
-                  `tmp=$(mktemp '${settingsJsonPath}'.tmp.XXXXXX) && ` +
-                  `jq '. + ${jsonStr}' '${settingsJsonPath}' > "$tmp" && ` +
-                  `mv "$tmp" '${settingsJsonPath}'`;
-        sh(cmd);
-
-        for (let key in dataObj) rawSettings[key] = dataObj[key];
+        Settings.setMany(dataObj);
     }
 
     // =========================================================================
@@ -536,80 +519,57 @@ Item {
     }
 
     // =========================================================================
-    // Boot Initialization (Runs once on start)
+    // Boot Initialization
     // =========================================================================
-    Component.onCompleted: {
-        settingsReader.running = true;
+    // The SDK Settings store owns loading + the watcher + the write path.
+    // Config maps the loaded values into its domain properties once ready.
+    property bool _mapped: false
+    Connections {
+        target: Settings
+        function onReadyChanged() { if (Settings.ready) config.mapFromSettings(); }
     }
-
-    Process {
-        id: settingsReader
-        command: ["bash", "-c", `cat "${config.settingsJsonPath}" 2>/dev/null || echo '{}'`]
-        running: false
-        stdout: StdioCollector {
-            onStreamFinished: {
-                try {
-                    if (this.text && this.text.trim().length > 0 && this.text.trim() !== "{}") {
-                        config.rawSettings = JSON.parse(this.text);
-                        
-                        // Map explicitly defined properties
-                        if (config.rawSettings.uiScale !== undefined) config.uiScale = config.rawSettings.uiScale;
-                        if (config.rawSettings.appScale !== undefined) config.appScale = config.rawSettings.appScale;
-                        if (config.rawSettings.wallpaperDir !== undefined) config.wallpaperDir = config.rawSettings.wallpaperDir;
-                        if (config.rawSettings.language !== undefined && config.rawSettings.language !== "") config.language = config.rawSettings.language;
-                        if (config.rawSettings.kbOptions !== undefined) config.kbOptions = config.rawSettings.kbOptions;
-                        if (config.rawSettings.workspaceCount !== undefined) {
-                            config.workspaceCount = config.rawSettings.workspaceCount;
-                            config.initialWorkspaceCount = config.rawSettings.workspaceCount; 
-                        }
-                        
-                        // Map Keybinds
-                        if (config.rawSettings.keybinds !== undefined && Array.isArray(config.rawSettings.keybinds)) {
-                            let tempBinds = [];
-                            for (let k of config.rawSettings.keybinds) {
-                                tempBinds.push({
-                                    type: k.type || "bind",
-                                    mods: k.mods || "",
-                                    key: k.key || "",
-                                    dispatcher: k.dispatcher || "exec",
-                                    command: k.command || "",
-                                    isEditing: false
-                                });
-                            }
-                            config.keybindsData = tempBinds;
-                        } else {
-                            config.keybindsData = [];
-                        }
-
-                        // Map Startups
-                        if (config.rawSettings.startup !== undefined && Array.isArray(config.rawSettings.startup)) {
-                            let tempStartup = [];
-                            for (let s of config.rawSettings.startup) {
-                                tempStartup.push({ command: s.command || "" });
-                            }
-                            config.startupData = tempStartup;
-                        } else {
-                            config.startupData = [];
-                        }
-                    } else {
-                        config.saveAppSettings();
-                        config.keybindsData = [];
-                        config.saveAllKeybinds([]);
-                        config.startupData = [];
-                    }
-                } catch (e) {
-                    console.log("Error parsing global settings:", e);
-                    // Overwrite the corrupted file with a fresh empty object so
-                    // the bar can start and jq saves will work going forward.
-                    config.sh("echo '{}' > '" + config.settingsJsonPath + "'");
-                    config.rawSettings = {};
-                    config.keybindsData = [];
-                    config.startupData = [];
-                }
-                config.keybindsLoaded();
-                config.startupLoaded();
-                config.dataReady = true;
+    function mapFromSettings() {
+        if (_mapped) return;
+        _mapped = true;
+        let rs = Settings.data;
+        if (rs && Object.keys(rs).length > 0) {
+            if (rs.uiScale !== undefined) config.uiScale = rs.uiScale;
+            if (rs.appScale !== undefined) config.appScale = rs.appScale;
+            if (rs.wallpaperDir !== undefined) config.wallpaperDir = rs.wallpaperDir;
+            if (rs.language !== undefined && rs.language !== "") config.language = rs.language;
+            if (rs.kbOptions !== undefined) config.kbOptions = rs.kbOptions;
+            if (rs.workspaceCount !== undefined) {
+                config.workspaceCount = rs.workspaceCount;
+                config.initialWorkspaceCount = rs.workspaceCount;
             }
+            if (rs.keybinds !== undefined && Array.isArray(rs.keybinds)) {
+                let tempBinds = [];
+                for (let k of rs.keybinds) {
+                    tempBinds.push({
+                        type: k.type || "bind",
+                        mods: k.mods || "",
+                        key: k.key || "",
+                        dispatcher: k.dispatcher || "exec",
+                        command: k.command || "",
+                        isEditing: false
+                    });
+                }
+                config.keybindsData = tempBinds;
+            } else {
+                config.keybindsData = [];
+            }
+            if (rs.startup !== undefined && Array.isArray(rs.startup)) {
+                let tempStartup = [];
+                for (let s of rs.startup) tempStartup.push({ command: s.command || "" });
+                config.startupData = tempStartup;
+            } else {
+                config.startupData = [];
+            }
+        } else {
+            config.keybindsData = [];
+            config.startupData = [];
         }
+        config.keybindsLoaded();
+        config.startupLoaded();
     }
 }

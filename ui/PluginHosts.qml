@@ -32,10 +32,11 @@ Item {
         for (let i = 0; i < list.length; i++) {
             let p = list[i] || {};
             let host = String(p.host || "").replace(/^\.\//, "");
+            let compatOk = !(p.compat && p.compat.ok === false); // refuse incompatible
             // Managed plugins only (hosts live in the shell tree), loaded
             // relatively like every shell component.
-            if (host !== "" && p.enabled === true && PluginsCatalog.isManaged(p))
-                out.push({ id: String(p.id), url: "plugins/" + p.id + "/" + host });
+            if (host !== "" && p.enabled === true && compatOk && PluginsCatalog.isManaged(p))
+                out.push({ id: String(p.id), url: "plugins/" + p.id + "/" + host, entry: p });
         }
         return out;
     }
@@ -59,6 +60,10 @@ Item {
             required property var modelData
             source: modelData.url
             onLoaded: {
+                // Inject the SDK handle only if the plugin declares `host`
+                // (incremental migration: plugins without it are untouched).
+                if (item && item.host !== undefined)
+                    item.host = HostApi.forPlugin(modelData.entry || modelData);
                 if (item && item.frameObstacleChanged)
                     item.frameObstacleChanged.connect(root.refreshObstacles);
                 root.refreshObstacles();

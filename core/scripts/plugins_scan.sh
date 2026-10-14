@@ -28,6 +28,15 @@ USER_DIR="${PLUGINS_USER:-${XDG_CONFIG_HOME:-$HOME/.config}/hypr/plugins-user}"
 MANAGED_DIR="${PLUGINS_MANAGED:-${XDG_CONFIG_HOME:-$HOME/.config}/hypr/plugins}"
 SETTINGS="${PLUGINS_SETTINGS:-${XDG_CONFIG_HOME:-$HOME/.config}/hypr/settings.json}"
 
+# Compatibility annotation (see equisdots/plugin-api). The evaluator + the API
+# version file are vendored with the shell; a plugin's `compat` ranges are
+# resolved to {state, ok, reason, requires, seen}.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+COMPAT="$SCRIPT_DIR/plugins_compat.sh"
+API_FILE="${PLUGINS_API_FILE:-$SCRIPT_DIR/../../plugin-api.json}"
+HOST_API="$(jq -r '.api // empty' "$API_FILE" 2>/dev/null || true)"
+SHELL_VERSION="$(jq -r '.shell // empty' "$API_FILE" 2>/dev/null || true)"
+
 settings_obj='{}'
 if [ -f "$SETTINGS" ] && jq -e . "$SETTINGS" >/dev/null 2>&1; then
     settings_obj=$(jq -c . "$SETTINGS")
@@ -39,7 +48,18 @@ fi
 one() {
     local dir="$1"
     [ -f "$dir/plugin.json" ] || return 0
-    jq -c --arg base "$dir" --argjson settings "$settings_obj" '
+    local verdict='{"state":"ok","ok":true,"reason":""}'
+    if [ -x "$COMPAT" ]; then
+        local c; c=$(jq -c '.compat // empty' "$dir/plugin.json" 2>/dev/null || true)
+        if [ -n "$c" ] && [ "$c" != "null" ]; then
+            verdict=$(HOST_API="$HOST_API" SHELL_VERSION="$SHELL_VERSION" \
+                      HYPRLAND_VERSION="${PLUGINS_HYPRLAND:-}" \
+                      QUICKSHELL_VERSION="${PLUGINS_QS:-}" \
+                      QT_VERSION="${PLUGINS_QT:-}" \
+                      bash "$COMPAT" <<<"$c" 2>/dev/null || echo "$verdict")
+        fi
+    fi
+    jq -c --arg base "$dir" --argjson settings "$settings_obj" --argjson verdict "$verdict" '
         . as $m
         | select(($m.id // "") != "")
         | ($m.toggle // ("plugins." + $m.id + ".enabled")) as $toggle
@@ -53,7 +73,7 @@ one() {
                       then ($m.defaultEnabled // false)
                       else ($val == true) end),
             config: (if $cfg == null then true else ($cfg == true) end)
-          })' "$dir/plugin.json" 2>/dev/null || true
+          }) | .compat = $verdict' "$dir/plugin.json" 2>/dev/null || true
 }
 
 scan_dir() {
