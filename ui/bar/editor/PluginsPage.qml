@@ -64,11 +64,27 @@ Item {
         refreshTimer.restart();
     }
 
+    // Whether the plugin's settings page is reachable: enabled + config menu
+    // on (`plugins.<id>.config`, default true).
+    function configShown(p) { return p ? p.config !== false : false; }
+    function setConfigShown(p, value) {
+        if (!p || !p.id) return;
+        let obj = Object.assign({}, Config.rawSettings.plugins || {});
+        let entry = Object.assign({}, obj[p.id] || {});
+        entry.config = value;
+        obj[p.id] = entry;
+        Config.setSetting("plugins", obj);
+        refreshTimer.restart();
+    }
+
     // Where Configure goes: the plugin's own deployed page (settings.page →
-    // dynamic p_<id>) or the legacy fixed settings tab.
+    // dynamic p_<id>, only while enabled + config menu on) or the legacy
+    // fixed settings tab.
     function configureTarget(p) {
-        if (p && p.settings && typeof p.settings === "object" && p.settings.page)
+        if (p && p.settings && typeof p.settings === "object" && p.settings.page) {
+            if (p.enabled !== true || !root.configShown(p)) return "";
             return "p_" + p.id;
+        }
         if (p && p.settingsTab) return String(p.settingsTab);
         return "";
     }
@@ -214,17 +230,40 @@ Item {
                                         }
                                     }
                                     Item { Layout.fillWidth: true }
-                                    Text {
-                                        text: card.modelData.enabled ? "Enabled" : "Disabled"
-                                        font.family: "Hack Nerd Font"
-                                        font.pixelSize: bar.s(11)
-                                        font.weight: Font.Bold
-                                        color: card.modelData.enabled ? bar.colors.mauve : bar.colors.subtext0
-                                    }
-                                    ToggleSwitch {
-                                        bar: root.bar
-                                        checked: card.modelData.enabled === true
-                                        onToggled: root.setEnabled(card.modelData, !card.modelData.enabled)
+                                    ColumnLayout {
+                                        spacing: bar.s(4)
+                                        RowLayout {
+                                            Layout.alignment: Qt.AlignRight
+                                            spacing: bar.s(6)
+                                            Text {
+                                                text: card.modelData.enabled ? "Enabled" : "Disabled"
+                                                font.family: "Hack Nerd Font"
+                                                font.pixelSize: bar.s(11)
+                                                font.weight: Font.Bold
+                                                color: card.modelData.enabled ? bar.colors.mauve : bar.colors.subtext0
+                                            }
+                                            ToggleSwitch {
+                                                bar: root.bar
+                                                checked: card.modelData.enabled === true
+                                                onToggled: root.setEnabled(card.modelData, !card.modelData.enabled)
+                                            }
+                                        }
+                                        RowLayout {
+                                            Layout.alignment: Qt.AlignRight
+                                            visible: !!(card.modelData.settings && card.modelData.settings.page)
+                                            spacing: bar.s(6)
+                                            Text {
+                                                text: "Config menu"
+                                                font.family: "Hack Nerd Font"
+                                                font.pixelSize: bar.s(11)
+                                                color: root.configShown(card.modelData) ? bar.colors.text : bar.colors.subtext0
+                                            }
+                                            ToggleSwitch {
+                                                bar: root.bar
+                                                checked: root.configShown(card.modelData)
+                                                onToggled: root.setConfigShown(card.modelData, !root.configShown(card.modelData))
+                                            }
+                                        }
                                     }
                                 }
 

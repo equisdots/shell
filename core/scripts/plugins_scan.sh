@@ -33,7 +33,9 @@ if [ -f "$SETTINGS" ] && jq -e . "$SETTINGS" >/dev/null 2>&1; then
     settings_obj=$(jq -c . "$SETTINGS")
 fi
 
-# One manifest -> one normalized object with _base + resolved enabled state.
+# One manifest -> one normalized object with _base + resolved enabled state
+# (`enabled` from the toggle path / defaultEnabled; `config`, the settings-menu
+# switch, from plugins.<id>.config, default true).
 one() {
     local dir="$1"
     [ -f "$dir/plugin.json" ] || return 0
@@ -43,12 +45,14 @@ one() {
         | ($m.toggle // ("plugins." + $m.id + ".enabled")) as $toggle
         | ($toggle | split(".")) as $path
         | (try ($settings | getpath($path)) catch null) as $val
+        | (try ($settings | getpath(["plugins", $m.id, "config"])) catch null) as $cfg
         | ($m + {
             _base: $base,
             toggle: $toggle,
             enabled: (if $val == null
                       then ($m.defaultEnabled // false)
-                      else ($val == true) end)
+                      else ($val == true) end),
+            config: (if $cfg == null then true else ($cfg == true) end)
           })' "$dir/plugin.json" 2>/dev/null || true
 }
 

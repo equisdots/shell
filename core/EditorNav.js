@@ -122,6 +122,11 @@ function withPlugins(groups, plugins) {
                 let p = plugins[k] || {};
                 let s = (p.settings && typeof p.settings === "object") ? p.settings : null;
                 if (!s || !s.page || !p.id) continue;
+                // Everything follows the plugin: its page shows only while the
+                // plugin is enabled and its config menu is on
+                // (`plugins.<id>.config`, default true).
+                if (p.enabled !== true) continue;
+                if (p.config === false) continue;
                 items.push({
                     id: "p_" + p.id,
                     icon: s.icon || "",
