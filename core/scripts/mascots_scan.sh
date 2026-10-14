@@ -1,21 +1,24 @@
 #!/usr/bin/env bash
 # ═══════════════════════════════════════════════════════════════════════════
-# mascots_scan.sh — discovery for the Nyx notch.
+# mascots_scan.sh — discovery for the mascot island/notch integration.
 #
 # Emits a single JSON object: { "mascots": [ ... ], "things": [ ... ] }.
 #
-#   mascots  one manifest per species, under the shipped (nyx) and user species
-#            dirs. A species is either a per-species folder with a manifest.json
+#   mascots  one manifest per species, under the provider (plugin) and user
+#            species dirs. A species is either a per-species folder with a
+#            manifest.json
 #            (its `entry`/`popover` resolve relative to that folder) or a flat
 #            *.json file. `_base` is set to the manifest's directory.
-#   things   one *.json descriptor per notch card, under the shipped (repo) and
-#            user notch dirs: { id, label, icon, thumb?, exec?, enabled? }.
+#   things   one *.json descriptor per notch card, under the provider (plugin)
+#            and user notch dirs: { id, label, icon, thumb?, exec?, enabled? }.
 #
 # The user dirs are scanned first and win on id collisions, so a user file
 # overrides or extends the shipped defaults. Every entry gets "_base" (its
 # directory) so the caller can resolve relative QML entries.
 #
-# Env (all optional): MASCOTS_SHIPPED, MASCOTS_USER, THINGS_SHIPPED, THINGS_USER
+# Env (all optional): MASCOTS_SHIPPED, MASCOTS_USER, THINGS_SHIPPED,
+# THINGS_USER. The *_SHIPPED vars hold colon-separated dir lists in precedence
+# order (user dirs are always scanned first by the caller).
 # ═══════════════════════════════════════════════════════════════════════════
 
 set -u
@@ -58,11 +61,21 @@ dedupe() {
     jq -s 'reduce .[] as $x ([]; if any(.[]; .id == $x.id) then . else . + [$x] end) // []'
 }
 
+# Colon-separated dir list, in order.
+scan_list() {
+    local list="$1" d
+    [ -n "$list" ] || return 0
+    local IFS=':'
+    for d in $list; do
+        scan_dir "$d"
+    done
+}
+
 mascots=$(
-    { scan_dir "${MASCOTS_USER:-}"; scan_dir "${MASCOTS_SHIPPED:-}"; } | dedupe
+    { scan_dir "${MASCOTS_USER:-}"; scan_list "${MASCOTS_SHIPPED:-}"; } | dedupe
 )
 things=$(
-    { scan_dir "${THINGS_USER:-}"; scan_dir "${THINGS_SHIPPED:-}"; } | dedupe
+    { scan_dir "${THINGS_USER:-}"; scan_list "${THINGS_SHIPPED:-}"; } | dedupe
 )
 
 jq -nc --argjson m "${mascots:-[]}" --argjson t "${things:-[]}" \

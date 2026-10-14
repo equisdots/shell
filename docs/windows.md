@@ -97,12 +97,14 @@ are not covered.
 
 ## Mascots
 
-The click-through island / notch is the standalone **Nyx** module (deployed to
-`ui/plugins/nyx/`, wrapped by `ui/Mascots.qml`, which injects the palette, the paths and
-the discovered catalogs). Its species and the notch "cards" are **discovered
-from folders** and edited from Plugins → Nyx (ordered lineup with drag-and-drop
-reordering). See `docs/mascots.md` for the shell integration (discovery, cards,
-editor) and `ui/plugins/nyx/README.md` for the overlay API and species authoring.
+The click-through island / notch is the standalone **Nyx** plugin (resolved
+dynamically from the plugin catalog — managed deploy or a user plugin — and
+wrapped by `ui/Mascots.qml`, which injects the palette, the paths and the
+discovered catalogs). Its species and the notch "cards" are **discovered from
+provider plugins and user folders** and edited from Plugins → Nyx (ordered
+lineup with drag-and-drop reordering). See `docs/mascots.md` for the shell
+integration (discovery, cards, editor) and `ui/plugins/nyx/README.md` for the
+overlay API and species authoring.
 
 ## Glassmorphism
 

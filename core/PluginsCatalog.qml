@@ -36,6 +36,25 @@ Item {
 
     function refresh() { scan.running = false; scan.running = true }
 
+    // ── UI resolution (shared by the shell integrations) ──────────────────
+    // Absolute path of a plugin's UI root: managed plugins resolve to the
+    // shell-tree deploy (ui/plugins/<id>); user plugins to their own folder.
+    // `rel` appends a repo-relative path (settings pages, mascot dirs, ...).
+    function uiPath(p, rel) {
+        if (!p || !p.id) return "";
+        let base = String(p._base || "");
+        let userRoot = home + "/.config/hypr/plugins-user/";
+        let rootDir = (base.indexOf(userRoot) === 0)
+                      ? base
+                      : home + "/.config/hypr/scripts/quickshell/ui/plugins/" + p.id;
+        if (!rel) return rootDir;
+        return rootDir + "/" + String(rel).replace(/^\.\//, "");
+    }
+    function uiUrl(p, rel) {
+        let path = uiPath(p, rel);
+        return path === "" ? "" : "file://" + path;
+    }
+
     Process {
         id: scan
         running: true

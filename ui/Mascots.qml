@@ -4,17 +4,17 @@ import Quickshell.Io
 import "../core"
 import "../core/WindowRegistry.js" as Registry
 import "./bar"
-import "./plugins/nyx/front"
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Mascots — equisdots integration for the Nyx mascot module.
+// Mascots — equisdots integration for the mascot island/notch module.
 //
-// Nyx is a separate repo (equisdots/nyx) deployed by the dots installer to
-// ui/plugins/nyx/ (front/ = island/notch window + control-center dock; mascots/ = the
-// species). It never imports the shell: this thin wrapper injects the live
-// palette, the settings file path, the widget-occlusion hooks, the widget
+// The island UI ships as a plugin (Nyx) that declares its overlay through
+// `provides.mascots.overlay`; this wrapper resolves it from the plugin
+// catalog — managed deploy or a user plugin — and injects the live palette,
+// the settings file path, the widget-occlusion hooks, the widget
 // list/launcher used by the dock, plus live data (quick-action states, system
-// stats, persisted favorites).
+// stats, persisted favorites). With no provider installed the wrapper simply
+// renders nothing.
 // ═══════════════════════════════════════════════════════════════════════════
 
 Item {
@@ -140,28 +140,47 @@ Item {
         return "";
     }
 
-    MascotsOverlay {
-        palette: themeColors
-        settingsPath: Quickshell.env("HOME") + "/.config/hypr/settings.json"
-        widgetStatePath: (Quickshell.env("XDG_RUNTIME_DIR") || "/tmp") + "/quickshell/current_widget"
-        dockWidgetName: "applauncher"
-        widgetRectProvider: function(name, sw, sh, scale) {
-            return Registry.getLayout(name, 0, 0, sw, sh, scale);
-        }
-        mascotCatalog: MascotsCatalog.mascots
-        widgetList: root.notchWidgets
-        quickActions: root.quickActions
-        quickHandler: function(id) { root.runQuick(id); }
-        stats: root.stats
-        favorites: root.favorites
-        onFavoriteToggled: (id) => root.toggleFavorite(id)
-        widgetLauncher: function(id) {
-            let exec = root.thingExec(id);
-            if (exec !== "") { Quickshell.execDetached(["bash", "-c", exec]); return; }
-            Quickshell.execDetached([
-                Quickshell.env("HOME") + "/.config/hypr/scripts/qs_manager.sh",
-                "open", String(id)
-            ]);
-        }
+    // ── overlay (resolved from the plugin catalog) ─────────────────────────
+    readonly property string overlaySource: MascotsCatalog.overlaySource
+
+    function syncOverlay() {
+        let src = root.overlaySource;
+        if (String(overlayLoader.source) === src) return;
+        if (src === "") { overlayLoader.setSource(""); return; }
+        overlayLoader.setSource(src, {
+            settingsPath: Quickshell.env("HOME") + "/.config/hypr/settings.json",
+            widgetStatePath: (Quickshell.env("XDG_RUNTIME_DIR") || "/tmp") + "/quickshell/current_widget",
+            dockWidgetName: "applauncher",
+            widgetRectProvider: function(name, sw, sh, scale) {
+                return Registry.getLayout(name, 0, 0, sw, sh, scale);
+            },
+            quickHandler: function(id) { root.runQuick(id); },
+            widgetLauncher: function(id) {
+                let exec = root.thingExec(id);
+                if (exec !== "") { Quickshell.execDetached(["bash", "-c", exec]); return; }
+                Quickshell.execDetached([
+                    Quickshell.env("HOME") + "/.config/hypr/scripts/qs_manager.sh",
+                    "open", String(id)
+                ]);
+            }
+        });
     }
+    Component.onCompleted: root.syncOverlay()
+    Connections {
+        target: MascotsCatalog
+        function onOverlaySourceChanged() { root.syncOverlay() }
+    }
+
+    Loader {
+        id: overlayLoader
+        onLoaded: item.favoriteToggled.connect(function(id) { root.toggleFavorite(id) })
+    }
+
+    // Live values update through bindings on the loaded overlay.
+    Binding { target: overlayLoader.item; property: "palette";       value: themeColors;            when: overlayLoader.item !== null }
+    Binding { target: overlayLoader.item; property: "mascotCatalog"; value: MascotsCatalog.mascots; when: overlayLoader.item !== null }
+    Binding { target: overlayLoader.item; property: "widgetList";    value: root.notchWidgets;      when: overlayLoader.item !== null }
+    Binding { target: overlayLoader.item; property: "quickActions";  value: root.quickActions;      when: overlayLoader.item !== null }
+    Binding { target: overlayLoader.item; property: "stats";         value: root.stats;             when: overlayLoader.item !== null }
+    Binding { target: overlayLoader.item; property: "favorites";     value: root.favorites;         when: overlayLoader.item !== null }
 }
