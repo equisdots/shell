@@ -1,7 +1,7 @@
 import QtQuick
 import Quickshell
 import "../core"
-import "../core/sdk"
+import qs.core.sdk
 
 // ═══════════════════════════════════════════════════════════════════════════
 // PluginHosts — mounts the host adapters of installed plugins.

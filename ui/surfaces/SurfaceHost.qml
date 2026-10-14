@@ -1,6 +1,6 @@
 import QtQuick
 import "../../core"
-import "../../core/sdk"
+import qs.core.sdk
 
 // ═══════════════════════════════════════════════════════════════════════════
 // SurfaceHost — imperative diff of Surfaces.instances into SurfaceWindow items
