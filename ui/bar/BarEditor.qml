@@ -737,15 +737,20 @@ Item {
         };
         return map[id] || null;
     }
-    // Plugin-contributed pages (p_<id>): loaded on demand from the plugin's
-    // deployed UI dir (../plugins/<id>/<settings.page> in the shell tree).
+    // Plugin-contributed pages (p_<id>): loaded on demand. Managed plugins
+    // load from the shell-tree deploy (../plugins/<id>/); user plugins load
+    // from their own folder via file:// (their page must be self-contained).
     function pluginPageFile(pid) {
         let list = PluginsCatalog.plugins || [];
+        let userRoot = Quickshell.env("HOME") + "/.config/hypr/plugins-user/";
         for (let i = 0; i < list.length; i++) {
             let p = list[i] || {};
             let s = (p.settings && typeof p.settings === "object") ? p.settings : null;
-            if (p.id === pid && s && s.page)
-                return "../plugins/" + pid + "/" + String(s.page).replace(/^\.\//, "");
+            if (p.id !== pid || !s || !s.page) continue;
+            let page = String(s.page).replace(/^\.\//, "");
+            let base = String(p._base || "");
+            if (base.indexOf(userRoot) === 0) return "file://" + base + "/" + page;
+            return "../plugins/" + pid + "/" + page;
         }
         return "";
     }
