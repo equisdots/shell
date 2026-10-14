@@ -225,11 +225,12 @@ ipc call topbar queueReload`. The three scales are distinct: UI Scale = shell
 only, App scale = global display scale (`scripts/scale-menu.sh`), monitor
 scale = Hyprland monitors.
 
-## Mascots / notch
+## Host overlays (Nyx)
 
 `settings.mascots` (`enabled`, `size`, `species`, `count`, `position`,
-`appearance`, `notch*`, `dock.*`, `watcher.*`) drives the Nyx island. `species`
-is a string (every mascot that kind, repeated `count` times) or an array (the
-lineup, one per id, in order). Species and notch cards are discovered from
-provider plugins and the user folders, and edited from Plugins → Nyx; see
-`docs/mascots.md`.
+`appearance`, `notch*`, `dock.*`, `watcher.*`) drives the Nyx plugin's island:
+the shell mounts its host adapter generically and never reads these keys
+itself. `species` is a string (every mascot that kind, repeated `count` times)
+or an array (the lineup, one per id, in order). Species and notch cards are
+discovered from provider plugins and the user folders and edited from
+Plugins → Nyx; see `equisdots/nyx` → `docs/shell-integration.md`.

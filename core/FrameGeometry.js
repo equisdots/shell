@@ -4,7 +4,7 @@
 // El marco es un borde que recorre los cuatro extremos del monitor, dibujado en
 // la capa Bottom (por detrás de la barra, islas y ventanas) y con reserva de
 // espacio por lado para que las ventanas nunca lo crucen (como la barra). Donde
-// la barra, la isla de mascotas o un panel/launcher anclado a un borde tocan el
+// la barra, un overlay de host o un panel/launcher anclado a un borde tocan el
 // marco, la línea se "hunde" y lo abraza con esquinas redondeadas (muesca).
 //
 // Todo aquí es puro (sin tipos QML) y testeable con node:
@@ -48,7 +48,7 @@ function defaults() {
         notchRadius: 12,  // corner radius of the detours (muescas)
         notchBar: true,   // hug the bar
         notchWidget: true,// carve around the active widget (launcher/panels)
-        notchMascot: true,// carve around the nyx island/notch
+        notchHosts: true, // carve around host overlays (plugin host adapters)
         widgetReach: 140, // how far (design px) a widget may sit and still notch
         layer: "bottom"
     };
@@ -90,22 +90,24 @@ function normalize(raw) {
         notchRadius: _clamp(Math.round(_num(raw.notchRadius, d.notchRadius)), 0, 60),
         notchBar: typeof raw.notchBar === "boolean" ? raw.notchBar : d.notchBar,
         notchWidget: typeof raw.notchWidget === "boolean" ? raw.notchWidget : d.notchWidget,
-        notchMascot: typeof raw.notchMascot === "boolean" ? raw.notchMascot : d.notchMascot,
+        // Legacy key `notchMascot` (pre host-adapter era) still reads.
+        notchHosts: typeof raw.notchHosts === "boolean" ? raw.notchHosts
+                    : (typeof raw.notchMascot === "boolean" ? raw.notchMascot : d.notchHosts),
         widgetReach: _clamp(Math.round(_num(raw.widgetReach, d.widgetReach)), 0, 600),
         layer: LAYERS.indexOf(String(raw.layer)) !== -1 ? String(raw.layer) : d.layer
     };
 }
 
 // ── Reserva de espacio ────────────────────────────────────────────────────
-// Un lado no debe reservar si ya lo reserva otro elemento: el de la barra y el
-// de la mascota (notch con notchReserve) se omiten para no empujar su capa.
-function reserveEdges(cfg, barPosition, mascotEdge) {
+// Un lado no debe reservar si ya lo ocupa otro elemento (la barra, un overlay
+// de host): los edges de skip se omiten para no empujar su capa.
+function reserveEdges(cfg, skipEdges) {
     if (!cfg || cfg.reserve === false) return [];
+    skipEdges = skipEdges || [];
     var out = [];
     for (var i = 0; i < EDGES.length; i++) {
         var e = EDGES[i];
-        if (barPosition && barPosition === e) continue;
-        if (mascotEdge && mascotEdge === e) continue;
+        if (skipEdges.indexOf(e) !== -1) continue;
         out.push(e);
     }
     return out;
@@ -278,7 +280,7 @@ function presets() {
           cfg: { enabled: true, thickness: 25, sideThickness: 43, radius: 15, inset: -4,
                  gap: 4, notchRadius: 7, color: "blue", alpha: 0.1, line: true, lineWidth: 10,
                  fill: true, fillColor: "surface0", fillAlpha: 1, reserve: false, reserveExtra: 15,
-                 notchBar: true, notchWidget: true, notchMascot: true, layer: "bottom" } },
+                 notchBar: true, notchWidget: true, notchHosts: true, layer: "bottom" } },
         { id: "minimal", label: "Minimal", icon: "󰅁",
           cfg: { thickness: 8, sideThickness: 8, radius: 24, inset: 6, gap: 6, notchRadius: 12,
                  color: "surface1", alpha: 0.85, line: true, lineWidth: 1, fill: false } },

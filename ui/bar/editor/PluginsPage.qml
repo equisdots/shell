@@ -13,7 +13,7 @@ import "../../../core"
 // (~/.config/hypr/plugins managed by dots + ~/.config/hypr/plugins-user, the
 // user dir wins on id collisions): identity, type badge, description, an
 // enable/disable switch and a Configure shortcut that jumps to the plugin's
-// own settings page (plugin.json → settings.page, e.g. nyx → p_nyx; the
+// own settings page (plugin.json → settings.page → dynamic p_<id>; the
 // legacy settingsTab key is still honored).
 //
 // The switch writes the plugin's effective toggle in settings.json

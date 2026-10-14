@@ -34,4 +34,13 @@ QtObject {
     function clear() {
         root.active = root.empty;
     }
+
+    // Host obstacles: rects published by plugin host adapters (republished by
+    // ui/PluginHosts.qml from their `frameObstacle` property). The frame hugs
+    // them and never reserves edges marked `avoidReserve`.
+    property var hostObstacles: []
+
+    function setHostObstacles(list) {
+        root.hostObstacles = (list && list.length !== undefined) ? list : [];
+    }
 }

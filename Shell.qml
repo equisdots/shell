@@ -18,5 +18,5 @@ ShellRoot {
     Bar {}
     Floating {}
     Widgets {}
-    Mascots {}
+    PluginHosts {}
 }

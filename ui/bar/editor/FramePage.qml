@@ -12,9 +12,9 @@ import "../../../core/FrameGeometry.js" as FG
 // "frame"). It edits the section that ui/frame/Frame.qml consumes live.
 //
 // The frame is a border wrapping all four screen edges, drawn on the Bottom
-// layer (behind the bar, mascot islands and windows) and reserving space on
+// layer (behind the bar, host overlays and windows) and reserving space on
 // each side so tiled windows never cross it (same model as the bar). Where the
-// bar, the nyx island or an edge-anchored widget (launcher/panels) meet it, the
+// bar, a host overlay or an edge-anchored widget (launcher/panels) meet it, the
 // line sinks and hugs them with rounded corners (muescas).
 //
 // Contract: receives the BarEditor root as `bar` (bar.s(), bar.colors).
@@ -62,7 +62,7 @@ Item {
     property real frReserveExtra: d.reserveExtra
     property bool frNotchBar: d.notchBar
     property bool frNotchWidget: d.notchWidget
-    property bool frNotchMascot: d.notchMascot
+    property bool frNotchHosts: d.notchHosts
     property bool frBackgroundLayer: d.layer === "background"
 
     readonly property var flickable: body.item ? body.item.flickable : null
@@ -87,7 +87,7 @@ Item {
         root.frReserveExtra = c.reserveExtra;
         root.frNotchBar = c.notchBar;
         root.frNotchWidget = c.notchWidget;
-        root.frNotchMascot = c.notchMascot;
+        root.frNotchHosts = c.notchHosts;
         root.frBackgroundLayer = c.layer === "background";
     }
     Component.onCompleted: root.syncFromConfig()
@@ -193,7 +193,7 @@ Item {
                     EditLabel {
                         bar: root.bar
                         width: parent.width
-                        text: "A border wrapping all four screen edges, drawn behind the bar, the mascots and the windows. It reserves space on each side so tiled windows never cross it, and hugs the bar/mascot/launcher with rounded corners. Applies live."
+                        text: "A border wrapping all four screen edges, drawn behind the bar, host overlays and the windows. It reserves space on each side so tiled windows never cross it, and hugs the bar/overlay/launcher with rounded corners. Applies live."
                         font.pixelSize: bar.s(11)
                         color: bar.colors.subtext0
                         wrapMode: Text.WordWrap
@@ -280,7 +280,7 @@ Item {
                         width: parent.width
                         bar: root.bar
                         icon: "󰅁"
-                        label: "Border line (hugs the bar/mascot)"
+                        label: "Border line (hugs the bar/overlays)"
                         checked: root.frLine
                         onToggled: { root.frLine = !root.frLine; root.set("line", root.frLine); }
                     }
@@ -483,9 +483,9 @@ Item {
                         width: parent.width
                         bar: root.bar
                         icon: ""
-                        label: "Hug the mascot island"
-                        checked: root.frNotchMascot
-                        onToggled: { root.frNotchMascot = !root.frNotchMascot; root.set("notchMascot", root.frNotchMascot); }
+                        label: "Hug host overlays"
+                        checked: root.frNotchHosts
+                        onToggled: { root.frNotchHosts = !root.frNotchHosts; root.set("notchHosts", root.frNotchHosts); }
                     }
 
                     // ── Space & layer ───────────────────────────────────────

@@ -36,17 +36,25 @@ Item {
 
     function refresh() { scan.running = false; scan.running = true }
 
+    // ── origin ────────────────────────────────────────────────────────────
+    // Managed plugins are deployed by dots into the shell tree; user plugins
+    // live in `~/.config/hypr/plugins-user/`.
+    function isManaged(p) {
+        if (!p) return false;
+        let base = String(p._base || "");
+        return base.indexOf(home + "/.config/hypr/plugins-user/") !== 0;
+    }
+
     // ── UI resolution (shared by the shell integrations) ──────────────────
     // Absolute path of a plugin's UI root: managed plugins resolve to the
     // shell-tree deploy (ui/plugins/<id>); user plugins to their own folder.
-    // `rel` appends a repo-relative path (settings pages, mascot dirs, ...).
+    // `rel` appends a repo-relative path (settings pages, provided dirs, ...).
     function uiPath(p, rel) {
         if (!p || !p.id) return "";
         let base = String(p._base || "");
-        let userRoot = home + "/.config/hypr/plugins-user/";
-        let rootDir = (base.indexOf(userRoot) === 0)
-                      ? base
-                      : home + "/.config/hypr/scripts/quickshell/ui/plugins/" + p.id;
+        let rootDir = PluginsCatalog.isManaged(p)
+                      ? home + "/.config/hypr/scripts/quickshell/ui/plugins/" + p.id
+                      : base;
         if (!rel) return rootDir;
         return rootDir + "/" + String(rel).replace(/^\.\//, "");
     }

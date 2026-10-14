@@ -95,16 +95,15 @@ same config: each island capsule (`ui/bar/Zone.qml`) and the optional strip
 swallow clicks. Notifications and the lock screen are separate surfaces and
 are not covered.
 
-## Mascots
+## Host overlays (Nyx)
 
-The click-through island / notch is the standalone **Nyx** plugin (resolved
-dynamically from the plugin catalog — managed deploy or a user plugin — and
-wrapped by `ui/Mascots.qml`, which injects the palette, the paths and the
-discovered catalogs). Its species and the notch "cards" are **discovered from
-provider plugins and user folders** and edited from Plugins → Nyx (ordered
-lineup with drag-and-drop reordering). See `docs/mascots.md` for the shell
-integration (discovery, cards, editor) and `ui/plugins/nyx/README.md` for the
-overlay API and species authoring.
+Installed plugins may ship a host adapter (manifest `host` entry) that the
+shell mounts generically (`ui/PluginHosts.qml`); Nyx — the click-through
+island/notch — is the first one, with its species and notch "cards"
+**discovered from provider plugins and user folders** and edited from
+Plugins → Nyx (ordered lineup with drag-and-drop reordering). Hosts publish
+`frameObstacle` rects consumed by the Frame (see above). See the Nyx docs
+(`equisdots/nyx` → `docs/shell-integration.md` and `ui/plugins/nyx/README.md`).
 
 ## Glassmorphism
 

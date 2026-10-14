@@ -113,9 +113,18 @@ Item {
             "hyprland": "d_hyprland", "idle": "d_idle", "gpu": "d_gpu",
             "notifications": "d_notifications", "guide": "d_guide", "about": "d_guide",
             "shadows": "d_shadows", "glass": "d_glass", "palette": "d_palette",
-            "mascots": "p_nyx", "nyx": "p_nyx", "plugins": "d_plugins"
+            "plugins": "d_plugins"
         };
         let page = map[root.activeMode] !== undefined ? map[root.activeMode] : root.activeMode;
+        if (root.navIndex(page) === -1) {
+            // Installed plugins are addressed by id: "<id>" -> "p_<id>".
+            let pid = String(root.activeMode);
+            let plist = PluginsCatalog.plugins || [];
+            for (let i = 0; i < plist.length; i++) {
+                let p = plist[i] || {};
+                if (p.id === pid && p.settings && p.settings.page) { page = "p_" + pid; break; }
+            }
+        }
         if (root.navIndex(page) === -1) return;
         // Timer (220 ms, como el popup): la ventana acaba de abrirse y la
         // intro anima; el layout debe estar resuelto antes de navegar.
@@ -737,15 +746,19 @@ Item {
         };
         return map[id] || null;
     }
-    // Plugin-contributed pages (p_<id>): loaded on demand, resolved through
-    // PluginsCatalog.uiUrl (managed: shell-tree deploy; user: own folder).
+    // Plugin-contributed pages (p_<id>): loaded on demand. Managed plugins
+    // load relatively (like every shell page: file:// loading changes
+    // unqualified type resolution — QtQuick.Controls' Config would shadow the
+    // core singleton). User plugins load via file:// and stay self-contained.
     function pluginPageFile(pid) {
         let list = PluginsCatalog.plugins || [];
         for (let i = 0; i < list.length; i++) {
             let p = list[i] || {};
             let s = (p.settings && typeof p.settings === "object") ? p.settings : null;
-            if (p.id === pid && s && s.page)
-                return PluginsCatalog.uiUrl(p, s.page);
+            if (p.id !== pid || !s || !s.page) continue;
+            let page = String(s.page).replace(/^\.\//, "");
+            if (PluginsCatalog.isManaged(p)) return "../plugins/" + pid + "/" + page;
+            return PluginsCatalog.uiUrl(p, page);
         }
         return "";
     }

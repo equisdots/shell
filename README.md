@@ -23,18 +23,19 @@ Running subsystems:
   `settings.json → shadows`, applies live).
 - **Glass** — translucent shell backgrounds + compositor backdrop blur
   (`settings.json → glass`, hyprland `layers.lua`; Theme → Glass page).
-- **Mascots / Nyx** — click-through top island + chibi cursor-following
-  mascots that morph into a dock with the launcher (`ui/Mascots.qml`; the
-  whole plugin UI — island + its own Plugins → Nyx settings page — ships in
-  equisdots/nyx and deploys to `ui/plugins/nyx/`).
+- **Plugin hosts** — plugins may ship a host adapter (manifest `host` entry)
+  that the shell mounts generically (`ui/PluginHosts.qml`); hosts can also
+  publish `frameObstacle` rects for the screen frame. Nyx (equisdots/nyx) is
+  the first: a click-through island/notch that morphs into a dock, with its
+  own settings page under Plugins.
 - **Plugins** — installed-plugin registry and manager: folder discovery
   (`~/.config/hypr/plugins` + `plugins-user`), enable/disable and a Configure
   shortcut per plugin (`ui/bar/editor/PluginsPage.qml`; standard, samples and
   contracts in equisdots/plugins → `docs/plugins.md`).
 - **Frame** — a bezel hugging all four screen edges, drawn on the Bottom layer
-  and reserving space so tiled windows never cross it; it hugs the bar, the nyx
-  notch and edge-anchored widgets (launcher/panels) with rounded corners and
-  morphs live with them (`ui/frame/Frame.qml`, `core/FrameGeometry.js`,
+  and reserving space so tiled windows never cross it; it hugs the bar, host
+  overlays and edge-anchored widgets (launcher/panels) with rounded corners
+  and morphs live with them (`ui/frame/Frame.qml`, `core/FrameGeometry.js`,
   `core/FrameBus.qml`; `settings.json → frame`; Theme → Frame page).
 - **Panels** — clipboard, davincix, file-search, focustime, idle,
   quickactions, quicknotes, rss-reader, scale, window-controls.
@@ -92,7 +93,7 @@ scripts/check.sh
 - `docs/bar-modules.md` — module contract, `ModulePill` API, compact mode,
   per-module personalization.
 - `docs/windows.md` — windows, widget popups, IPC and watchers.
-- `docs/mascots.md` — the Nyx notch: species/card discovery, folders, editor.
+- the island/notch integration is documented in its plugin (equisdots/nyx → `docs/shell-integration.md`).
 - `docs/desktop-widgets.md` — floating widget subsystem and redactor.
 - `docs/themes.md` — palette system, live editing and theme-sync.
 - `docs/personalization.md` — configuration surface (bar engines, modules,
