@@ -23,8 +23,13 @@ Running subsystems:
   `settings.json → shadows`, applies live).
 - **Glass** — translucent shell backgrounds + compositor backdrop blur
   (`settings.json → glass`, hyprland `layers.lua`; Theme → Glass page).
-- **Mascots** — click-through top island + chibi cursor-following mascots that
-  morph into a dock with the launcher (`ui/Mascots.qml`; Theme → Mascots page).
+- **Mascots / Nyx** — click-through top island + chibi cursor-following
+  mascots that morph into a dock with the launcher (`ui/Mascots.qml`;
+  Plugins → Nyx page — Nyx is plugin #1 of the equisdots plugin standard).
+- **Plugins** — installed-plugin registry and manager: folder discovery
+  (`~/.config/hypr/plugins` + `plugins-user`), enable/disable and a Configure
+  shortcut per plugin (`ui/bar/editor/PluginsPage.qml`; standard, samples and
+  contracts in equisdots/plugins → `docs/plugins.md`).
 - **Frame** — a bezel hugging all four screen edges, drawn on the Bottom layer
   and reserving space so tiled windows never cross it; it hugs the bar, the nyx
   notch and edge-anchored widgets (launcher/panels) with rounded corners and
@@ -47,6 +52,9 @@ Known pending:
 - Some popup helpers (diary, schedule) have no script yet; schedule is
   optional (existence-guarded), diary is still a dead button.
 - The `install/` layer does not exist yet.
+- The plugin standard is POC-level (Nyx + the `hello` sample); the first
+  converted plugins (screenshots, idle-lock, monitors) will land in
+  equisdots/plugins.
 
 ## Layout
 

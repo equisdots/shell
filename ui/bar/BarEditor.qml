@@ -112,7 +112,8 @@ Item {
             "bar": "d_engine", "engine": "d_engine", "launcher": "d_launcher",
             "hyprland": "d_hyprland", "idle": "d_idle", "gpu": "d_gpu",
             "notifications": "d_notifications", "guide": "d_guide", "about": "d_guide",
-            "shadows": "d_shadows", "glass": "d_glass", "palette": "d_palette", "mascots": "d_mascots"
+            "shadows": "d_shadows", "glass": "d_glass", "palette": "d_palette",
+            "mascots": "d_nyx", "nyx": "d_nyx", "plugins": "d_plugins"
         };
         let page = map[root.activeMode] !== undefined ? map[root.activeMode] : root.activeMode;
         if (root.navIndex(page) === -1) return;
@@ -580,7 +581,7 @@ Item {
     property real targetMasterHeight: root.s(760)
     // Outer radius for the host-drawn panel shadow (matches the panel bg).
     readonly property real shadowRadius: root.s(21)
-    // Grupos de navegación: definidos en core/EditorNav.js (5 grupos
+    // Grupos de navegación: definidos en core/EditorNav.js (7 grupos
     // colapsables, orden/visibilidad/estado desde settings.editor).
     property var navGroups: EditorNav.configure(EditorNav.groups(), Config.rawSettings.editor)
     // Colapsar/desplegar un grupo: persiste en settings.editor.collapsed.
@@ -694,7 +695,8 @@ Item {
             "d_shadows":       "editor/ShadowsPage.qml",
             "d_frame":         "editor/FramePage.qml",
             "d_glass":         "editor/GlassPage.qml",
-            "d_mascots":       "editor/MascotsPage.qml"
+            "d_nyx":           "editor/NyxPage.qml",
+            "d_plugins":       "editor/PluginsPage.qml"
         };
         return map[id] || "";
     }
@@ -725,7 +727,8 @@ Item {
             "d_shadows":       dShadowsLoader,
             "d_frame":         dFrameLoader,
             "d_glass":         dGlassLoader,
-            "d_mascots":       dMascotsLoader
+            "d_nyx":           dNyxLoader,
+            "d_plugins":       dPluginsLoader
         };
         return map[id] || null;
     }
@@ -1692,13 +1695,23 @@ Item {
                         Behavior on opacity { NumberAnimation { duration: 250 } }
                     }
                     Loader {
-                        id: dMascotsLoader
+                        id: dNyxLoader
                         anchors.fill: parent
-                        visible: root.currentPage === "d_mascots"
+                        visible: root.currentPage === "d_nyx"
                         opacity: visible ? 1.0 : 0.0
                         property real slideY: visible ? 0 : root.s(10)
                         Behavior on slideY { NumberAnimation { duration: 250; easing.type: Easing.OutQuart } }
-                        transform: Translate { y: dMascotsLoader.slideY }
+                        transform: Translate { y: dNyxLoader.slideY }
+                        Behavior on opacity { NumberAnimation { duration: 250 } }
+                    }
+                    Loader {
+                        id: dPluginsLoader
+                        anchors.fill: parent
+                        visible: root.currentPage === "d_plugins"
+                        opacity: visible ? 1.0 : 0.0
+                        property real slideY: visible ? 0 : root.s(10)
+                        Behavior on slideY { NumberAnimation { duration: 250; easing.type: Easing.OutQuart } }
+                        transform: Translate { y: dPluginsLoader.slideY }
                         Behavior on opacity { NumberAnimation { duration: 250 } }
                     }
                     Loader {

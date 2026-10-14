@@ -231,4 +231,4 @@ scale = Hyprland monitors.
 `appearance`, `notch*`, `dock.*`, `watcher.*`) drives the Nyx island. `species`
 is a string (every mascot that kind, repeated `count` times) or an array (the
 lineup, one per id, in order). Species and notch cards are discovered from
-folders and edited from Theme → Mascots; see `docs/mascots.md`.
+folders and edited from Plugins → Nyx; see `docs/mascots.md`.

@@ -115,9 +115,9 @@ A card descriptor (`*.json`):
 (filtering `enabled === false`) and runs a card's `exec` in the launcher; the
 `wallpaper` card keeps its live preview thumbnail.
 
-## Editor (Settings → Mascots)
+## Editor (Settings → Plugins → Nyx)
 
-Theme → Mascots edits `settings.json → mascots`. The **Species** section is an
+Plugins → Nyx edits `settings.json → mascots`. The **Species** section is an
 ordered, drag-reorderable lineup:
 
 - **Ordered list** — the active species, one row each (drag handle, icon, label,

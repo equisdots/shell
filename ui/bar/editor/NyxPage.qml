@@ -7,7 +7,7 @@ import "../edit"
 import "../../../core"
 
 // ═══════════════════════════════════════════════════════════════════════════
-// MascotsPage — BarEditor tab (Theme group): the mascot island overlay.
+// NyxPage — BarEditor tab (Plugins group): the Nyx plugin (mascot island + notch).
 //
 // The widget itself lives in ui/Mascots.qml (a click-through overlay): a small
 // island at the top that morphs into a dock while the app launcher is open,
@@ -374,7 +374,7 @@ Item {
                     spacing: bar.s(12)
 
                     Text {
-                        text: "Mascots"
+                        text: "Nyx"
                         font.family: "Hack Nerd Font"
                         font.weight: Font.Black
                         font.pixelSize: bar.s(24)
