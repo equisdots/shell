@@ -30,12 +30,10 @@ Lock.qml                   alternate entry: PAM session lock (WlSessionLock,
     │   ├── edit/          editor controls (FieldCard, ToggleCard, ...)
     │   └── popups/        applauncher, battery, guide, music, network,
     │                      system-monitor, updater, volume (bar-triggered)
-    ├── timex/             timex subsystem UI: TimexPopup (clock + calendar +
-    │                      hourly forecast + day panel) and TimexTab (settings;
-    │                      sources live in the equisdots/timex repo)
     ├── panels/            clipboard, davincix, file-search, focustime, idle,
-    │                      quickactions, quicknotes, rss-reader, scale,
-    │                      window-controls
+    │                      quickactions, quicknotes, scale, window-controls
+    │                      (plugin panels — timex, rss-reader — resolve from
+    │                      their manifests via ui/Main.qml)
     ├── notifications/     NotificationPopups
     ├── frame/             screen frame: ScreenFrame per edge/fullscreen
     │                      (Frame.qml) + geometry in core/FrameGeometry.js and

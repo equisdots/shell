@@ -158,14 +158,12 @@ override); the generic `colors` map is normalized by `moduleConfig`.
 Ported subsystems without a dedicated module expose their options through
 `core/Personalization.js`, one settings section per subsystem:
 
-`lock`, `battery`, `volume`, `music`, `network`, `calendar`, `updater`, `applauncher`, `system-monitor`, `clipboard`, `focustime`, `quicknotes`, `idle`, `file-search`, `rss-reader`, `scale`, `window-controls`, `widgets`, `timex`
+`lock`, `battery`, `volume`, `music`, `network`, `calendar`, `updater`, `applauncher`, `system-monitor`, `clipboard`, `focustime`, `quicknotes`, `idle`, `file-search`, `scale`, `window-controls`, `widgets`
 
-The `timex` section drives the calendar popup's timex UI (Settings → Shell →
-Weather → *Timex layout*): `forecastEnabled`, `forecastPosition`
-(`below`/`above`), `forecastSize`, `forecastGap`, `forecastHours`,
-`forecastShowTime/Icon/Temp`, `forecastOrder` (CSV of `time,icon,temp`) and
-`clockScale`. The settings tab writes them inside the same `timex` object as
-`provider`/`city`/`unit`.
+The `timex` and `rss-reader` subsystems moved to plugins: their options
+(`settings.json → "timex"` and `→ "rss-reader"`, including the calendar
+popup's layout keys) are plugin-owned now and edited by their own settings
+pages (`p_timex`, `p_rss-reader` in the Plugins group).
 
 The `lock` section configures the lock screen (`Lock.qml`, the alternate
 entry point at the repo root launched by `lock.sh`):

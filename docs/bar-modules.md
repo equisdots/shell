@@ -123,7 +123,7 @@ are re-added disabled after updates, so existing bars never change on their
 own).
 
 - **weather**: shows `bar.weatherIcon` + `bar.weatherTemp` (data polled from
-  the timex engine through the `ui/bar/popups/calendar/weather.sh` shim; the
+  the timex plugin's engine through the `ui/bar/popups/calendar/weather.sh` shim; the
   island fill follows the weather code color `bar.weatherHex`); click opens the
   calendar popup.
 - **focus**: shows the title of the currently focused window

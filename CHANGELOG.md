@@ -7,9 +7,11 @@ Dates use YYYY-MM-DD.
 
 ### Changed
 - **Screenshots overlay left the shell**: `ScreenshotOverlay.qml` now ships with the `screenshots` plugin (deployed to `ui/plugins/screenshots/ui/`); the recording bar module resolves the plugin's script across deploy layouts (managed registry/tree, user plugin, transitional core path).
+- **Timex and RSS Reader moved to plugins**: `ui/Main.qml` resolves plugin-provided panels (`manifest provides.panels`) and the General position grid lists them dynamically; the `timex` plugin ships the calendar/weather popup + its settings page, the `rss-reader` plugin a rebuilt reader panel + its own feed manager page. `SUPER+S`/`SUPER+O` come from the plugins' `hypr.lua`.
 
 ### Removed
 - `ScreenshotOverlay.qml` (the plugin owns it; `dots` installs the plugin by default).
+- `ui/timex/` (popup + settings tab) and `ui/panels/rss-reader/` (panel + fetcher + feeds) — both ship with their plugins now.
 
 ## [2026-10-02]
 
