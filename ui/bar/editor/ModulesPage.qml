@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import "../edit"
 import ".."
 import "../BarLayout.js" as BarLayout
+import "../../../core"
 
 // ═══════════════════════════════════════════════════════════════════════════
 // ModulesPage — BarEditor tab: per-module personalization (icon, color, fill,
@@ -52,11 +53,28 @@ Item {
 
     function defIcon(id) {
         let d = root.moduleDefaults[id];
-        return d && d.icon ? d.icon : "";
+        if (d && d.icon) return d.icon;
+        let p = PluginsCatalog.barModule(id);
+        return p && p.icon ? p.icon : "";
     }
     function defAccent(id) {
         let d = root.moduleDefaults[id];
-        return d && d.accent ? d.accent : "";
+        if (d && d.accent) return d.accent;
+        return "";
+    }
+    // Core catalog + plugin-provided modules (provides.bar.modules) not in
+    // the catalog; plugin entries carry their label/icon hints.
+    readonly property var allModules: {
+        PluginsCatalog.rev;
+        let base = BarLayout.MODULES.map(m => Object.assign({}, m));
+        let have = {};
+        for (let i = 0; i < base.length; i++) have[base[i].id] = true;
+        let extra = PluginsCatalog.barModuleEntries();
+        for (let i = 0; i < extra.length; i++) {
+            if (have[extra[i].id]) continue;
+            base.push({ id: extra[i].id, label: extra[i].label, icon: extra[i].icon, component: "" });
+        }
+        return base;
     }
     function colorOf(value) {
         if (value === "") return root.bar.colors.text;
@@ -153,7 +171,7 @@ Item {
                         rowSpacing: bar.s(12)
 
                         Repeater {
-                            model: BarLayout.MODULES
+                            model: root.allModules
 
                             delegate: Rectangle {
                                 id: card

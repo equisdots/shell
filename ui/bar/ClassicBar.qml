@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import "BarLayout.js" as BarLayout
+import "../../core"
 
 // ============================================================================
 // ClassicBar — the classic left/center/right bar engine (Phase D4-E1b + R1).
@@ -379,8 +380,12 @@ Item {
                     height: item ? item.implicitHeight : 0
                     Component.onCompleted: {
                         let mod = BarLayout.getModule(modelData.id);
-                        if (!mod) return;
-                        setSource(Qt.resolvedUrl(mod.component), {
+                        let comp = mod ? mod.component : "";
+                        // Plugin-provided modules (provides.bar.modules) fall
+                        // back to the plugin's implementation.
+                        if (comp === "") comp = PluginsCatalog.barModuleComp(modelData.id);
+                        if (comp === "") return;
+                        setSource(Qt.resolvedUrl(comp), {
                             "bar": classicRoot.bar,
                             "colors": classicRoot.colors,
                             "zoneReady": true,

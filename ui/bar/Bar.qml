@@ -703,15 +703,6 @@ Variants {
             }
 
             Process {
-                id: recPoller
-                command: ["bash", "-c", "if [ -s " + paths.getCacheDir("recording") + "/rec_pid ] && kill -0 $(cat " + paths.getCacheDir("recording") + "/rec_pid) 2>/dev/null; then echo '1'; else echo '0'; fi"]
-                stdout: StdioCollector {
-                    onStreamFinished: {
-                        barWindow.isRecording = (this.text.trim() === "1");
-                    }
-                }
-            }
-            Process {
                 id: updatePoller
                 command: ["bash", "-c", "if [ -f " + paths.getCacheDir("updater") + "/update_pending ]; then echo '1'; else echo '0'; fi"]
                 running: true
@@ -800,7 +791,6 @@ Variants {
             // ================================================================
             // SYSTEM STATE
             // ================================================================
-            property bool isRecording: false
             property bool updateAvailable: false
             property bool forceUpdateShow: false
             property bool isUpdateVisible: updateAvailable || forceUpdateShow
@@ -1126,7 +1116,6 @@ Variants {
             Timer { id: netPollTimer; interval: 3000; running: true; repeat: true; onTriggered: { networkPoller.running = false; networkPoller.running = true; } }
             Timer { id: btPollTimer; interval: 4000; running: true; repeat: true; onTriggered: { btPoller.running = false; btPoller.running = true; } }
             Timer { id: batPollTimer; interval: 3000; running: true; repeat: true; onTriggered: { batteryPoller.running = false; batteryPoller.running = true; } }
-            Timer { id: recPollTimer; interval: 2500; running: true; repeat: true; onTriggered: { recPoller.running = false; recPoller.running = true; } }
             Timer { id: updatePollTimer; interval: 4000; running: true; repeat: true; onTriggered: { updatePoller.running = false; updatePoller.running = true; } }
             Timer { id: musicPollTimer; interval: 3000; running: true; repeat: true; onTriggered: { musicForceRefresh.running = false; musicForceRefresh.running = true; } }
             Timer { id: wsPollTimer; interval: 1500; running: true; repeat: true; onTriggered: { wsReader.running = false; wsReader.running = true; } }

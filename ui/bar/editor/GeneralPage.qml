@@ -50,11 +50,9 @@ Item {
         { id: "battery", label: "Battery" },
         { id: "system-monitor", label: "System" },
         { id: "applauncher", label: "Launcher" },
-        { id: "clipboard", label: "Clipboard" },
         { id: "music", label: "Music" },
         { id: "updater", label: "Updater" },
         { id: "guide", label: "About (guide)" },
-        { id: "quicknotes", label: "Notepad" },
         { id: "scale", label: "Scale" },
         { id: "window-controls", label: "Window controls" }
     ].concat(pluginPanels)
@@ -314,7 +312,14 @@ Item {
                                             border.color: Qt.alpha(bar.colors[role], 0.75)
                                             Text {
                                                 anchors.centerIn: parent
-                                                text: { let m = BarLayout.getModule(modelData); return m && m.icon ? m.icon : "·"; }
+                                                text: {
+                                                    let m = BarLayout.getModule(modelData);
+                                                    if (!m || !m.icon) {
+                                                        let pm = PluginsCatalog.barModule(modelData);
+                                                        if (pm && pm.icon) return pm.icon;
+                                                    }
+                                                    return m && m.icon ? m.icon : "·";
+                                                }
                                                 font.family: "Hack Nerd Font"
                                                 font.pixelSize: bar.s(13)
                                                 color: bar.colors[role]

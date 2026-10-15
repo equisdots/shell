@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Effects
 import Quickshell
 import "BarLayout.js" as BarLayout
+import "../../core"
 
 // ============================================================================
 // Zone — renders ONE zone of the bar.
@@ -204,9 +205,15 @@ Item {
 
                 Component.onCompleted: {
                     let mod = BarLayout.getModule(slotWrap.modelData);
-                    if (!mod) return;
+                    let comp = mod ? mod.component : "";
+                    // Plugin-provided modules (manifest provides.bar.modules):
+                    // the core catalog keeps the slot id; the implementation
+                    // ships with a plugin (resolved at ui/bar depth or as an
+                    // absolute path for user plugins).
+                    if (comp === "") comp = PluginsCatalog.barModuleComp(slotWrap.modelData);
+                    if (comp === "") return;
                     // Module components live in bar/modules/ (same level as this file).
-                    setSource(Qt.resolvedUrl(mod.component), {
+                    setSource(Qt.resolvedUrl(comp), {
                         "bar": zoneRoot.bar,
                         "colors": zoneRoot.colors,
                         "zoneReady": Qt.binding(() => zoneRoot.ready),

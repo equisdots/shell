@@ -69,6 +69,47 @@ Item {
         return registryEntries().filter(r => r && r.id && !isInstalled(r.id));
     }
 
+    // ── plugin bar modules (manifest provides.bar.modules) ────────────────
+    // Bar modules shipped by plugins: `<id> = { comp, label?, icon? }` (comp
+    // relative to the plugin UI root). The core catalog keeps the slot id for
+    // layout/defaults; the bar resolves the implementation here for enabled,
+    // compatible plugins.
+    function barModuleEntries() {
+        let out = [];
+        let list = plugins || [];
+        for (let i = 0; i < list.length; i++) {
+            let p = list[i] || {};
+            if (p.enabled !== true) continue;
+            if (p.compat && p.compat.ok === false) continue;
+            let b = (p.provides && typeof p.provides === "object") ? p.provides.bar : null;
+            let mods = (b && typeof b === "object") ? b.modules : null;
+            if (!mods || typeof mods !== "object") continue;
+            for (let id in mods) {
+                let e = mods[id] || {};
+                out.push({ id: id, entry: e, plugin: p,
+                           label: e.label || id, icon: e.icon || "" });
+            }
+        }
+        return out;
+    }
+
+    function barModule(id) {
+        let list = barModuleEntries();
+        for (let i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+        return null;
+    }
+
+    // Component URL for a plugin bar module: root-relative for managed
+    // plugins (resolved from the caller at ui/bar depth as "../plugins/..."),
+    // absolute path for user plugins.
+    function barModuleComp(id) {
+        let hit = barModule(id);
+        if (!hit || !hit.entry.comp) return "";
+        return isManaged(hit.plugin)
+            ? "../plugins/" + hit.plugin.id + "/" + String(hit.entry.comp).replace(/^\.\//, "")
+            : uiPath(hit.plugin, hit.entry.comp);
+    }
+
     function refresh() {
         scan.running = false;
         scan.running = true;
