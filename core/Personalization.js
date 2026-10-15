@@ -65,28 +65,13 @@ var SECTIONS = {
         pollMs: 5000,
         historyLength: 30
     },
-    "clipboard": {
-        popupWidth: 800,
-        popupHeight: 700,
-        fetchLimit: 24
-    },
     "focustime": {
         popupWidth: 900,
         popupHeight: 700
     },
-    "quicknotes": {
-        popupWidth: 480,
-        popupHeight: 460,
-        saveDebounceMs: 800
-    },
     "idle": {
         popupWidth: 560,
         popupHeight: 430
-    },
-    "file-search": {
-        popupWidth: 600,
-        popupHeight: 500,
-        debounceMs: 200
     },
     "scale": {
         popupWidth: 520,
