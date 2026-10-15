@@ -67,20 +67,21 @@ Item {
         return root.bar.colors.subtext0;
     }
 
-    // Writes the plugin's effective toggle path (plugins.<id>.enabled by
-    // default) and reloads the compositor for hypr-side plugins.
+    // Writes the plugin's effective toggle into the plugin's OWN settings file
+    // (its state never mixes into the core settings.json), then reloads the
+    // compositor for hypr-side plugins and rescans.
     function setEnabled(p, value) {
+        if (!p || !p.id) return;
         let path = String(p.toggle || ("plugins." + p.id + ".enabled")).split(".");
-        if (path.length < 2 || path[0] === "") return;
-        let top = path[0];
-        let obj = Object.assign({}, Config.rawSettings[top] || {});
-        let cur = obj;
-        for (let i = 1; i < path.length - 1; i++) {
-            cur[path[i]] = Object.assign({}, cur[path[i]] || {});
-            cur = cur[path[i]];
-        }
-        cur[path[path.length - 1]] = value;
-        Config.setSetting(top, obj);
+        if (path.length < 1 || path[0] === "") return;
+        let file = String(p._base || "") + "/settings.json";
+        let pathJson = JSON.stringify(path);
+        let v = value ? "true" : "false";
+        let cmd = "f='" + file + "'; mkdir -p \"$(dirname \"$f\")\"; " +
+                  "[ -f \"$f\" ] || echo '{}' > \"$f\"; " +
+                  "tmp=$(mktemp \"$f\".tmp.XXXXXX) && " +
+                  "jq --argjson p '" + pathJson + "' --argjson v " + v + " 'setpath($p; $v)' \"$f\" > \"$tmp\" && mv \"$tmp\" \"$f\"";
+        Quickshell.execDetached(["bash", "-c", cmd]);
         if (p.type === "hypr" || p.type === "mixed") root.reloadCompositor();
         refreshTimer.restart();
     }

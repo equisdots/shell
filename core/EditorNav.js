@@ -54,14 +54,6 @@ var GROUPS = [
         ]
     },
     {
-        id: "plugins",
-        label: "Plugins",
-        icon: "󰏗",
-        items: [
-            { id: "d_plugins", icon: "󰏗", label: "Plugins" }
-        ]
-    },
-    {
         id: "behavior",
         label: "Behavior",
         icon: "󰀻",

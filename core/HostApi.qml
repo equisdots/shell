@@ -33,12 +33,18 @@ Scope {
 
     property var _handles: ({})
     Component { id: hostComp; PluginHost {} }
+    Component { id: storeComp; SettingsStore {} }
 
     function forPlugin(entry) {
         let id = (entry && entry.id !== undefined) ? String(entry.id) : "";
         if (id === "") return null;
         let h = _handles[id];
         if (h) { h.manifest = entry; return h; }
+        // Per-plugin settings store: the plugin's OWN file (self-contained; never
+        // mixed with the core settings.json). Path: <registry>/<id>/settings.json.
+        let store = storeComp.createObject(api, {
+            filePath: String(entry && entry._base ? entry._base : "") + "/settings.json"
+        });
         h = hostComp.createObject(api, {
             manifest: entry,
             colors: sharedColors,
@@ -46,6 +52,7 @@ Scope {
             catalog: PluginsCatalog,
             widgetsSource: LayoutMath,
             statsSource: SysData,
+            settingsStore: store,
             scaleFn: api.scaleFn
         });
         if (h) _handles[id] = h;

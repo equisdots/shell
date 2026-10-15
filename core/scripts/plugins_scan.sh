@@ -8,11 +8,12 @@
 #   user    $PLUGINS_USER     (default ~/.config/hypr/plugins-user)   — wins
 #   managed $PLUGINS_MANAGED  (default ~/.config/hypr/plugins)        — dots
 #
-# The user dir is scanned first and wins on id collisions. `enabled` resolves
-# the plugin's effective switch from settings.json: plugin.json "toggle" (a
-# settings path) or the default plugins.<id>.enabled, falling back to the
-# manifest's "defaultEnabled". Every entry gets "_base" (its directory) so
-# callers can resolve relative payloads (hypr.lua, scripts/).
+# AUTONOMY: each plugin owns its settings in ITS OWN file
+# (<dir>/settings.json), never mixed into the core settings.json. This scan
+# resolves `enabled` from the plugin's OWN file (the manifest's toggle path, or
+# <scope>.enabled, falling back to the manifest's defaultEnabled). The
+# shell-side metadata `plugins.<id>.config` (the settings-menu switch) stays in
+# the core settings.json (the shell owns it). Every entry gets "_base".
 #
 # Env (all optional): PLUGINS_USER, PLUGINS_MANAGED, PLUGINS_SETTINGS
 # ═══════════════════════════════════════════════════════════════════════════
@@ -28,26 +29,27 @@ USER_DIR="${PLUGINS_USER:-${XDG_CONFIG_HOME:-$HOME/.config}/hypr/plugins-user}"
 MANAGED_DIR="${PLUGINS_MANAGED:-${XDG_CONFIG_HOME:-$HOME/.config}/hypr/plugins}"
 SETTINGS="${PLUGINS_SETTINGS:-${XDG_CONFIG_HOME:-$HOME/.config}/hypr/settings.json}"
 
-# Compatibility annotation (see equisdots/plugin-api). The evaluator + the API
-# version file are vendored with the shell; a plugin's `compat` ranges are
-# resolved to {state, ok, reason, requires, seen}.
+# Core settings.json: only the shell metadata (plugins.<id>.config) is read here.
+settings_obj='{}'
+if [ -f "$SETTINGS" ] && jq -e . "$SETTINGS" >/dev/null 2>&1; then
+    settings_obj=$(jq -c . "$SETTINGS")
+fi
+
+# Compatibility annotation (see equisdots/plugin-api).
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 COMPAT="$SCRIPT_DIR/plugins_compat.sh"
 API_FILE="${PLUGINS_API_FILE:-$SCRIPT_DIR/../../plugin-api.json}"
 HOST_API="$(jq -r '.api // empty' "$API_FILE" 2>/dev/null || true)"
 SHELL_VERSION="$(jq -r '.shell // empty' "$API_FILE" 2>/dev/null || true)"
 
-settings_obj='{}'
-if [ -f "$SETTINGS" ] && jq -e . "$SETTINGS" >/dev/null 2>&1; then
-    settings_obj=$(jq -c . "$SETTINGS")
-fi
-
-# One manifest -> one normalized object with _base + resolved enabled state
-# (`enabled` from the toggle path / defaultEnabled; `config`, the settings-menu
-# switch, from plugins.<id>.config, default true).
+# One manifest -> one normalized object. `enabled` resolves from the plugin's
+# OWN settings file; `config` (settings-menu switch) from settings.json.
 one() {
-    local dir="$1"
+    local dir="$1" pset='{}'
     [ -f "$dir/plugin.json" ] || return 0
+    if [ -f "$dir/settings.json" ] && jq -e . "$dir/settings.json" >/dev/null 2>&1; then
+        pset="$(jq -c . "$dir/settings.json")"
+    fi
     local verdict='{"state":"ok","ok":true,"reason":""}'
     if [ -x "$COMPAT" ]; then
         local c; c=$(jq -c '.compat // empty' "$dir/plugin.json" 2>/dev/null || true)
@@ -59,19 +61,18 @@ one() {
                       bash "$COMPAT" <<<"$c" 2>/dev/null || echo "$verdict")
         fi
     fi
-    jq -c --arg base "$dir" --argjson settings "$settings_obj" --argjson verdict "$verdict" '
+    jq -c --arg base "$dir" --argjson pset "$pset" --argjson settings "$settings_obj" --argjson verdict "$verdict" '
         . as $m
         | select(($m.id // "") != "")
-        | ($m.toggle // ("plugins." + $m.id + ".enabled")) as $toggle
+        | ($m.scope // ("plugins." + $m.id)) as $scope
+        | ($m.toggle // ($scope + ".enabled")) as $toggle
         | ($toggle | split(".")) as $path
-        | (try ($settings | getpath($path)) catch null) as $val
+        | (try ($pset | getpath($path)) catch null) as $val
         | (try ($settings | getpath(["plugins", $m.id, "config"])) catch null) as $cfg
         | ($m + {
             _base: $base,
             toggle: $toggle,
-            enabled: (if $val == null
-                      then ($m.defaultEnabled // false)
-                      else ($val == true) end),
+            enabled: (if $val == null then ($m.defaultEnabled // false) else ($val == true) end),
             config: (if $cfg == null then true else ($cfg == true) end)
           }) | .compat = $verdict' "$dir/plugin.json" 2>/dev/null || true
 }
