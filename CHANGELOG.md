@@ -3,6 +3,14 @@
 All notable changes to the equisdots shell are documented here.
 Dates use YYYY-MM-DD.
 
+## [2026-10-15]
+
+### Changed
+- **Screenshots overlay left the shell**: `ScreenshotOverlay.qml` now ships with the `screenshots` plugin (deployed to `ui/plugins/screenshots/ui/`); the recording bar module resolves the plugin's script across deploy layouts (managed registry/tree, user plugin, transitional core path).
+
+### Removed
+- `ScreenshotOverlay.qml` (the plugin owns it; `dots` installs the plugin by default).
+
 ## [2026-10-02]
 
 ### Added

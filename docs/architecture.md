@@ -23,7 +23,6 @@ Lock.qml                   alternate entry: PAM session lock (WlSessionLock,
 └── ui/                    everything visible
     ├── Main.qml           master window: widget stack + morph + IPC handler
     ├── Floating.qml       floating widget host
-    ├── ScreenshotOverlay.qml
     ├── bar/               Bar.qml (host), ClassicBar.qml, ModulePill, Zone,
     │   │                  Colors.qml, BarLayout.js (engines API)
     │   ├── modules/       18 bar modules

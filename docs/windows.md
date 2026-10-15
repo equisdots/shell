@@ -21,8 +21,9 @@ Windows mounted by `Shell.qml`:
 - **`ui/widgets/Widgets.qml`** — the desktop-widget system (one `WidgetLoader`
   per screen, Bottom-layer windows). See `docs/desktop-widgets.md`.
 - **`Lock.qml`** (repo root, alternate entry) — PAM session lock (`WlSessionLock`).
-- **`ui/ScreenshotOverlay.qml`** — region selection, recording controls, QR
-  scan, magnifier.
+- **Screenshots overlay** (`ui/plugins/screenshots/ui/`) — region selection,
+  recording controls, QR scan, magnifier; ships with the `screenshots` plugin
+  (`equisdots/plugins` → `plugins/screenshots`), installed by default.
 
 Shared services live in `core/`: `Config` (settings.json), `Caching`
 (cache/run/state paths), `Scaler`, `Theme`, `SysData`, `Cava`, `WidgetSync`,
