@@ -24,7 +24,6 @@ Item {
         { id: "calendar", label: "Calendar" },
         { id: "clipboard", label: "Clipboard" },
         { id: "quicknotes", label: "Notepad" },
-        { id: "rss-reader", label: "RSS reader" },
         { id: "file-search", label: "File search" },
         { id: "scale", label: "Scale picker" },
         { id: "window-controls", label: "Window controls" },
