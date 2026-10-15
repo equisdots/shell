@@ -14,9 +14,14 @@ ModulePill {
     pulse: true
     showState: bar.isRecording
 
+    // The screenshots plugin owns the script; resolve its deployed copy
+    // (managed registry + UI tree, user plugin) with the transitional core
+    // path as the last resort.
+    readonly property string screenshotCmd: "S=; for c in \"$HOME/.config/hypr/plugins/screenshots/scripts/screenshot.sh\" \"$HOME/.config/hypr/scripts/quickshell/ui/plugins/screenshots/scripts/screenshot.sh\" \"$HOME/.config/hypr/plugins-user/screenshots/scripts/screenshot.sh\" \"$HOME/.config/hypr/scripts/screenshot.sh\"; do [ -f \"$c\" ] && { S=\"$c\"; break; }; done; [ -n \"$S\" ] && exec bash \"$S\""
+
     onClicked: {
         bar.isRecording = false;
-        Quickshell.execDetached(["bash", "-c", "~/.config/hypr/scripts/screenshot.sh"]);
+        Quickshell.execDetached(["bash", "-c", screenshotCmd]);
     }
 
     Text {
