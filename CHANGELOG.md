@@ -10,6 +10,7 @@ Dates use YYYY-MM-DD.
 - **Timex and RSS Reader moved to plugins**: `ui/Main.qml` resolves plugin-provided panels (`manifest provides.panels`) and the General position grid lists them dynamically; the `timex` plugin ships the calendar/weather popup + its settings page, the `rss-reader` plugin a rebuilt reader panel + its own feed manager page. `SUPER+S`/`SUPER+O` come from the plugins' `hypr.lua`.
 - **Clipboard, QuickNotes and File Search moved to plugins**: same panel mechanism + their own settings pages; `SUPER+C`, `SUPER+Y` and `SUPER+'` come from each plugin's `hypr.lua`.
 - **Bar modules can be plugin-provided**: `provides.bar.modules.<id>` lets a plugin supply a module implementation for a core slot; the recording indicator is now `screenshots`' `bar/Recording.qml` and the shell keeps no recording state (`bar.isRecording` and the core poller were removed).
+- **Weather and Resources islands moved to their plugins**: the weather bar module now ships with `timex` (self-polling the engine; the `weather.sh` shim and the bar's weather poller are gone) and the CPU/RAM island ships with `sysmon` (reads the core `SysData`); the sysmon plugin installs by default and its floating monitor becomes opt-in via a new `sysmon.panelEnabled` toggle.
 
 ### Removed
 - `ScreenshotOverlay.qml` (the plugin owns it; `dots` installs the plugin by default).
