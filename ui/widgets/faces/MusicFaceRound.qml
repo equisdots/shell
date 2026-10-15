@@ -250,8 +250,8 @@ Item {
             id: discBase
             anchors.fill: parent
             cornerRadius: width / 2
-            fill: Theme.surfaceContainerHigh
-            hairline: root.isMediaActive ? Theme.outline : Theme.outlineVariant
+            fill: Theme.widgetFill
+            hairline: root.isMediaActive ? Theme.outline : Theme.widgetHairline
 
             Text {
                 anchors.centerIn: parent

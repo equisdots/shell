@@ -53,8 +53,8 @@ Item {
 
     GlassCard {
         anchors.fill: parent
-        fill: Theme.surfaceContainerHigh
-        hairline: Theme.outlineVariant
+        fill: Theme.widgetFill
+        hairline: Theme.widgetHairline
         cornerRadius: Theme.radiusLg
     }
 

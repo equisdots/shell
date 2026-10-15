@@ -596,6 +596,15 @@ Item {
             root.openPicker(root.selectedId);
     }
 
+    // Toggle the desktop-widget card style (solid tonal <-> translucent glass)
+    // in settings.json -> widgets.style. Theme watches settings.json, so every
+    // widget face re-applies live (real widgets + the redactor proxies).
+    function toggleWidgetStyle() {
+        let w = (Config.rawSettings && Config.rawSettings.widgets) ? Config.rawSettings.widgets : {};
+        let next = (Theme.widgetStyle === "glass") ? "solid" : "glass";
+        Config.setSetting("widgets", Object.assign({}, w, { "style": next }));
+    }
+
     function deleteSelected() {
         if (root.selectedId === "")
             return;
@@ -1387,6 +1396,32 @@ Item {
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
                         }
+                    }
+                }
+
+                // ---- widget card style (solid <-> glass) ----
+                Button {
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: s(104)
+                    height: s(30)
+                    hoverEnabled: true
+                    onClicked: root.toggleWidgetStyle()
+
+                    background: Rectangle {
+                        radius: s(8)
+                        border.width: 1
+                        border.color: Theme.widgetStyle === "glass" ? Theme.mauve : Theme.surface2
+                        color: Theme.widgetStyle === "glass"
+                            ? Theme.stateLayer(Theme.mauve, 0.16)
+                            : (parent.hovered ? Theme.surface2 : Theme.surface1)
+                    }
+                    contentItem: Text {
+                        text: "󰖌  Glass: " + (Theme.widgetStyle === "glass" ? "on" : "off")
+                        font.family: Theme.fontFamily
+                        font.pixelSize: s(10)
+                        color: Theme.widgetStyle === "glass" ? Theme.mauve : Theme.text
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
                     }
                 }
 

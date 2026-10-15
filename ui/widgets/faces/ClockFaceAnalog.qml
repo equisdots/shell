@@ -31,8 +31,8 @@ Item {
     GlassCard {
         anchors.fill: parent
         cornerRadius: width / 2
-        fill: Theme.surfaceContainerHigh
-        hairline: Theme.outlineVariant
+        fill: Theme.widgetFill
+        hairline: Theme.widgetHairline
 
         Rectangle {
             width: parent.width * 0.045

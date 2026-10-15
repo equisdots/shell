@@ -36,8 +36,8 @@ Item {
     GlassCard {
         id: bgRect
         anchors.fill: parent
-        fill: (root.path === "" || artImg.status !== Image.Ready) ? Theme.surfaceContainerHigh : "transparent"
-        hairline: (root.path === "" || artImg.status !== Image.Ready) ? Theme.outlineVariant : "transparent"
+        fill: (root.path === "" || artImg.status !== Image.Ready) ? Theme.widgetFill : "transparent"
+        hairline: (root.path === "" || artImg.status !== Image.Ready) ? Theme.widgetHairline : "transparent"
         cornerRadius: root.cornerRadius
 
         AnimatedImage {

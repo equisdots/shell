@@ -121,6 +121,23 @@ Item {
         return Qt.rgba(c.r, c.g, c.b, amount);
     }
 
+    // Widget card style (settings.json -> widgets.style): "solid" (opaque tonal
+    // container) or "glass" (translucent fill + brighter hairline; the shared
+    // GlassCard sheen already sits on top). Toggled live from the widget
+    // redactor's "Glass" button.
+    property var widgetsSettings: ({})
+    readonly property string widgetStyle: (root.widgetsSettings.style === "glass") ? "glass" : "solid"
+    readonly property color widgetFill: {
+        if (root.widgetStyle === "glass") {
+            const b = root.base;
+            return Qt.rgba(b.r, b.g, b.b, 0.5);
+        }
+        return root.surfaceContainerHigh;
+    }
+    readonly property color widgetHairline: root.widgetStyle === "glass"
+        ? Qt.rgba(root.text.r, root.text.g, root.text.b, 0.18)
+        : root.outlineVariant
+
     property color base: "#1e1e2e"
     property color mantle: "#181825"
     property color crust: "#11111b"
@@ -309,6 +326,8 @@ Item {
         root.glassSettings = (parsed.glass && typeof parsed.glass === "object") ? parsed.glass : {};
         // MD3 structure scales (shape/density/motion).
         root.appearanceSettings = (parsed.appearance && typeof parsed.appearance === "object") ? parsed.appearance : {};
+        // Widget card style (widgets.style).
+        root.widgetsSettings = (parsed.widgets && typeof parsed.widgets === "object") ? parsed.widgets : {};
         // Force a palette re-apply when glass changed (content guard would
         // otherwise skip an unchanged palette file).
         if (JSON.stringify(root.glassSettings) !== prevGlass) root.lastPaletteKey = "";
