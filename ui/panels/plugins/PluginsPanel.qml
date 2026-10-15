@@ -19,7 +19,6 @@ import "../../bar/edit"
 
 Item {
     id: root
-    anchors.fill: parent
 
     readonly property var plugins: {
         PluginsCatalog.rev;
@@ -37,6 +36,8 @@ Item {
     }
 
     property string selected: ""          // plugin id whose page is open ("" = list)
+    property string activeMode: ""        // Main sets this from `open plugins <id>`
+    onActiveModeChanged: if (root.activeMode !== "" && root.activeMode !== root.selected) root.selected = root.activeMode
 
     function pluginById(id) {
         let l = root.plugins;
@@ -174,7 +175,7 @@ Item {
                 let p = root.pluginById(root.selected);
                 if (!p || !p.settings || !p.settings.page) return "";
                 let page = String(p.settings.page).replace(/^\.\//, "");
-                if (PluginsCatalog.isManaged(p)) return "../plugins/" + p.id + "/" + page;
+                if (PluginsCatalog.isManaged(p)) return "../../plugins/" + p.id + "/" + page;
                 return PluginsCatalog.uiUrl(p, page);
             }
             onLoaded: {
