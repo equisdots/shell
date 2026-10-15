@@ -25,6 +25,25 @@ Item {
 
     // ── Posiciones de popups (settings.widgets.<id>.position) ─────────────
     property int posTick: 0
+    // Core popups + plugin-provided panels (manifest provides.panels; the
+    // entry's label or the plugin name). Position keys are panel names — the
+    // page never knows plugin ids.
+    readonly property var pluginPanels: {
+        PluginsCatalog.rev;
+        let out = [];
+        let list = PluginsCatalog.plugins || [];
+        for (let i = 0; i < list.length; i++) {
+            let p = list[i] || {};
+            if (!p.enabled || !p.provides || typeof p.provides !== "object") continue;
+            let panels = p.provides.panels;
+            if (!panels || typeof panels !== "object") continue;
+            for (let name in panels) {
+                let e = panels[name] || {};
+                out.push({ id: name, label: e.label || p.name || name });
+            }
+        }
+        return out;
+    }
     readonly property var widgetsList: [
         { id: "network", label: "Wifi / Bluetooth" },
         { id: "volume", label: "Sound" },
@@ -32,15 +51,13 @@ Item {
         { id: "system-monitor", label: "System" },
         { id: "applauncher", label: "Launcher" },
         { id: "clipboard", label: "Clipboard" },
-        { id: "calendar", label: "Timex" },
         { id: "music", label: "Music" },
         { id: "updater", label: "Updater" },
         { id: "guide", label: "About (guide)" },
         { id: "quicknotes", label: "Notepad" },
-        { id: "rss-reader", label: "RSS" },
         { id: "scale", label: "Scale" },
         { id: "window-controls", label: "Window controls" }
-    ]
+    ].concat(pluginPanels)
     function widgetPosition(id) {
         let w = Config.rawSettings.widgets;
         return (w && w[id] && w[id].position) ? w[id].position : "default";
