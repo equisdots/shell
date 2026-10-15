@@ -46,6 +46,7 @@ var GROUPS = [
         label: "Theme",
         icon: "✦",
         items: [
+            { id: "d_appearance", icon: "󰏘", label: "Appearance" },
             { id: "d_palette",    icon: "✦", label: "Palette" },
             { id: "d_animations", icon: "󰔟", label: "Animations" },
             { id: "d_shadows",    icon: "󰹹", label: "Shadows" },

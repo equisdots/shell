@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import "../../../core"
 
 // ═══════════════════════════════════════════════════════════════════════════
 // EffectSlider — fila-card con slider para el panel Settings (grupo System).
@@ -39,16 +40,16 @@ Rectangle {
         : (Math.round(current) + suffix)
 
     height: bar ? bar.s(44) : 44
-    radius: bar ? bar.s(18) : 18
-    color: bar ? Qt.alpha(bar.colors.surface0, 0.4) : "transparent"
+    radius: bar ? bar.s(Theme.radiusLg) : Theme.radiusLg
+    color: bar ? Theme.surfaceContainerLow : "transparent"
     border.width: 1
-    border.color: bar ? bar.colors.surface1 : "transparent"
+    border.color: bar ? Theme.outlineVariant : "transparent"
 
     RowLayout {
         anchors.fill: parent
-        anchors.leftMargin: bar ? bar.s(15) : 15
-        anchors.rightMargin: bar ? bar.s(10) : 10
-        spacing: bar ? bar.s(10) : 10
+        anchors.leftMargin: bar ? bar.s(Theme.gapLg) : Theme.gapLg
+        anchors.rightMargin: bar ? bar.s(Theme.gapSm) : Theme.gapSm
+        spacing: bar ? bar.s(Theme.gapSm) : Theme.gapSm
 
         Text {
             text: slider.icon
@@ -74,8 +75,8 @@ Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: bar ? bar.s(30) : 30
             Layout.alignment: Qt.AlignVCenter
-            radius: bar ? bar.s(6) : 6
-            color: bar ? bar.colors.surface1 : "transparent"
+            radius: bar ? bar.s(Theme.radiusSm) : Theme.radiusSm
+            color: bar ? Theme.surfaceContainer : "transparent"
 
             Rectangle {
                 id: fillBar

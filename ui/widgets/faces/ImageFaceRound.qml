@@ -31,12 +31,12 @@ Item {
         return "file://" + p;
     }
 
-    Rectangle {
+    GlassCard {
         id: bgRect
         anchors.fill: parent
-        color: (root.path === "" || artImg.status !== Image.Ready) ? Theme.surface0 : "transparent"
-        radius: width / 2
-        antialiasing: true
+        fill: (root.path === "" || artImg.status !== Image.Ready) ? Theme.surfaceContainerHigh : "transparent"
+        hairline: (root.path === "" || artImg.status !== Image.Ready) ? Theme.outlineVariant : "transparent"
+        cornerRadius: width / 2
 
         AnimatedImage {
             id: artImg

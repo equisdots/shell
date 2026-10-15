@@ -61,12 +61,12 @@ Item {
         onTriggered: root.currentTime = new Date()
     }
 
-    Rectangle {
+    GlassCard {
         id: bgContainer
         anchors.fill: parent
-        color: Theme.surface0
-        radius: Theme.clampedBorderRadius
-        antialiasing: true
+        fill: Theme.surfaceContainerHigh
+        hairline: Theme.outlineVariant
+        cornerRadius: Theme.radiusLg
 
         Rectangle {
             anchors.right: parent.right

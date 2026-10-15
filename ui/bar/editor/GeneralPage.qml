@@ -122,7 +122,7 @@ Item {
                 anchors.fill: parent
                 clip: true
                 boundsBehavior: Flickable.StopAtBounds
-                contentHeight: pageCol.height + bar.s(16)
+                contentHeight: pageCol.height + bar.s(Theme.gapLg)
                 ScrollBar.vertical: ScrollBar {
                     id: vScroll
                     width: bar.s(4)
@@ -130,8 +130,8 @@ Item {
                     hoverEnabled: true
                     active: pageFlick.moving || vScroll.hovered
                     contentItem: Rectangle {
-                        radius: bar.s(2)
-                        color: bar.colors.surface2
+                        radius: bar.s(Theme.radiusXs)
+                        color: Theme.surfaceContainerHighest
                         opacity: vScroll.active ? 1.0 : 0.45
                     }
                     background: Item {}
@@ -139,10 +139,10 @@ Item {
 
                 Column {
                     id: pageCol
-                    x: bar.s(8)
-                    y: bar.s(8)
-                    width: pageFlick.width - bar.s(16)
-                    spacing: bar.s(12)
+                    x: bar.s(Theme.gapSm)
+                    y: bar.s(Theme.gapSm)
+                    width: pageFlick.width - bar.s(Theme.gapLg)
+                    spacing: bar.s(Theme.gapLg)
 
                     // Título de página (GP:1007-1014)
                     Text {
@@ -157,17 +157,17 @@ Item {
                     // activo (der). Todo generado del catálogo ENGINES.
                     Row {
                         width: parent.width
-                        spacing: bar.s(12)
+                        spacing: bar.s(Theme.gapMd)
 
                         // ── Izquierda: catálogo + slot reservado ──────────────
                         Column {
-                            width: Math.round((parent.width - bar.s(12)) * 0.60)
-                            spacing: bar.s(10)
+                            width: Math.round((parent.width - bar.s(Theme.gapMd)) * 0.60)
+                            spacing: bar.s(Theme.gapMd)
                             GridLayout {
                                 width: parent.width
                                 columns: 2
-                                columnSpacing: bar.s(10)
-                                rowSpacing: bar.s(10)
+                                columnSpacing: bar.s(Theme.gapMd)
+                                rowSpacing: bar.s(Theme.gapMd)
                                 Repeater {
                                     model: BarLayout.ENGINES
                                     delegate: OptionCard {
@@ -185,10 +185,10 @@ Item {
                                 Rectangle {
                                     Layout.fillWidth: true
                                     Layout.minimumHeight: bar.s(64)
-                                    radius: bar.s(16)
+                                    radius: bar.s(Theme.radiusLg)
                                     color: "transparent"
                                     border.width: 1
-                                    border.color: Qt.alpha(bar.colors.surface1, 0.7)
+                                    border.color: Theme.outlineVariant
                                     Text {
                                         anchors.centerIn: parent
                                         text: "Next engine slot"
@@ -210,21 +210,21 @@ Item {
 
                         // ── Derecha: ficha del engine activo + acciones ───────
                         Column {
-                            width: parent.width - parent.children[0].width - bar.s(12)
-                            spacing: bar.s(10)
+                            width: parent.width - parent.children[0].width - bar.s(Theme.gapMd)
+                            spacing: bar.s(Theme.gapMd)
 
                             Rectangle {
                                 width: parent.width
-                                radius: bar.s(16)
-                                color: Qt.alpha(bar.colors.surface0, 0.4)
+                                radius: bar.s(Theme.radiusLg)
+                                color: Theme.surfaceContainerLow
                                 border.width: 1
-                                border.color: bar.colors.surface1
-                                height: infoCol.height + bar.s(24)
+                                border.color: Theme.outlineVariant
+                                height: infoCol.height + bar.s(Theme.gapMd) * 2
                                 Column {
                                     id: infoCol
-                                    x: bar.s(14); y: bar.s(12)
-                                    width: parent.width - bar.s(28)
-                                    spacing: bar.s(6)
+                                    x: bar.s(Theme.gapMd); y: bar.s(Theme.gapMd)
+                                    width: parent.width - bar.s(Theme.gapMd) * 2
+                                    spacing: bar.s(Theme.gapSm)
                                     EditLabel { bar: root.bar; text: "Active engine"; font.pixelSize: bar.s(12); color: bar.colors.subtext0 }
                                     Text {
                                         text: root.bar.engine === "classic" ? "ClassicBar" : "Bar"
@@ -269,7 +269,7 @@ Item {
 
                             Row {
                                 width: parent.width
-                                spacing: bar.s(10)
+                                spacing: bar.s(Theme.gapMd)
                                 visible: bar.engine === "classic"
                                 EditorButton { bar: root.bar; icon: "󰚰"; label: "Mirror bar layout"; onActivated: root.bar.mirrorBarAction() }
                                 EditorButton { bar: root.bar; label: "Classic defaults"; onActivated: root.bar.classicDefaultsAction() }
@@ -280,32 +280,32 @@ Item {
                     // Preview del engine activo: mini-barra con los módulos reales
                     Rectangle {
                         width: parent.width
-                        radius: bar.s(16)
-                        color: Qt.alpha(bar.colors.surface0, 0.4)
+                        radius: bar.s(Theme.radiusLg)
+                        color: Theme.surfaceContainerLow
                         border.width: 1
-                        border.color: bar.colors.surface1
+                        border.color: Theme.outlineVariant
                         height: bar.s(240)
                         Column {
                             anchors.fill: parent
-                            anchors.margins: bar.s(14)
-                            spacing: bar.s(10)
+                            anchors.margins: bar.s(Theme.gapMd)
+                            spacing: bar.s(Theme.gapMd)
                             EditLabel { bar: root.bar; text: "Preview"; font.pixelSize: bar.s(12); color: bar.colors.subtext0 }
                             Rectangle {
                                 width: parent.width
                                 height: bar.s(44)
-                                radius: bar.s(10)
-                                color: Qt.alpha(bar.colors.surface1, 0.5)
+                                radius: bar.s(Theme.radiusMd)
+                                color: Theme.surfaceContainer
                                 border.width: 1
-                                border.color: Qt.alpha(bar.colors.surface1, 0.9)
+                                border.color: Theme.outlineVariant
                                 Row {
                                     anchors.centerIn: parent
-                                    spacing: bar.s(6)
+                                    spacing: bar.s(Theme.gapSm)
                                     Repeater {
                                         model: root.previewTokens()
                                         delegate: Rectangle {
                                             required property var modelData
                                             required property int index
-                                            width: bar.s(28); height: bar.s(28); radius: bar.s(7)
+                                            width: bar.s(28); height: bar.s(28); radius: bar.s(Theme.radiusSm)
                                             readonly property string role: ["mauve", "blue", "green", "peach", "pink", "teal", "yellow", "sapphire"][index % 8]
                                             color: Qt.alpha(bar.colors[role], 0.20)
                                             border.width: 1
@@ -343,16 +343,16 @@ Item {
                     // Posiciones de los popups: matriz 3x3 espacial por widget.
                     Rectangle {
                         width: parent.width
-                        radius: bar.s(16)
-                        color: Qt.alpha(bar.colors.surface0, 0.4)
+                        radius: bar.s(Theme.radiusLg)
+                        color: Theme.surfaceContainerLow
                         border.width: 1
-                        border.color: bar.colors.surface1
-                        height: posCol.height + bar.s(24)
+                        border.color: Theme.outlineVariant
+                        height: posCol.height + bar.s(Theme.gapMd) * 2
                         Column {
                             id: posCol
-                            x: bar.s(14); y: bar.s(12)
-                            width: parent.width - bar.s(28)
-                            spacing: bar.s(8)
+                            x: bar.s(Theme.gapMd); y: bar.s(Theme.gapMd)
+                            width: parent.width - bar.s(Theme.gapMd) * 2
+                            spacing: bar.s(Theme.gapSm)
                             EditLabel { bar: root.bar; text: "Popup positions"; font.pixelSize: bar.s(12); color: bar.colors.subtext0 }
                             Repeater {
                                 model: root.widgetsList
@@ -360,7 +360,7 @@ Item {
                                     id: parentWidget
                                     required property var modelData
                                     width: posCol.width
-                                    spacing: bar.s(10)
+                                    spacing: bar.s(Theme.gapMd)
                                     Text {
                                         width: bar.s(170)
                                         anchors.verticalCenter: parent.verticalCenter
@@ -371,7 +371,7 @@ Item {
                                     }
                                     GridLayout {
                                         columns: 3
-                                        rowSpacing: bar.s(3); columnSpacing: bar.s(3)
+                                        rowSpacing: bar.s(Theme.gapXs); columnSpacing: bar.s(Theme.gapXs)
                                         Repeater {
                                             model: ["top-left", "top-center", "top-right",
                                                     "center-left", "center", "center-right",
@@ -380,21 +380,21 @@ Item {
                                                 id: posCell
                                                 required property var modelData
                                                 readonly property bool act: root.posTick >= 0 && root.widgetPosition(parentWidget.modelData.id) === posCell.modelData
-                                                width: bar.s(20); height: bar.s(20); radius: bar.s(5)
-                                                color: act ? bar.colors.mauve : Qt.alpha(bar.colors.surface1, 0.5)
+                                                width: bar.s(20); height: bar.s(20); radius: bar.s(Theme.radiusXs)
+                                                color: act ? bar.colors.mauve : Theme.surfaceContainer
                                                 border.width: 1
-                                                border.color: act ? bar.colors.mauve : Qt.alpha(bar.colors.surface1, 0.9)
+                                                border.color: act ? bar.colors.mauve : Theme.outlineVariant
                                                 MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.setWidgetPosition(parentWidget.modelData.id, posCell.modelData) }
                                             }
                                         }
                                     }
                                     Rectangle {
-                                        width: bar.s(46); height: bar.s(20); radius: bar.s(5)
+                                        width: bar.s(46); height: bar.s(20); radius: bar.s(Theme.radiusXs)
                                         anchors.verticalCenter: parent.verticalCenter
                                         readonly property bool act: root.posTick >= 0 && root.widgetPosition(parentWidget.modelData.id) === "default"
-                                        color: act ? bar.colors.mauve : Qt.alpha(bar.colors.surface1, 0.3)
+                                        color: act ? bar.colors.mauve : Theme.surfaceContainerLow
                                         border.width: 1
-                                        border.color: act ? bar.colors.mauve : Qt.alpha(bar.colors.surface1, 0.7)
+                                        border.color: act ? bar.colors.mauve : Theme.outlineVariant
                                         Text { anchors.centerIn: parent; text: "auto"; font.family: "Hack Nerd Font"; font.pixelSize: bar.s(9); color: act ? bar.colors.crust : bar.colors.subtext0 }
                                         MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.setWidgetPosition(parentWidget.modelData.id, "default") }
                                     }

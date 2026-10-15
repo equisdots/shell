@@ -295,11 +295,12 @@ Item {
     }
 
     // --- visuals ---------------------------------------------------------------------
-    Rectangle {
+    GlassCard {
         id: bgContainer
         anchors.fill: parent
-        color: Theme.surface0
-        radius: Theme.clampedBorderRadius
+        fill: Theme.surfaceContainerHigh
+        hairline: Theme.outlineVariant
+        cornerRadius: Theme.radiusLg
         clip: true
 
         // Background placeholder disc (also the fallback behind the cover).

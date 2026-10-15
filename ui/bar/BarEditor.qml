@@ -710,7 +710,8 @@ Item {
             "d_shadows":       "editor/ShadowsPage.qml",
             "d_frame":         "editor/FramePage.qml",
             "d_glass":         "editor/GlassPage.qml",
-            "d_plugins":       "editor/PluginsPage.qml"
+            "d_plugins":       "editor/PluginsPage.qml",
+            "d_appearance":    "editor/AppearancePage.qml"
         };
         return map[id] || "";
     }
@@ -740,7 +741,8 @@ Item {
             "d_shadows":       dShadowsLoader,
             "d_frame":         dFrameLoader,
             "d_glass":         dGlassLoader,
-            "d_plugins":       dPluginsLoader
+            "d_plugins":       dPluginsLoader,
+            "d_appearance":    dAppearanceLoader
         };
         return map[id] || null;
     }
@@ -1443,8 +1445,8 @@ Item {
                     opacity: root.introSidebar
                     transform: Translate { x: s(-30) * (1.0 - root.introSidebar) }
 
-                    // Brand: caja mauve + título + paleta activa en vivo
-                    Column {
+                    // Brand: base16 palette swatches (live — Colors watcher keeps them fresh)
+                    Grid {
                         id: brandCol
                         anchors.top: parent.top
                         anchors.left: parent.left
@@ -1452,47 +1454,17 @@ Item {
                         anchors.topMargin: s(15)
                         anchors.leftMargin: s(15)
                         anchors.rightMargin: s(15)
-                        spacing: s(10)
-                        Row {
-                            width: parent.width
-                            spacing: s(12)
-                            Rectangle {
-                                width: s(36); height: s(36); radius: s(13)
-                                color: colors.mauve
-                                Text {
-                                    anchors.centerIn: parent
-                                    text: "󰫧"
-                                    font.family: "Hack Nerd Font"
-                                    font.pixelSize: s(20)
-                                    color: colors.crust
-                                }
-                            }
-                            Column {
-                                anchors.verticalCenter: parent.verticalCenter
-                                spacing: s(2)
-                                Text {
-                                    text: "Settings"
-                                    font.family: "Hack Nerd Font"
-                                    font.pixelSize: s(15)
-                                    font.weight: Font.Black
-                                    color: colors.text
-                                }
-                                Row {
-                                    spacing: s(6)
-                                    Rectangle {
-                                        width: s(8); height: s(8); radius: s(4)
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        color: colors.mauve
-                                    }
-                                    Text {
-                                        // Live palette name (Colors watcher keeps it fresh)
-                                        text: themeColors.paletteName
-                                        font.family: "Hack Nerd Font"
-                                        font.pixelSize: s(11)
-                                        color: colors.subtext0
-                                        anchors.verticalCenter: parent.verticalCenter
-                                    }
-                                }
+                        columns: 8
+                        spacing: s(5)
+
+                        Repeater {
+                            model: 16
+                            delegate: Rectangle {
+                                required property int index
+                                width: s(16); height: s(16); radius: s(4)
+                                color: colors["color" + index]
+                                border.width: 1
+                                border.color: Qt.alpha(colors.text, 0.10)
                             }
                         }
                     }
@@ -1601,18 +1573,10 @@ Item {
                                             height: navItemsCol.height
                                             visible: !navGroupCol.modelData.collapsed
 
-                                            Rectangle {
-                                                x: s(6)
-                                                width: s(2)
-                                                radius: s(1)
-                                                height: Math.max(0, parent.height - s(8))
-                                                anchors.verticalCenter: parent.verticalCenter
-                                                color: Qt.alpha(colors.surface1, 0.5)
-                                            }
                                             Column {
                                                 id: navItemsCol
-                                                x: s(14)
-                                                width: parent.width - s(14)
+                                                x: 0
+                                                width: parent.width
                                                 spacing: 0
                                                 Repeater {
                                                     model: root.groupItems(navGroupCol.modelData)
@@ -1741,6 +1705,16 @@ Item {
                         property real slideY: visible ? 0 : root.s(10)
                         Behavior on slideY { NumberAnimation { duration: 250; easing.type: Easing.OutQuart } }
                         transform: Translate { y: dGlassLoader.slideY }
+                        Behavior on opacity { NumberAnimation { duration: 250 } }
+                    }
+                    Loader {
+                        id: dAppearanceLoader
+                        anchors.fill: parent
+                        visible: root.currentPage === "d_appearance"
+                        opacity: visible ? 1.0 : 0.0
+                        property real slideY: visible ? 0 : root.s(10)
+                        Behavior on slideY { NumberAnimation { duration: 250; easing.type: Easing.OutQuart } }
+                        transform: Translate { y: dAppearanceLoader.slideY }
                         Behavior on opacity { NumberAnimation { duration: 250 } }
                     }
                     Loader {
@@ -1980,7 +1954,10 @@ Item {
                         compact: true
                         bar: root
                         label: "+ Add"
-                        visible: root.currentPage === "s_keyboard" || root.currentPage === "s_startup"
+                        // The Keyboard/Startup tabs now render their own in-flow
+                        // "+ Add" (as the last section row), so the floating
+                        // button would duplicate it.
+                        visible: false
                         anchors.right: parent.right
                         anchors.bottom: parent.bottom
                         anchors.rightMargin: s(18)

@@ -91,8 +91,13 @@ QtObject {
 
     // Called by WidgetLoaders after any model mutation.
     function notifyWidgetsChanged() {
-        sync.widgetsChanged();
+        // Refresh the snapshot BEFORE emitting: the signal handler (the
+        // redactor) reads sync.redactorInfo synchronously, so emitting first
+        // would rebuild its model from the *previous* state — every add/delete
+        // would then appear one operation behind, and deletes would look like
+        // they hit the wrong widget.
         sync.refreshRedactorInfo();
+        sync.widgetsChanged();
     }
 
     // --- redactor mode -----------------------------------------------------------

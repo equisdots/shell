@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import "../../../core"
 
 // ═══════════════════════════════════════════════════════════════════════════
 // ToggleCard — card ON/OFF de ancho completo (familia GuidePopup).
@@ -21,14 +22,14 @@ Rectangle {
     signal toggled()
 
     height: bar ? bar.s(44) : 44
-    radius: bar ? bar.s(18) : 18
+    radius: bar ? bar.s(Theme.radiusLg) : Theme.radiusLg
     color: !bar ? "transparent"
         : tgl.checked
-            ? Qt.alpha(bar.colors.mauve, 0.15)
-            : Qt.alpha(bar.colors.surface0, 0.4)
+            ? Theme.stateLayer(bar.colors.mauve, Theme.stateHover)
+            : Theme.surfaceContainerLow
     border.width: 1
     border.color: !bar ? "transparent"
-        : (tgl.checked || tglMa.containsMouse) ? bar.colors.mauve : bar.colors.surface1
+        : (tgl.checked || tglMa.containsMouse) ? bar.colors.mauve : Theme.outlineVariant
     scale: tglMa.pressed ? 0.95 : 1.0
     Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutQuart } }
     Behavior on color { ColorAnimation { duration: 150 } }
@@ -36,9 +37,9 @@ Rectangle {
 
     RowLayout {
         anchors.fill: parent
-        anchors.leftMargin: bar ? bar.s(15) : 15
-        anchors.rightMargin: bar ? bar.s(15) : 15
-        spacing: bar ? bar.s(10) : 10
+        anchors.leftMargin: bar ? bar.s(Theme.gapLg) : Theme.gapLg
+        anchors.rightMargin: bar ? bar.s(Theme.gapLg) : Theme.gapLg
+        spacing: bar ? bar.s(Theme.gapSm) : Theme.gapSm
         Text {
             visible: tgl.icon !== ""
             text: tgl.icon

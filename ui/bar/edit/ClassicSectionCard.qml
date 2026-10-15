@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import ".."
 import "../BarLayout.js" as BarLayout
+import "../../../core"
 
 // Per-section list card for the CLASSIC engine editor (BarEditor, Phase D4-E2).
 // Renders one section ("left" | "center" | "right") or the synthetic
@@ -52,9 +53,9 @@ Rectangle {
         : BarLayout.classicSectionItems(classicCard.bar.classic, classicCard.listId)
 
     height: contentCol.implicitHeight + bar.s(16)
-    radius: bar.s(21)
-    color: Qt.alpha(bar.colors.surface0, 0.4)
-    border.width: bar.s(1); border.color: bar.colors.surface1
+    radius: bar.s(Theme.radiusLg)
+    color: Theme.surfaceContainerLow
+    border.width: bar.s(1); border.color: Theme.outlineVariant
 
     // Is a point in editor-root coordinates inside this card?
     function containsRootPoint(mx, my) {
@@ -179,13 +180,13 @@ Rectangle {
     Column {
         id: contentCol
         anchors.fill: parent
-        anchors.margins: bar.s(8)
-        spacing: bar.s(6)
+        anchors.margins: bar.s(Theme.gapSm)
+        spacing: bar.s(Theme.gapXs)
 
         // header: list name + hint
         Row {
             width: parent.width
-            spacing: bar.s(6)
+            spacing: bar.s(Theme.gapXs)
             SectionTitle { bar: classicCard.bar; text: classicCard.listTitle }
             EditLabel {
                 bar: classicCard.bar
@@ -212,7 +213,7 @@ Rectangle {
         Flow {
             id: chipsFlow
             width: parent.width
-            spacing: bar.s(5)
+            spacing: bar.s(Theme.gapXs)
             Repeater {
                 model: classicCard.chipsModel
                 delegate: Rectangle {
@@ -249,10 +250,10 @@ Rectangle {
                     width: chipRoot.chipIsGroup ? grpWidth
                                                 : looseRow.implicitWidth + bar.s(16) + (chipRoot.chipHasMinus ? bar.s(24) : 0)
                     height: chipRoot.chipIsGroup ? grpContent.implicitHeight + bar.s(10) : bar.s(30)
-                    radius: bar.s(chipRoot.chipIsGroup ? 10 : 8)
-                    color: bar.colors.surface1
+                    radius: bar.s(Theme.radiusSm)
+                    color: Theme.surfaceContainer
                     border.width: chipRoot.chipIsGroup ? 1 : 0
-                    border.color: bar.colors.surface2
+                    border.color: Theme.outlineVariant
                     clip: chipRoot.chipIsGroup
 
                     // Dim the dragged chip so the ghost reads clearly.
@@ -267,9 +268,9 @@ Rectangle {
                         id: looseRow
                         visible: !chipRoot.chipIsGroup
                         anchors.left: parent.left
-                        anchors.leftMargin: bar.s(6)
+                        anchors.leftMargin: bar.s(Theme.gapXs)
                         anchors.verticalCenter: parent.verticalCenter
-                        spacing: bar.s(5)
+                        spacing: bar.s(Theme.gapXs)
                         Text {
                             text: chipRoot.looseMod ? chipRoot.looseMod.icon : "◇"
                             font.family: "Hack Nerd Font"
@@ -289,14 +290,14 @@ Rectangle {
                         id: grpContent
                         visible: chipRoot.chipIsGroup
                         anchors.left: parent.left
-                        anchors.leftMargin: bar.s(6)
+                        anchors.leftMargin: bar.s(Theme.gapXs)
                         anchors.top: parent.top
-                        anchors.topMargin: bar.s(5)
-                        spacing: bar.s(3)
+                        anchors.topMargin: bar.s(Theme.gapXs)
+                        spacing: bar.s(Theme.gap2xs)
                         Row {
                             id: grpHead
                             height: bar.s(18)
-                            spacing: bar.s(4)
+                            spacing: bar.s(Theme.gapXs)
                             Text {
                                 text: "◧"
                                 font.family: "Hack Nerd Font"
@@ -321,7 +322,7 @@ Rectangle {
                         // Members: smaller chips, individually draggable.
                         Row {
                             id: grpMembers
-                            spacing: bar.s(3)
+                            spacing: bar.s(Theme.gap2xs)
                             Repeater {
                                 model: chipRoot.chipIsGroup ? chipRoot.modelData : []
                                 delegate: Rectangle {
@@ -331,17 +332,17 @@ Rectangle {
 
                                     width: memberRow.implicitWidth + bar.s(22)
                                     height: bar.s(24)
-                                    radius: bar.s(6)
-                                    color: bar.colors.surface0
+                                    radius: bar.s(Theme.radiusSm)
+                                    color: Theme.surfaceContainer
                                     opacity: (bar.dndBusy && bar.dndModuleId === memberId) ? 0.35 : 1.0
                                     Behavior on opacity { NumberAnimation { duration: 100 } }
 
                                     Row {
                                         id: memberRow
                                         anchors.left: parent.left
-                                        anchors.leftMargin: bar.s(4)
+                                        anchors.leftMargin: bar.s(Theme.gapXs)
                                         anchors.verticalCenter: parent.verticalCenter
-                                        spacing: bar.s(4)
+                                        spacing: bar.s(Theme.gapXs)
                                         Text {
                                             text: memberMod ? memberMod.icon : "◇"
                                             font.family: "Hack Nerd Font"
@@ -404,8 +405,8 @@ Rectangle {
                                         anchors.verticalCenter: parent.verticalCenter
                                         width: bar.s(15)
                                         height: bar.s(15)
-                                        radius: bar.s(4)
-                                        color: bar.colors.surface2
+                                        radius: bar.s(Theme.radiusXs)
+                                        color: Theme.surfaceContainerHigh
                                         Text {
                                             anchors.centerIn: parent
                                             text: "−"
@@ -472,12 +473,12 @@ Rectangle {
                     Rectangle {
                         visible: chipRoot.chipHasMinus
                         anchors.right: parent.right
-                        anchors.rightMargin: bar.s(2)
+                        anchors.rightMargin: bar.s(Theme.gap2xs)
                         anchors.verticalCenter: parent.verticalCenter
                         width: bar.s(18)
                         height: bar.s(18)
-                        radius: bar.s(5)
-                        color: bar.colors.surface2
+                        radius: bar.s(Theme.radiusXs)
+                        color: Theme.surfaceContainerHigh
                         Text {
                             anchors.centerIn: parent
                             text: "−"
@@ -547,13 +548,13 @@ Rectangle {
                     Rectangle {
                         visible: chipRoot.chipIsGroup
                         anchors.top: parent.top
-                        anchors.topMargin: bar.s(4)
+                        anchors.topMargin: bar.s(Theme.gapXs)
                         anchors.right: parent.right
-                        anchors.rightMargin: bar.s(4)
+                        anchors.rightMargin: bar.s(Theme.gapXs)
                         width: bar.s(18)
                         height: bar.s(18)
-                        radius: bar.s(5)
-                        color: bar.colors.surface2
+                        radius: bar.s(Theme.radiusXs)
+                        color: Theme.surfaceContainerHigh
                         Text {
                             anchors.centerIn: parent
                             text: "⤢"
@@ -574,7 +575,7 @@ Rectangle {
                     Rectangle {
                         anchors.fill: parent
                         anchors.margins: bar.s(1)
-                        radius: bar.s(10)
+                        radius: bar.s(Theme.radiusSm)
                         visible: chipRoot.chipIsGroup && classicCard.dndActive && classicCard.dndJoinIndex === chipRoot.chipItemIndex
                         color: "transparent"
                         border.width: bar.s(2)
@@ -594,7 +595,7 @@ Rectangle {
         id: dropHighlight
         anchors.fill: parent
         anchors.margins: bar.s(1)
-        radius: bar.s(20)
+        radius: bar.s(Theme.radiusLg)
         visible: classicCard.dndActive
         color: "transparent"
         border.width: bar.s(2)

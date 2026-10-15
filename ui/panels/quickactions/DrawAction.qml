@@ -88,8 +88,8 @@ Item {
     property color themeBaseColor: (typeof mochaColors !== "undefined" && mochaColors && mochaColors.base) ? mochaColors.base : "#1e1e2e"
     
     // Universal Panel Styling
-    property color panelBgColor: Qt.rgba(themeBaseColor.r, themeBaseColor.g, themeBaseColor.b, 0.85)
-    property color panelBorderColor: Qt.rgba(baseTextColor.r, baseTextColor.g, baseTextColor.b, 0.15)
+    property color panelBgColor: Theme.surfaceContainerHigh
+    property color panelBorderColor: Theme.outlineVariant
 
 
     // Zoom limits and World Size
@@ -462,15 +462,15 @@ Item {
             z: 10
             anchors.top: parent.top
             anchors.right: parent.right
-            anchors.topMargin: s(20)
-            anchors.rightMargin: s(20)
-            spacing: s(12)
+            anchors.topMargin: Theme.gapXl
+            anchors.rightMargin: Theme.gapXl
+            spacing: Theme.gapMd
 
             // --- ZOOM PILL ---
             Rectangle {
                 width: zoomRow.width + s(24)
                 height: s(44)
-                radius: s(18)
+                radius: Theme.radiusLg
                 color: root.panelBgColor
                 border.width: 1
                 border.color: root.panelBorderColor
@@ -478,13 +478,13 @@ Item {
                 Row {
                     id: zoomRow
                     anchors.centerIn: parent
-                    spacing: s(6)
+                    spacing: Theme.gapXs
 
                     Item {
                         width: s(32); height: s(32)
                         Rectangle {
-                            anchors.fill: parent; radius: s(18); z:-1
-                            color: zoomMinusMouse.containsMouse ? ((typeof mochaColors !== "undefined" && mochaColors && mochaColors.surface0) ? mochaColors.surface0 : Qt.rgba(root.baseTextColor.r, root.baseTextColor.g, root.baseTextColor.b, 0.1)) : "transparent"
+                            anchors.fill: parent; radius: Theme.radiusLg; z:-1
+                            color: zoomMinusMouse.containsMouse ? Theme.stateLayer(root.baseTextColor, Theme.stateHover) : "transparent"
                         }
                         Text {
                             anchors.centerIn: parent; text: "\uF068"; font.family: root.iconFont; font.pixelSize: s(14); color: root.baseTextColor
@@ -498,8 +498,8 @@ Item {
                     Item {
                         width: s(48); height: s(32)
                         Rectangle {
-                            anchors.fill: parent; radius: s(18); z:-1
-                            color: zoomResetMouse.containsMouse ? ((typeof mochaColors !== "undefined" && mochaColors && mochaColors.surface0) ? mochaColors.surface0 : Qt.rgba(root.baseTextColor.r, root.baseTextColor.g, root.baseTextColor.b, 0.1)) : "transparent"
+                            anchors.fill: parent; radius: Theme.radiusLg; z:-1
+                            color: zoomResetMouse.containsMouse ? Theme.stateLayer(root.baseTextColor, Theme.stateHover) : "transparent"
                         }
                         Text {
                             anchors.centerIn: parent; text: Math.round(zoomContainer.scale * 100) + "%"; font.pixelSize: s(12); color: root.baseTextColor; font.bold: true
@@ -517,8 +517,8 @@ Item {
                     Item {
                         width: s(32); height: s(32)
                         Rectangle {
-                            anchors.fill: parent; radius: s(18); z:-1
-                            color: zoomPlusMouse.containsMouse ? ((typeof mochaColors !== "undefined" && mochaColors && mochaColors.surface0) ? mochaColors.surface0 : Qt.rgba(root.baseTextColor.r, root.baseTextColor.g, root.baseTextColor.b, 0.1)) : "transparent"
+                            anchors.fill: parent; radius: Theme.radiusLg; z:-1
+                            color: zoomPlusMouse.containsMouse ? Theme.stateLayer(root.baseTextColor, Theme.stateHover) : "transparent"
                         }
                         Text {
                             anchors.centerIn: parent; text: "\uF067"; font.family: root.iconFont; font.pixelSize: s(14); color: root.baseTextColor
@@ -535,14 +535,14 @@ Item {
             Rectangle {
                 width: s(44)
                 height: s(44)
-                radius: s(18)
+                radius: Theme.radiusLg
                 color: root.panelBgColor
                 border.width: 1
                 border.color: root.panelBorderColor
                 
                 Rectangle {
-                    anchors.centerIn: parent; width: s(32); height: s(32); radius: s(18); z:-1
-                    color: copyMouse.containsMouse ? ((typeof mochaColors !== "undefined" && mochaColors && mochaColors.surface0) ? mochaColors.surface0 : Qt.rgba(root.baseTextColor.r, root.baseTextColor.g, root.baseTextColor.b, 0.1)) : "transparent"
+                    anchors.centerIn: parent; width: s(32); height: s(32); radius: Theme.radiusLg; z:-1
+                    color: copyMouse.containsMouse ? Theme.stateLayer(root.baseTextColor, Theme.stateHover) : "transparent"
                 }
 
                 Text {
@@ -576,13 +576,13 @@ Item {
             z: 20
             width: s(260)
             height: s(64)
-            radius: s(18)
-            color: (typeof mochaColors !== "undefined" && mochaColors && mochaColors.base) ? Qt.rgba(mochaColors.base.r, mochaColors.base.g, mochaColors.base.b, 0.98 * mochaColors.base.a) : root.solidBgColor
+            radius: Theme.radiusLg
+            color: Theme.surfaceContainerHigh
             border.width: 1
             border.color: root.panelBorderColor
             
             anchors.bottom: toolbar.top
-            anchors.bottomMargin: s(12)
+            anchors.bottomMargin: Theme.gapMd
             anchors.horizontalCenter: parent.horizontalCenter
             
             visible: root.showSizeConfig
@@ -591,8 +591,8 @@ Item {
 
             RowLayout {
                 anchors.fill: parent
-                anchors.margins: s(18)
-                spacing: s(14)
+                anchors.margins: Theme.gapLg
+                spacing: Theme.gapMd
 
                 Text {
                     text: root.currentTool === "eraser" ? "\uF12D" : (root.currentTool === "brush" ? "\uF1FC" : "\uF040")
@@ -605,7 +605,7 @@ Item {
                 Rectangle {
                     Layout.fillWidth: true
                     height: s(6)
-                    radius: s(4)
+                    radius: Theme.radiusXs
                     color: (typeof mochaColors !== "undefined" && mochaColors && mochaColors.text) ? Qt.rgba(mochaColors.text.r, mochaColors.text.g, mochaColors.text.b, 0.1) : Qt.rgba(root.baseTextColor.r, root.baseTextColor.g, root.baseTextColor.b, 0.1)
                     
                     Rectangle {
@@ -684,13 +684,13 @@ Item {
             z: 20
             width: s(320)
             height: s(340)
-            radius: s(18)
-            color: (typeof mochaColors !== "undefined" && mochaColors && mochaColors.base) ? Qt.rgba(mochaColors.base.r, mochaColors.base.g, mochaColors.base.b, 0.98 * mochaColors.base.a) : root.solidBgColor
+            radius: Theme.radiusLg
+            color: Theme.surfaceContainerHigh
             border.width: 1
             border.color: root.panelBorderColor
             
             anchors.bottom: toolbar.top
-            anchors.bottomMargin: s(12)
+            anchors.bottomMargin: Theme.gapMd
             anchors.horizontalCenter: parent.horizontalCenter
             
             visible: root.showColorPicker
@@ -699,17 +699,17 @@ Item {
 
             Column {
                 anchors.centerIn: parent
-                spacing: s(20)
+                spacing: Theme.gapXl
 
                 // SV Square and Hue Slider
                 Row {
-                    spacing: s(16)
+                    spacing: Theme.gapLg
                     anchors.horizontalCenter: parent.horizontalCenter
 
                     // Saturation / Value Square
                     Rectangle {
                         width: s(220); height: s(200)
-                        radius: s(13)
+                        radius: Theme.radiusMd
                         color: Qt.hsva(root.pickHue, 1, 1, 1)
                         clip: true
                         border.width: 0
@@ -761,7 +761,7 @@ Item {
                     // Hue Slider
                     Rectangle {
                         width: s(24); height: s(200)
-                        radius: s(13)
+                        radius: Theme.radiusMd
                         clip: true
                         gradient: Gradient {
                             orientation: Gradient.Vertical
@@ -776,7 +776,7 @@ Item {
 
                         Rectangle {
                             width: parent.width; height: s(8)
-                            radius: s(10)
+                            radius: Theme.radiusSm
                             border.width: 1; border.color: "black"
                             color: "white"
                             y: (root.pickHue * parent.height) - (height/2)
@@ -798,7 +798,7 @@ Item {
                 // FIXED: Robust null checks for mochaColors properties
                 Grid {
                     columns: 8
-                    spacing: s(12)
+                    spacing: Theme.gapMd
                     anchors.horizontalCenter: parent.horizontalCenter
 
                     Repeater {
@@ -835,7 +835,7 @@ Item {
 
                 // Hex Input
                 Row {
-                    spacing: s(10)
+                    spacing: Theme.gapSm
                     anchors.horizontalCenter: parent.horizontalCenter
                     
                     Text { 
@@ -849,15 +849,15 @@ Item {
                     Rectangle {
                         width: s(120)
                         height: s(28)
-                        color: (typeof mochaColors !== "undefined" && mochaColors && mochaColors.surface0) ? mochaColors.surface0 : Qt.rgba(root.baseTextColor.r, root.baseTextColor.g, root.baseTextColor.b, 0.05)
+                        color: Theme.surfaceContainer
                         border.width: 1
-                        border.color: (typeof mochaColors !== "undefined" && mochaColors && mochaColors.surface1) ? mochaColors.surface1 : Qt.rgba(root.baseTextColor.r, root.baseTextColor.g, root.baseTextColor.b, 0.1)
-                        radius: s(14)
+                        border.color: Theme.outlineVariant
+                        radius: Theme.radiusMd
                         
                         TextInput {
                             id: hexInput
                             anchors.fill: parent
-                            anchors.margins: s(4)
+                            anchors.margins: Theme.gapXs
                             color: root.baseTextColor
                             text: root.currentColor.toString()
                             font.pixelSize: s(14)
@@ -880,11 +880,11 @@ Item {
             z: 10
             anchors.bottom: parent.bottom
             anchors.horizontalCenter: parent.horizontalCenter
-            anchors.margins: s(20)
+            anchors.margins: Theme.gapXl
             
             width: toolRow.width + s(32)
             height: s(48)
-            radius: s(18)
+            radius: Theme.radiusLg
             
             color: root.panelBgColor
             border.width: 1
@@ -893,7 +893,7 @@ Item {
             Row {
                 id: toolRow
                 anchors.centerIn: parent
-                spacing: s(16)
+                spacing: Theme.gapLg
 
                 // --- UNDO BUTTON ---
                 Item {
@@ -902,8 +902,8 @@ Item {
 
                     Rectangle {
                         anchors.fill: parent
-                        radius: s(18)
-                        color: undoMouse.containsMouse && root.historyStep >= 0 ? ((typeof mochaColors !== "undefined" && mochaColors && mochaColors.surface0) ? mochaColors.surface0 : Qt.rgba(root.baseTextColor.r, root.baseTextColor.g, root.baseTextColor.b, 0.1)) : "transparent"
+                        radius: Theme.radiusLg
+                        color: undoMouse.containsMouse && root.historyStep >= 0 ? Theme.stateLayer(root.baseTextColor, Theme.stateHover) : "transparent"
                         Behavior on color { ColorAnimation { duration: 150 } }
                         z: -1
                     }
@@ -934,8 +934,8 @@ Item {
 
                     Rectangle {
                         anchors.fill: parent
-                        radius: s(18)
-                        color: redoMouse.containsMouse && root.historyStep < root.actionHistory.length - 1 ? ((typeof mochaColors !== "undefined" && mochaColors && mochaColors.surface0) ? mochaColors.surface0 : Qt.rgba(root.baseTextColor.r, root.baseTextColor.g, root.baseTextColor.b, 0.1)) : "transparent"
+                        radius: Theme.radiusLg
+                        color: redoMouse.containsMouse && root.historyStep < root.actionHistory.length - 1 ? Theme.stateLayer(root.baseTextColor, Theme.stateHover) : "transparent"
                         Behavior on color { ColorAnimation { duration: 150 } }
                         z: -1
                     }
@@ -976,8 +976,8 @@ Item {
                         id: toolsActiveHighlight
                         y: 0
                         height: s(32)
-                        radius: s(18)
-                        color: (typeof mochaColors !== "undefined" && mochaColors && mochaColors.surface1) ? mochaColors.surface1 : Qt.rgba(root.baseTextColor.r, root.baseTextColor.g, root.baseTextColor.b, 0.15)
+                        radius: Theme.radiusLg
+                        color: Theme.surfaceContainerHigh
                         z: 0
 
                         property int prevIdx: 0
@@ -1007,7 +1007,7 @@ Item {
                         id: toolsListLayout
                         anchors.left: parent.left
                         anchors.top: parent.top
-                        spacing: s(8)
+                        spacing: Theme.gapSm
                         z: 1
 
                         Repeater {
@@ -1025,8 +1025,8 @@ Item {
 
                                 Rectangle {
                                     anchors.fill: parent
-                                    radius: s(18)
-                                    color: toolMouseArea.containsMouse && root.currentTool !== modelData.id ? ((typeof mochaColors !== "undefined" && mochaColors && mochaColors.surface0) ? mochaColors.surface0 : Qt.rgba(root.baseTextColor.r, root.baseTextColor.g, root.baseTextColor.b, 0.08)) : "transparent"
+                                    radius: Theme.radiusLg
+                                    color: toolMouseArea.containsMouse && root.currentTool !== modelData.id ? Theme.stateLayer(root.baseTextColor, Theme.stateHover) : "transparent"
                                     Behavior on color { ColorAnimation { duration: 150 } }
                                     z: -1
                                 }
@@ -1085,8 +1085,8 @@ Item {
 
                     Rectangle {
                         anchors.fill: parent
-                        radius: s(18)
-                        color: colorIndicatorMouse.containsMouse ? ((typeof mochaColors !== "undefined" && mochaColors && mochaColors.surface0) ? mochaColors.surface0 : Qt.rgba(root.baseTextColor.r, root.baseTextColor.g, root.baseTextColor.b, 0.1)) : "transparent"
+                        radius: Theme.radiusLg
+                        color: colorIndicatorMouse.containsMouse ? Theme.stateLayer(root.baseTextColor, Theme.stateHover) : "transparent"
                         Behavior on color { ColorAnimation { duration: 150 } }
                         z: -1
                     }
@@ -1094,7 +1094,7 @@ Item {
                     Rectangle {
                         width: s(22)
                         height: s(22)
-                        radius: s(18)
+                        radius: Theme.radiusLg
                         color: root.currentColor
                         anchors.centerIn: parent
                         
@@ -1132,8 +1132,8 @@ Item {
 
                     Rectangle {
                         anchors.fill: parent
-                        radius: s(18)
-                        color: clearMouse.containsMouse ? ((typeof mochaColors !== "undefined" && mochaColors && mochaColors.surface0) ? mochaColors.surface0 : Qt.rgba(root.baseTextColor.r, root.baseTextColor.g, root.baseTextColor.b, 0.1)) : "transparent"
+                        radius: Theme.radiusLg
+                        color: clearMouse.containsMouse ? Theme.stateLayer(root.baseTextColor, Theme.stateHover) : "transparent"
                         Behavior on color { ColorAnimation { duration: 150 } }
                         z: -1
                     }

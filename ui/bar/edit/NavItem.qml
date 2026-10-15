@@ -1,4 +1,5 @@
 import QtQuick
+import "../../../core"
 
 // ═══════════════════════════════════════════════════════════════════════════
 // NavItem — fila de navegación del rail (Fase 4: paridad con GuidePopup).
@@ -20,16 +21,16 @@ Rectangle {
     signal activated()
 
     height: bar ? bar.s(44) : 44
-    radius: bar ? bar.s(18) : 18
+    radius: bar ? bar.s(Theme.radiusLg) : Theme.radiusLg
     color: nav.active ? "transparent"
-        : (navMa.containsMouse ? Qt.alpha(bar.colors.surface1, 0.5) : "transparent")
+        : (navMa.containsMouse ? Theme.surfaceContainer : "transparent")
     Behavior on color { ColorAnimation { duration: 150 } }
 
     Row {
         id: navRow
         anchors.fill: parent
-        anchors.leftMargin: bar ? bar.s(15) : 15
-        spacing: bar ? bar.s(12) : 12
+        anchors.leftMargin: bar ? bar.s(Theme.gapLg) : Theme.gapLg
+        spacing: bar ? bar.s(Theme.gapMd) : Theme.gapMd
         // Desplaza icono+label s(6) al activarse (GP:485-489).
         property real contentShift: nav.active ? (bar ? bar.s(6) : 6) : 0
         Behavior on contentShift { NumberAnimation { duration: 400; easing.type: Easing.OutExpo } }

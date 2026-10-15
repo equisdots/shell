@@ -25,7 +25,7 @@ Item {
     property string imagePath: ""
     property string wImagePath: imagePath
     property string path: imagePath
-    property real cornerRadius: Theme.clampedBorderRadius
+    property real cornerRadius: Theme.radiusLg
 
     function fileUrl(p) {
         if (!p || p === "") return "";
@@ -33,12 +33,12 @@ Item {
         return "file://" + p;
     }
 
-    Rectangle {
+    GlassCard {
         id: bgRect
         anchors.fill: parent
-        color: (root.path === "" || artImg.status !== Image.Ready) ? Theme.surface0 : "transparent"
-        radius: root.cornerRadius
-        antialiasing: true
+        fill: (root.path === "" || artImg.status !== Image.Ready) ? Theme.surfaceContainerHigh : "transparent"
+        hairline: (root.path === "" || artImg.status !== Image.Ready) ? Theme.outlineVariant : "transparent"
+        cornerRadius: root.cornerRadius
 
         AnimatedImage {
             id: artImg

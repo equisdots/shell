@@ -1,4 +1,5 @@
 import QtQuick
+import "../../../core"
 
 // Ciclo de color de borde del BarEditor (Fase 4: familia GuidePopup).
 // alpha(surface0, 0.4) + borde surface1; hover alpha(mauve, 0.15) + borde
@@ -12,9 +13,9 @@ Rectangle {
     width: bar ? bar.s(66) : 66
     height: bar ? bar.s(30) : 30
     radius: height / 2
-    color: !bar ? "transparent" : (ccMa.containsMouse ? Qt.alpha(bar.colors.mauve, 0.15) : Qt.alpha(bar.colors.surface0, 0.4))
+    color: !bar ? "transparent" : (ccMa.containsMouse ? Theme.stateLayer(bar.colors.mauve, Theme.stateHover) : Theme.surfaceContainerLow)
     border.width: 1
-    border.color: !bar ? "transparent" : (ccMa.containsMouse ? bar.colors.mauve : bar.colors.surface1)
+    border.color: !bar ? "transparent" : (ccMa.containsMouse ? bar.colors.mauve : Theme.outlineVariant)
     scale: ccMa.pressed ? 0.95 : 1.0
     Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutQuart } }
     Behavior on color { ColorAnimation { duration: 150 } }

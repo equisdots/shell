@@ -102,17 +102,17 @@ Item {
     // ── UI ──────────────────────────────────────────────────────────────────
     Rectangle {
         anchors.fill: parent
-        color: window.base
-        radius: window.s(16)
+        color: Theme.surfaceContainerLow
+        radius: Theme.radiusLg
 
         ColumnLayout {
             anchors.fill: parent
-            anchors.margins: window.s(18)
-            spacing: window.s(12)
+            anchors.margins: Theme.gapLg
+            spacing: Theme.gapMd
 
             RowLayout {
                 Layout.fillWidth: true
-                spacing: window.s(10)
+                spacing: Theme.gapSm
 
                 Text {
                     text: "Palette"
@@ -132,7 +132,7 @@ Item {
                 Rectangle {
                     width: window.s(20)
                     height: window.s(20)
-                    radius: window.s(10)
+                    radius: width / 2
                     color: window.mauve
                 }
             }
@@ -145,14 +145,14 @@ Item {
                 placeholderTextColor: Qt.alpha(window.subtext0, 0.7)
                 font.family: "Hack Nerd Font"
                 font.pixelSize: window.s(12)
-                leftPadding: window.s(12)
-                rightPadding: window.s(12)
+                leftPadding: Theme.gapMd
+                rightPadding: Theme.gapMd
                 onTextChanged: window.filter = text
                 background: Rectangle {
-                    radius: window.s(12)
-                    color: Qt.alpha(window.surface0, 0.4)
+                    radius: Theme.radiusMd
+                    color: Theme.surfaceContainer
                     border.width: 1
-                    border.color: window.surface1
+                    border.color: Theme.outlineVariant
                 }
             }
 
@@ -170,8 +170,8 @@ Item {
                     hoverEnabled: true
                     active: pageFlick.moving || vScroll.hovered
                     contentItem: Rectangle {
-                        radius: window.s(2)
-                        color: window.surface2
+                        radius: Theme.radiusXs
+                        color: Theme.surfaceContainerHighest
                         opacity: vScroll.active ? 1.0 : 0.45
                     }
                     background: Item {}
@@ -180,12 +180,12 @@ Item {
                 Column {
                     id: listCol
                     width: pageFlick.width
-                    spacing: window.s(10)
+                    spacing: Theme.gapSm
 
                     Text {
                         width: parent.width
                         visible: window.palettes.length === 0
-                        topPadding: window.s(16)
+                        topPadding: Theme.gapLg
                         horizontalAlignment: Text.AlignHCenter
                         text: "No palettes found"
                         font.family: "Hack Nerd Font"
@@ -201,7 +201,7 @@ Item {
                             readonly property var entries: window.palettesOf(modelData.id, window.filter)
 
                             width: listCol.width
-                            spacing: window.s(10)
+                            spacing: Theme.gapSm
                             visible: entries.length > 0
 
                             Text {
@@ -217,8 +217,8 @@ Item {
                             GridLayout {
                                 width: parent.width
                                 columns: 3
-                                columnSpacing: window.s(8)
-                                rowSpacing: window.s(8)
+                                columnSpacing: Theme.gapSm
+                                rowSpacing: Theme.gapSm
 
                                 Repeater {
                                     model: parent.parent.entries
@@ -242,44 +242,44 @@ Item {
 
         Layout.fillWidth: true
         height: window.s(45)
-        radius: window.s(18)
+        radius: Theme.radiusMd
         color: palCard.isSel ? window.mauve
              : (palCard.hovered ? Qt.alpha(window.mauve, 0.12)
-                                : Qt.alpha(window.surface0, 0.4))
+                                : Theme.surfaceContainer)
         border.width: 1
-        border.color: (palCard.isSel || palCard.hovered) ? window.mauve : window.surface1
+        border.color: (palCard.isSel || palCard.hovered) ? window.mauve : Theme.outlineVariant
         Behavior on color { ColorAnimation { duration: 150 } }
         Behavior on border.color { ColorAnimation { duration: 150 } }
 
         RowLayout {
             anchors.fill: parent
-            anchors.margins: window.s(10)
-            spacing: window.s(10)
+            anchors.margins: Theme.gapSm
+            spacing: Theme.gapSm
 
             Item {
                 Layout.preferredWidth: window.s(24)
                 Layout.preferredHeight: window.s(24)
                 Column {
                     anchors.centerIn: parent
-                    spacing: window.s(2)
+                    spacing: Theme.gap2xs
                     Row {
-                        spacing: window.s(2)
+                        spacing: Theme.gap2xs
                         Repeater {
                             model: [0, 1]
                             delegate: Rectangle {
                                 width: window.s(9); height: window.s(9)
-                                radius: window.s(2)
+                                radius: Theme.radiusXs
                                 color: palCard.pal.colors[index]
                             }
                         }
                     }
                     Row {
-                        spacing: window.s(2)
+                        spacing: Theme.gap2xs
                         Repeater {
                             model: [0, 1]
                             delegate: Rectangle {
                                 width: window.s(9); height: window.s(9)
-                                radius: window.s(2)
+                                radius: Theme.radiusXs
                                 color: palCard.pal.colors[2 + index]
                             }
                         }

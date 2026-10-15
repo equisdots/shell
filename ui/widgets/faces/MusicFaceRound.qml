@@ -246,13 +246,12 @@ Item {
         width: root.discRadius * 2
         height: width
 
-        Rectangle {
+        GlassCard {
             id: discBase
             anchors.fill: parent
-            radius: width / 2
-            color: Theme.surface1
-            border.width: 1
-            border.color: root.isMediaActive ? Theme.surface2 : Theme.surface1
+            cornerRadius: width / 2
+            fill: Theme.surfaceContainerHigh
+            hairline: root.isMediaActive ? Theme.outline : Theme.outlineVariant
 
             Text {
                 anchors.centerIn: parent

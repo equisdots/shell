@@ -11,8 +11,8 @@ import "../../../core"
 // accent) plus the bar-wide icon color. Consumes the module personalization
 // API in BarLayout.js through bar.applyBar(...).
 //
-// Layout: 2-column grid of module cards (Guide look: alpha(surface0, 0.4)
-// r18 + surface1 border). Each card header previews the EFFECTIVE icon and
+// Layout: 2-column grid of module cards (Guide look: surfaceContainerLow
+// radiusLg + outlineVariant border). Each card header previews the EFFECTIVE icon and
 // accent; the fields hold overrides only, so their placeholders show the
 // current default (empty field = module default).
 //
@@ -112,7 +112,7 @@ Item {
                 anchors.fill: parent
                 clip: true
                 boundsBehavior: Flickable.StopAtBounds
-                contentHeight: pageCol.height + bar.s(16)
+                contentHeight: pageCol.height + bar.s(Theme.gapLg)
                 ScrollBar.vertical: ScrollBar {
                     id: vScroll
                     width: bar.s(4)
@@ -120,8 +120,8 @@ Item {
                     hoverEnabled: true
                     active: pageFlick.moving || vScroll.hovered
                     contentItem: Rectangle {
-                        radius: bar.s(2)
-                        color: bar.colors.surface2
+                        radius: bar.s(Theme.radiusXs)
+                        color: Theme.surfaceContainerHighest
                         opacity: vScroll.active ? 1.0 : 0.45
                     }
                     background: Item {}
@@ -129,10 +129,10 @@ Item {
 
                 Column {
                     id: pageCol
-                    x: bar.s(8)
-                    y: bar.s(8)
-                    width: pageFlick.width - bar.s(16)
-                    spacing: bar.s(12)
+                    x: bar.s(Theme.gapSm)
+                    y: bar.s(Theme.gapSm)
+                    width: pageFlick.width - bar.s(Theme.gapLg)
+                    spacing: bar.s(Theme.gapLg)
 
                     Text {
                         text: "Modules"
@@ -167,8 +167,8 @@ Item {
                         // ancho minimo (~s(680)); si no, 1 columna a lo ancho
                         // (evita solapes de los controles internos).
                         columns: Math.max(1, Math.floor((width + columnSpacing) / (bar.s(500) + columnSpacing)))
-                        columnSpacing: bar.s(12)
-                        rowSpacing: bar.s(12)
+                        columnSpacing: bar.s(Theme.gapMd)
+                        rowSpacing: bar.s(Theme.gapMd)
 
                         Repeater {
                             model: root.allModules
@@ -177,12 +177,12 @@ Item {
                                 id: card
 
                                 Layout.fillWidth: true
-                                Layout.preferredWidth: (pageCol.width - bar.s(12)) / 2
-                                implicitHeight: cardCol.implicitHeight + bar.s(24)
-                                radius: bar.s(18)
-                                color: Qt.alpha(bar.colors.surface0, 0.4)
+                                Layout.preferredWidth: (pageCol.width - bar.s(Theme.gapMd)) / 2
+                                implicitHeight: cardCol.implicitHeight + bar.s(Theme.gapMd) * 2
+                                radius: bar.s(Theme.radiusLg)
+                                color: Theme.surfaceContainerLow
                                 border.width: 1
-                                border.color: bar.colors.surface1
+                                border.color: Theme.outlineVariant
 
                                 readonly property var cfg: BarLayout.moduleConfig(root.bar.bar, modelData.id)
                                 readonly property string effIcon: card.cfg.icon !== "" ? card.cfg.icon : root.defIcon(modelData.id)
@@ -190,14 +190,14 @@ Item {
 
                                 Column {
                                     id: cardCol
-                                    x: bar.s(12)
-                                    y: bar.s(12)
-                                    width: parent.width - bar.s(24)
-                                    spacing: bar.s(8)
+                                    x: bar.s(Theme.gapMd)
+                                    y: bar.s(Theme.gapMd)
+                                    width: parent.width - bar.s(Theme.gapMd) * 2
+                                    spacing: bar.s(Theme.gapSm)
 
                                     RowLayout {
                                         width: parent.width
-                                        spacing: bar.s(8)
+                                        spacing: bar.s(Theme.gapSm)
 
                                         Text {
                                             Layout.alignment: Qt.AlignVCenter
@@ -230,8 +230,8 @@ Item {
                                             Layout.alignment: Qt.AlignVCenter
                                             width: bar.s(10)
                                             height: bar.s(10)
-                                            radius: bar.s(5)
-                                            color: card.effAccent !== "" ? root.colorOf(card.effAccent) : bar.colors.surface1
+                                            radius: bar.s(Theme.radiusFull)
+                                            color: card.effAccent !== "" ? root.colorOf(card.effAccent) : Theme.surfaceContainer
                                         }
                                     }
 
@@ -239,10 +239,10 @@ Item {
                                     // calculaban mal su alto implícito y las filas se pisaban.
                                     Row {
                                         width: parent.width
-                                        spacing: bar.s(8)
+                                        spacing: bar.s(Theme.gapSm)
 
                                         FieldCard {
-                                            width: (cardCol.width - bar.s(8)) / 2
+                                            width: (cardCol.width - bar.s(Theme.gapSm)) / 2
                                             bar: root.bar
                                             label: root.iconModules.indexOf(modelData.id) !== -1 ? "Icon" : "Icon (unused)"
                                             value: card.cfg.icon
@@ -253,7 +253,7 @@ Item {
                                         }
 
                                         FieldCard {
-                                            width: (cardCol.width - bar.s(8)) / 2
+                                            width: (cardCol.width - bar.s(Theme.gapSm)) / 2
                                             bar: root.bar
                                             label: "Color"
                                             value: card.cfg.color
@@ -265,10 +265,10 @@ Item {
 
                                     Row {
                                         width: parent.width
-                                        spacing: bar.s(8)
+                                        spacing: bar.s(Theme.gapSm)
 
                                         FieldCard {
-                                            width: (cardCol.width - bar.s(8)) / 2
+                                            width: (cardCol.width - bar.s(Theme.gapSm)) / 2
                                             bar: root.bar
                                             label: "Accent"
                                             value: card.cfg.accent
@@ -279,7 +279,7 @@ Item {
 
                                         Row {
                                             anchors.verticalCenter: parent.verticalCenter
-                                            spacing: bar.s(6)
+                                            spacing: bar.s(Theme.gapSm)
 
                                             EditorButton {
                                                 bar: root.bar
@@ -313,10 +313,10 @@ Item {
                                     Row {
                                         width: parent.width
                                         visible: modelData.id === "time"
-                                        spacing: bar.s(8)
+                                        spacing: bar.s(Theme.gapSm)
 
                                         FieldCard {
-                                            width: (cardCol.width - bar.s(8)) / 2
+                                            width: (cardCol.width - bar.s(Theme.gapSm)) / 2
                                             bar: root.bar
                                             label: "Clock format"
                                             value: root.bar.bar.timeFormat !== undefined ? root.bar.bar.timeFormat : ""
@@ -326,7 +326,7 @@ Item {
                                         }
 
                                         FieldCard {
-                                            width: (cardCol.width - bar.s(8)) / 2
+                                            width: (cardCol.width - bar.s(Theme.gapSm)) / 2
                                             bar: root.bar
                                             label: "Size"
                                             value: card.cfg.size > 0 ? String(card.cfg.size) : ""
@@ -340,7 +340,7 @@ Item {
                                     Row {
                                         width: parent.width
                                         visible: modelData.id === "time"
-                                        spacing: bar.s(6)
+                                        spacing: bar.s(Theme.gapSm)
 
                                         EditorButton {
                                             bar: root.bar
@@ -373,10 +373,10 @@ Item {
                                     Row {
                                         width: parent.width
                                         visible: modelData.id === "date"
-                                        spacing: bar.s(8)
+                                        spacing: bar.s(Theme.gapSm)
 
                                         FieldCard {
-                                            width: (cardCol.width - bar.s(8)) / 2
+                                            width: (cardCol.width - bar.s(Theme.gapSm)) / 2
                                             bar: root.bar
                                             label: "Date format"
                                             value: root.bar.bar.dateFormat !== undefined ? root.bar.bar.dateFormat : ""
@@ -386,7 +386,7 @@ Item {
                                         }
 
                                         FieldCard {
-                                            width: (cardCol.width - bar.s(8)) / 2
+                                            width: (cardCol.width - bar.s(Theme.gapSm)) / 2
                                             bar: root.bar
                                             label: "Size"
                                             value: card.cfg.size > 0 ? String(card.cfg.size) : ""
@@ -400,7 +400,7 @@ Item {
                                     Row {
                                         width: parent.width
                                         visible: modelData.id === "workspaces"
-                                        spacing: bar.s(6)
+                                        spacing: bar.s(Theme.gapSm)
 
                                         EditorButton {
                                             bar: root.bar
@@ -451,10 +451,10 @@ Item {
                                     Row {
                                         width: parent.width
                                         visible: modelData.id === "workspaces"
-                                        spacing: bar.s(8)
+                                        spacing: bar.s(Theme.gapSm)
 
                                         FieldCard {
-                                            width: (cardCol.width - bar.s(8)) / 2
+                                            width: (cardCol.width - bar.s(Theme.gapSm)) / 2
                                             bar: root.bar
                                             label: "Active fill"
                                             value: card.cfg.colors.active !== undefined ? card.cfg.colors.active : ""
@@ -465,7 +465,7 @@ Item {
                                         }
 
                                         FieldCard {
-                                            width: (cardCol.width - bar.s(8)) / 2
+                                            width: (cardCol.width - bar.s(Theme.gapSm)) / 2
                                             bar: root.bar
                                             label: "Active text"
                                             value: card.cfg.colors.activeText !== undefined ? card.cfg.colors.activeText : ""
@@ -480,10 +480,10 @@ Item {
                                     Row {
                                         width: parent.width
                                         visible: modelData.id === "workspaces"
-                                        spacing: bar.s(8)
+                                        spacing: bar.s(Theme.gapSm)
 
                                         FieldCard {
-                                            width: (cardCol.width - bar.s(8)) / 2
+                                            width: (cardCol.width - bar.s(Theme.gapSm)) / 2
                                             bar: root.bar
                                             label: "Occupied fill"
                                             value: card.cfg.colors.occupied !== undefined ? card.cfg.colors.occupied : ""
@@ -494,7 +494,7 @@ Item {
                                         }
 
                                         FieldCard {
-                                            width: (cardCol.width - bar.s(8)) / 2
+                                            width: (cardCol.width - bar.s(Theme.gapSm)) / 2
                                             bar: root.bar
                                             label: "Empty fill"
                                             value: card.cfg.colors.empty !== undefined ? card.cfg.colors.empty : ""
@@ -509,10 +509,10 @@ Item {
                                     Row {
                                         width: parent.width
                                         visible: modelData.id === "workspaces"
-                                        spacing: bar.s(8)
+                                        spacing: bar.s(Theme.gapSm)
 
                                         FieldCard {
-                                            width: (cardCol.width - bar.s(8)) / 2
+                                            width: (cardCol.width - bar.s(Theme.gapSm)) / 2
                                             bar: root.bar
                                             label: "Hover fill"
                                             value: card.cfg.colors.hover !== undefined ? card.cfg.colors.hover : ""
@@ -523,7 +523,7 @@ Item {
                                         }
 
                                         FieldCard {
-                                            width: (cardCol.width - bar.s(8)) / 2
+                                            width: (cardCol.width - bar.s(Theme.gapSm)) / 2
                                             bar: root.bar
                                             label: "Marker"
                                             value: card.cfg.colors.marker !== undefined ? card.cfg.colors.marker : ""
@@ -538,10 +538,10 @@ Item {
                                     Row {
                                         width: parent.width
                                         visible: modelData.id === "workspaces"
-                                        spacing: bar.s(8)
+                                        spacing: bar.s(Theme.gapSm)
 
                                         FieldCard {
-                                            width: (cardCol.width - bar.s(8)) / 2
+                                            width: (cardCol.width - bar.s(Theme.gapSm)) / 2
                                             bar: root.bar
                                             label: "Marker empty"
                                             value: card.cfg.colors.markerEmpty !== undefined ? card.cfg.colors.markerEmpty : ""

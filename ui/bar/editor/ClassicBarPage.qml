@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import "../edit"
+import "../../../core"
 
 // ═══════════════════════════════════════════════════════════════════════════
 // ClassicBarPage — BarEditor tab (classic engine only): classic bar style & size,
@@ -59,7 +60,7 @@ Item {
                 anchors.fill: parent
                 clip: true
                 boundsBehavior: Flickable.StopAtBounds
-                contentHeight: pageCol.height + bar.s(16)
+                contentHeight: pageCol.height + bar.s(Theme.gapLg)
                 ScrollBar.vertical: ScrollBar {
                     id: vScroll
                     width: bar.s(4)
@@ -67,8 +68,8 @@ Item {
                     hoverEnabled: true
                     active: pageFlick.moving || vScroll.hovered
                     contentItem: Rectangle {
-                        radius: bar.s(2)
-                        color: bar.colors.surface2
+                        radius: bar.s(Theme.radiusXs)
+                        color: Theme.surfaceContainerHighest
                         opacity: vScroll.active ? 1.0 : 0.45
                     }
                     background: Item {}
@@ -76,10 +77,10 @@ Item {
 
                 Column {
                     id: pageCol
-                    x: bar.s(8)
-                    y: bar.s(8)
-                    width: pageFlick.width - bar.s(16)
-                    spacing: bar.s(12)
+                    x: bar.s(Theme.gapSm)
+                    y: bar.s(Theme.gapSm)
+                    width: pageFlick.width - bar.s(Theme.gapLg)
+                    spacing: bar.s(Theme.gapLg)
                     visible: bar.engine === "classic"
 
                     // ════ STYLE & SIZE ════
@@ -102,8 +103,8 @@ Item {
                     GridLayout {
                         width: parent.width
                         columns: 3
-                        columnSpacing: bar.s(10)
-                        rowSpacing: bar.s(10)
+                        columnSpacing: bar.s(Theme.gapMd)
+                        rowSpacing: bar.s(Theme.gapMd)
                         OptionCard {
                             Layout.fillWidth: true
                             bar: root.bar
@@ -143,8 +144,8 @@ Item {
                     GridLayout {
                         width: parent.width
                         columns: 3
-                        columnSpacing: bar.s(10)
-                        rowSpacing: bar.s(10)
+                        columnSpacing: bar.s(Theme.gapMd)
+                        rowSpacing: bar.s(Theme.gapMd)
                         OptionCard {
                             Layout.fillWidth: true
                             bar: root.bar
@@ -258,18 +259,18 @@ Item {
                     // Card hero r21 con las secciones (targets DnD)
                     Rectangle {
                         width: parent.width
-                        radius: bar.s(21)
-                        color: Qt.alpha(bar.colors.surface0, 0.4)
+                        radius: bar.s(Theme.radiusLg)
+                        color: Theme.surfaceContainerLow
                         border.width: 1
-                        border.color: bar.colors.surface1
-                        height: modCol.height + bar.s(30)
+                        border.color: Theme.outlineVariant
+                        height: modCol.height + bar.s(Theme.gapLg) * 2
 
                         Column {
                             id: modCol
-                            x: bar.s(15)
-                            y: bar.s(15)
-                            width: parent.width - bar.s(30)
-                            spacing: bar.s(10)
+                            x: bar.s(Theme.gapLg)
+                            y: bar.s(Theme.gapLg)
+                            width: parent.width - bar.s(Theme.gapLg) * 2
+                            spacing: bar.s(Theme.gapMd)
                             EditLabel {
                                 bar: root.bar
                                 width: parent.width
@@ -281,7 +282,7 @@ Item {
                             Column {
                                 id: classicListsCol
                                 width: parent.width
-                                spacing: bar.s(10)
+                                spacing: bar.s(Theme.gapMd)
                                 ClassicSectionCard { width: parent.width; bar: root.bar; listId: "left" }
                                 ClassicSectionCard { width: parent.width; bar: root.bar; listId: "center" }
                                 ClassicSectionCard { width: parent.width; bar: root.bar; listId: "right" }
@@ -302,7 +303,7 @@ Item {
                     // Botones full-width (como el Close del guide GP:605-637)
                     Column {
                         width: parent.width
-                        spacing: bar.s(10)
+                        spacing: bar.s(Theme.gapMd)
                         EditorButton { width: parent.width; bar: root.bar; icon: "󰚰"; label: "Mirror bar layout"; onActivated: root.mirrorBar() }
                         EditorButton { width: parent.width; bar: root.bar; label: "Classic defaults"; onActivated: root.classicDefaults() }
                     }

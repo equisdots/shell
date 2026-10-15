@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import "../edit"
+import "../../../core"
 
 // ═══════════════════════════════════════════════════════════════════════════
 // WorkspacesPage — BarEditor tab: empty-workspace marker style.
@@ -44,7 +45,7 @@ Item {
                 anchors.fill: parent
                 clip: true
                 boundsBehavior: Flickable.StopAtBounds
-                contentHeight: pageCol.height + bar.s(16)
+                contentHeight: pageCol.height + bar.s(Theme.gapLg)
                 ScrollBar.vertical: ScrollBar {
                     id: vScroll
                     width: bar.s(4)
@@ -52,8 +53,8 @@ Item {
                     hoverEnabled: true
                     active: pageFlick.moving || vScroll.hovered
                     contentItem: Rectangle {
-                        radius: bar.s(2)
-                        color: bar.colors.surface2
+                        radius: bar.s(Theme.radiusXs)
+                        color: Theme.surfaceContainerHighest
                         opacity: vScroll.active ? 1.0 : 0.45
                     }
                     background: Item {}
@@ -61,10 +62,10 @@ Item {
 
                 Column {
                     id: pageCol
-                    x: bar.s(8)
-                    y: bar.s(8)
-                    width: pageFlick.width - bar.s(16)
-                    spacing: bar.s(12)
+                    x: bar.s(Theme.gapSm)
+                    y: bar.s(Theme.gapSm)
+                    width: pageFlick.width - bar.s(Theme.gapLg)
+                    spacing: bar.s(Theme.gapLg)
 
                     // Título de página (GP:1007-1014)
                     Text {
@@ -79,8 +80,8 @@ Item {
                     GridLayout {
                         width: parent.width
                         columns: 2
-                        columnSpacing: bar.s(10)
-                        rowSpacing: bar.s(10)
+                        columnSpacing: bar.s(Theme.gapMd)
+                        rowSpacing: bar.s(Theme.gapMd)
                         OptionCard {
                             Layout.fillWidth: true
                             bar: root.bar
@@ -139,21 +140,21 @@ Item {
                     // toma mauve (fondo 18% + borde) como indicador de selección.
                     Rectangle {
                         width: parent.width
-                        radius: bar.s(16)
-                        color: Qt.alpha(bar.colors.surface0, 0.4)
+                        radius: bar.s(Theme.radiusLg)
+                        color: Theme.surfaceContainerLow
                         border.width: 1
-                        border.color: bar.colors.surface1
-                        height: markerCol.height + bar.s(24)
+                        border.color: Theme.outlineVariant
+                        height: markerCol.height + bar.s(Theme.gapMd) * 2
                         Column {
                             id: markerCol
-                            x: bar.s(14); y: bar.s(12)
-                            width: parent.width - bar.s(28)
-                            spacing: bar.s(10)
+                            x: bar.s(Theme.gapMd); y: bar.s(Theme.gapMd)
+                            width: parent.width - bar.s(Theme.gapMd) * 2
+                            spacing: bar.s(Theme.gapMd)
                             EditLabel { bar: root.bar; text: "Preview"; font.pixelSize: bar.s(12); color: bar.colors.subtext0 }
                             GridLayout {
                                 width: parent.width
                                 columns: 4
-                                columnSpacing: bar.s(10)
+                                columnSpacing: bar.s(Theme.gapMd)
                                 Repeater {
                                     model: [
                                         { id: "number", label: "Numbers" },
@@ -168,10 +169,10 @@ Item {
                                         readonly property bool isActive: root.bar.bar.workspacesMarker === caseId
                                         Layout.fillWidth: true
                                         height: bar.s(78)
-                                        radius: bar.s(12)
-                                        color: isActive ? Qt.alpha(bar.colors.mauve, 0.18) : Qt.alpha(bar.colors.surface1, 0.25)
+                                        radius: bar.s(Theme.radiusMd)
+                                        color: isActive ? Qt.alpha(bar.colors.mauve, 0.18) : Theme.surfaceContainerLow
                                         border.width: 1
-                                        border.color: isActive ? bar.colors.mauve : Qt.alpha(bar.colors.surface1, 0.8)
+                                        border.color: isActive ? bar.colors.mauve : Theme.outlineVariant
                                         MouseArea {
                                             anchors.fill: parent
                                             cursorShape: Qt.PointingHandCursor
@@ -179,10 +180,10 @@ Item {
                                         }
                                         Column {
                                             anchors.centerIn: parent
-                                            spacing: bar.s(6)
+                                            spacing: bar.s(Theme.gapSm)
                                             Row {
                                                 anchors.horizontalCenter: parent.horizontalCenter
-                                                spacing: bar.s(4)
+                                                spacing: bar.s(Theme.gapXs)
                                                 Repeater {
                                                     model: 5
                                                     delegate: Item {
@@ -191,12 +192,12 @@ Item {
                                                         width: bar.s(18); height: bar.s(18)
                                                         Rectangle {
                                                             anchors.fill: parent
-                                                            radius: bar.s(5)
+                                                            radius: bar.s(Theme.radiusXs)
                                                             color: parent.occupied
-                                                                ? (caseCard.isActive ? Qt.alpha(bar.colors.mauve, 0.55) : Qt.alpha(bar.colors.surface1, 0.6))
-                                                                : Qt.alpha(bar.colors.surface0, 0.6)
+                                                                ? (caseCard.isActive ? Qt.alpha(bar.colors.mauve, 0.55) : Theme.surfaceContainer)
+                                                                : Theme.surfaceContainerLow
                                                             border.width: 1
-                                                            border.color: caseCard.isActive ? Qt.alpha(bar.colors.mauve, 0.8) : Qt.alpha(bar.colors.surface1, 0.7)
+                                                            border.color: caseCard.isActive ? Qt.alpha(bar.colors.mauve, 0.8) : Theme.outlineVariant
                                                         }
                                                         Text {
                                                             anchors.centerIn: parent

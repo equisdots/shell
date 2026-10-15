@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import "../../../core"
 
 // Selector de posición del editor CLASSIC (Fase 4: familia GuidePopup).
 // Inactivo: alpha(surface0, 0.4) + borde surface1; hover alpha(mauve, 0.1) +
@@ -16,16 +17,16 @@ Rectangle {
     readonly property bool isActive: card.bar && card.bar.classic && String(card.bar.classic.position) === card.pos
 
     height: bar ? bar.s(60) : 60
-    radius: bar ? bar.s(18) : 18
+    radius: bar ? bar.s(Theme.radiusLg) : Theme.radiusLg
     color: !bar ? "transparent"
         : card.isActive
             ? bar.colors.mauve
-            : (cardMa.containsMouse ? Qt.alpha(bar.colors.mauve, 0.1) : Qt.alpha(bar.colors.surface0, 0.4))
+            : (cardMa.containsMouse ? Theme.stateLayer(bar.colors.mauve, Theme.stateHover) : Theme.surfaceContainerLow)
     border.width: 1
     border.color: !bar ? "transparent"
         : card.isActive
             ? bar.colors.mauve
-            : (cardMa.containsMouse ? bar.colors.mauve : bar.colors.surface1)
+            : (cardMa.containsMouse ? bar.colors.mauve : Theme.outlineVariant)
     scale: cardMa.pressed ? 0.98 : 1.0
     Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutQuart } }
     Behavior on color { ColorAnimation { duration: 150 } }
@@ -33,7 +34,7 @@ Rectangle {
 
     RowLayout {
         anchors.centerIn: parent
-        spacing: bar ? bar.s(8) : 8
+        spacing: bar ? bar.s(Theme.gapSm) : Theme.gapSm
         Text {
             text: card.glyph
             font.family: "Hack Nerd Font"

@@ -6,6 +6,7 @@
 // (Settings object), and calls ctx.submitSearch(query) on submit.
 // ═══════════════════════════════════════════════════════════════════════════
 import QtQuick
+import "../../../../../core"
 
 Row {
     id: searchRow
@@ -15,7 +16,7 @@ Row {
     required property var settings   // Settings (QS_Davincix)
 
     height: ctx.s(44)
-    spacing: ctx.s(12)
+    spacing: Theme.gapMd
 
     function submit() {
         let q = searchInput.text.trim();
@@ -50,12 +51,12 @@ Row {
         visible: ctx.currentFilter === "Search" && ctx.hasSearched
         width: visible ? ctx.s(44) : 0
         height: ctx.s(44)
-        radius: ctx.s(13)
+        radius: Theme.radiusMd
         clip: true
         anchors.verticalCenter: parent.verticalCenter
 
-        color: ctx.isSearchPaused ? theme.surface2 : "transparent"
-        border.color: ctx.isSearchPaused ? theme.text : theme.surface1
+        color: ctx.isSearchPaused ? Theme.surfaceContainerHighest : "transparent"
+        border.color: ctx.isSearchPaused ? theme.text : Theme.outlineVariant
         border.width: ctx.isSearchPaused ? ctx.s(2) : 1
 
         Behavior on width { NumberAnimation { duration: 500; easing.type: Easing.OutBack; easing.overshoot: 0.5 } }
@@ -108,11 +109,11 @@ Row {
         visible: ctx.currentFilter === "Search" && ctx.hasSearched && ctx.isSearchPaused && ctx.searchResultCount > 0
         width: visible ? ctx.s(44) : 0
         height: ctx.s(44)
-        radius: ctx.s(13)
+        radius: Theme.radiusMd
         anchors.verticalCenter: parent.verticalCenter
 
-        color: lmMouse.containsMouse ? theme.surface1 : "transparent"
-        border.color: theme.surface1
+        color: lmMouse.containsMouse ? Theme.stateLayer(theme.text, Theme.stateHover) : "transparent"
+        border.color: Theme.outlineVariant
         border.width: 1
 
         Behavior on width { NumberAnimation { duration: 500; easing.type: Easing.OutBack; easing.overshoot: 0.5 } }
@@ -140,12 +141,12 @@ Row {
         id: searchBox
         height: ctx.s(44)
         width: ctx.currentFilter === "Search" ? ctx.s(440) : ctx.s(44)
-        radius: ctx.s(13)
+        radius: Theme.radiusMd
         clip: true
         anchors.verticalCenter: parent.verticalCenter
 
-        color: ctx.currentFilter === "Search" ? Qt.rgba(theme.surface2.r, theme.surface2.g, theme.surface2.b, 0.8) : "transparent"
-        border.color: ctx.currentFilter === "Search" ? theme.text : theme.surface1
+        color: ctx.currentFilter === "Search" ? Theme.surfaceContainer : "transparent"
+        border.color: ctx.currentFilter === "Search" ? theme.text : Theme.outlineVariant
         border.width: ctx.currentFilter === "Search" ? ctx.s(2) : 1
 
         Behavior on width { NumberAnimation { duration: 600; easing.type: Easing.OutBack; easing.overshoot: 0.5 } }
@@ -214,7 +215,7 @@ Row {
                 anchors.left: parent.left
                 anchors.leftMargin: ctx.s(6)
                 anchors.verticalCenter: parent.verticalCenter
-                spacing: ctx.s(4)
+                spacing: Theme.gapXs
 
                 Repeater {
                     model: ctx.activeSearchSources
@@ -222,14 +223,14 @@ Row {
                     delegate: Rectangle {
                         width: sourceLabel.implicitWidth + ctx.s(14)
                         height: ctx.s(26)
-                        radius: ctx.s(9)
+                        radius: Theme.radiusSm
 
                         color: ctx.searchSource === modelData.id
-                            ? theme.surface2
-                            : (sourceMouse.containsMouse ? theme.surface1 : "transparent")
+                            ? Theme.surfaceContainerHighest
+                            : (sourceMouse.containsMouse ? Theme.stateLayer(theme.text, Theme.stateHover) : "transparent")
                         border.color: ctx.searchSource === modelData.id
                             ? theme.text
-                            : theme.surface1
+                            : Theme.outlineVariant
                         border.width: 1
 
                         Behavior on color { ColorAnimation { duration: 150 } }
@@ -291,7 +292,7 @@ Row {
             id: submitBtn
             width: ctx.s(32)
             height: ctx.s(32)
-            radius: ctx.s(10)
+            radius: Theme.radiusSm
             anchors.right: parent.right
             anchors.rightMargin: ctx.s(8)
             anchors.verticalCenter: parent.verticalCenter
@@ -300,8 +301,8 @@ Row {
             visible: opacity > 0
             Behavior on opacity { NumberAnimation { duration: 400; easing.type: Easing.OutQuad } }
 
-            color: submitMouseArea.containsMouse ? theme.surface1 : "transparent"
-            border.color: submitMouseArea.containsMouse ? theme.text : theme.surface2
+            color: submitMouseArea.containsMouse ? Theme.stateLayer(theme.text, Theme.stateHover) : "transparent"
+            border.color: submitMouseArea.containsMouse ? theme.text : Theme.outlineVariant
             border.width: 1
             Behavior on color { ColorAnimation { duration: 300 } }
 
@@ -349,12 +350,12 @@ Row {
         id: videoSearchBtn
         width: ctx.s(44)
         height: ctx.s(44)
-        radius: ctx.s(13)
+        radius: Theme.radiusMd
         anchors.verticalCenter: parent.verticalCenter
         property bool active: ctx.currentFilter === "Search" && ctx.searchKind === "video"
 
-        color: active ? theme.surface2 : (vsMouse.containsMouse ? theme.surface1 : "transparent")
-        border.color: active ? theme.text : theme.surface1
+        color: active ? Theme.surfaceContainerHighest : (vsMouse.containsMouse ? Theme.stateLayer(theme.text, Theme.stateHover) : "transparent")
+        border.color: active ? theme.text : Theme.outlineVariant
         border.width: active ? ctx.s(2) : 1
 
         Behavior on color { ColorAnimation { duration: 300 } }
@@ -433,11 +434,11 @@ Row {
         id: keysBtn
         width: ctx.s(44)
         height: ctx.s(44)
-        radius: ctx.s(13)
+        radius: Theme.radiusMd
         anchors.verticalCenter: parent.verticalCenter
 
-        color: ctx.keysPanelOpen ? theme.surface2 : (kMouse.containsMouse ? theme.surface1 : "transparent")
-        border.color: ctx.keysPanelOpen ? theme.text : theme.surface1
+        color: ctx.keysPanelOpen ? Theme.surfaceContainerHighest : (kMouse.containsMouse ? Theme.stateLayer(theme.text, Theme.stateHover) : "transparent")
+        border.color: ctx.keysPanelOpen ? theme.text : Theme.outlineVariant
         border.width: ctx.keysPanelOpen ? ctx.s(2) : 1
 
         Behavior on color { ColorAnimation { duration: 250 } }

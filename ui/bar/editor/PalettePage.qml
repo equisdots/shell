@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import "../edit"
+import "../../../core"
 
 // ═══════════════════════════════════════════════════════════════════════════
 // PalettePage — BarEditor tab: shared palette selector + live base16 editor.
@@ -53,7 +54,7 @@ Item {
                 anchors.fill: parent
                 clip: true
                 boundsBehavior: Flickable.StopAtBounds
-                contentHeight: pageCol.height + bar.s(16)
+                contentHeight: pageCol.height + bar.s(Theme.gapLg)
                 ScrollBar.vertical: ScrollBar {
                     id: vScroll
                     width: bar.s(4)
@@ -61,8 +62,8 @@ Item {
                     hoverEnabled: true
                     active: pageFlick.moving || vScroll.hovered
                     contentItem: Rectangle {
-                        radius: bar.s(2)
-                        color: bar.colors.surface2
+                        radius: bar.s(Theme.radiusXs)
+                        color: Theme.surfaceContainerHighest
                         opacity: vScroll.active ? 1.0 : 0.45
                     }
                     background: Item {}
@@ -70,10 +71,10 @@ Item {
 
                 Column {
                     id: pageCol
-                    x: bar.s(8)
-                    y: bar.s(8)
-                    width: pageFlick.width - bar.s(16)
-                    spacing: bar.s(12)
+                    x: bar.s(Theme.gapSm)
+                    y: bar.s(Theme.gapSm)
+                    width: pageFlick.width - bar.s(Theme.gapLg)
+                    spacing: bar.s(Theme.gapLg)
 
                     // Título de página (GP:1007-1014)
                     Text {
@@ -91,14 +92,14 @@ Item {
                         placeholderTextColor: Qt.alpha(bar.colors.subtext0, 0.7)
                         font.family: "Hack Nerd Font"
                         font.pixelSize: bar.s(12)
-                        leftPadding: bar.s(12)
-                        rightPadding: bar.s(12)
+                        leftPadding: bar.s(Theme.gapMd)
+                        rightPadding: bar.s(Theme.gapMd)
                         onTextChanged: root.filter = text
                         background: Rectangle {
-                            radius: bar.s(12)
-                            color: Qt.alpha(bar.colors.surface0, 0.4)
+                            radius: bar.s(Theme.radiusMd)
+                            color: Theme.surfaceContainerLow
                             border.width: 1
-                            border.color: bar.colors.surface1
+                            border.color: Theme.outlineVariant
                         }
                     }
 
@@ -116,8 +117,8 @@ Item {
                     GridLayout {
                         width: parent.width
                         columns: 3
-                        columnSpacing: bar.s(10)
-                        rowSpacing: bar.s(10)
+                        columnSpacing: bar.s(Theme.gapMd)
+                        rowSpacing: bar.s(Theme.gapMd)
                         visible: root.bar.palettesOf("x", root.filter).length > 0
                         Repeater {
                             model: root.bar.palettesOf("x", root.filter)
@@ -139,8 +140,8 @@ Item {
                     GridLayout {
                         width: parent.width
                         columns: 3
-                        columnSpacing: bar.s(10)
-                        rowSpacing: bar.s(10)
+                        columnSpacing: bar.s(Theme.gapMd)
+                        rowSpacing: bar.s(Theme.gapMd)
                         visible: root.bar.palettesOf("custom", root.filter).length > 0
                         Repeater {
                             model: root.bar.palettesOf("custom", root.filter)
@@ -162,8 +163,8 @@ Item {
                     GridLayout {
                         width: parent.width
                         columns: 3
-                        columnSpacing: bar.s(10)
-                        rowSpacing: bar.s(10)
+                        columnSpacing: bar.s(Theme.gapMd)
+                        rowSpacing: bar.s(Theme.gapMd)
                         visible: root.bar.palettesOf("user", root.filter).length > 0
                         Repeater {
                             model: root.bar.palettesOf("user", root.filter)
@@ -183,7 +184,7 @@ Item {
                     // Fila de acciones: Edit colors / Reset / New palette
                     Row {
                         width: parent.width
-                        spacing: bar.s(10)
+                        spacing: bar.s(Theme.gapMd)
                         EditorButton {
                             bar: root.bar
                             icon: "󰏘"
@@ -276,39 +277,39 @@ Item {
                     Rectangle {
                         width: parent.width
                         visible: bar.paletteEditOpen
-                        radius: bar.s(21)
-                        color: Qt.alpha(bar.colors.surface0, 0.4)
+                        radius: bar.s(Theme.radiusLg)
+                        color: Theme.surfaceContainerLow
                         border.width: 1
-                        border.color: bar.colors.surface1
-                        height: editCol.height + bar.s(30)
+                        border.color: Theme.outlineVariant
+                        height: editCol.height + bar.s(Theme.gapLg) * 2
 
-                        Column {
-                            id: editCol
-                            x: bar.s(15)
-                            y: bar.s(15)
-                            width: parent.width - bar.s(30)
-                            spacing: bar.s(10)
+                Column {
+                    id: editCol
+                    x: bar.s(Theme.gapLg)
+                    y: bar.s(Theme.gapLg)
+                    width: parent.width - bar.s(Theme.gapLg) * 2
+                    spacing: bar.s(Theme.gapMd)
                             Flow {
                                 id: slotFlow
                                 width: parent.width
-                                spacing: bar.s(8)
+                                spacing: bar.s(Theme.gapSm)
                                 Repeater {
                                     model: root.bar.slotDescriptors
                                     delegate: Item {
                                         required property var modelData
-                                        width: (slotFlow.width - bar.s(16)) / 3
+                                        width: (slotFlow.width - bar.s(Theme.gapSm) * 2) / 3
                                         height: bar.s(30)
                                         Row {
                                             anchors.fill: parent
-                                            spacing: bar.s(6)
+                                            spacing: bar.s(Theme.gapSm)
                                             Rectangle {
                                                 id: chip
                                                 width: bar.s(18)
                                                 height: bar.s(18)
                                                 anchors.verticalCenter: parent.verticalCenter
-                                                radius: bar.s(6)
+                                                radius: bar.s(Theme.radiusSm)
                                                 border.width: 1
-                                                border.color: bar.colors.surface2
+                                                border.color: Theme.outlineVariant
                                             }
                                             Text {
                                                 text: modelData.label
@@ -331,12 +332,12 @@ Item {
                                                 maximumLength: 7
                                                 validator: RegularExpressionValidator { regularExpression: /^#[0-9a-fA-F]{6}$/ }
                                                 background: Rectangle {
-                                                    color: Qt.alpha(bar.colors.surface0, 0.4)
-                                                    radius: bar.s(13)
+                                                    color: Theme.surfaceContainerLow
+                                                    radius: bar.s(Theme.radiusMd)
                                                     border.width: 1
                                                     border.color: hexField.activeFocus
                                                         ? bar.colors.mauve
-                                                        : (hexField.acceptableInput ? bar.colors.surface1 : bar.colors.red)
+                                                        : (hexField.acceptableInput ? Theme.outlineVariant : bar.colors.red)
                                                 }
                                                 onEditingFinished: root.bar.finishSlotEdit(hexField, modelData.key)
                                                 onActiveFocusChanged: {
@@ -370,53 +371,53 @@ Item {
         Rectangle {
             width: createLoader.width
             height: implicitHeight
-            implicitHeight: createCol.height + bar.s(30)
-            radius: bar.s(21)
-            color: Qt.alpha(bar.colors.surface0, 0.4)
+            implicitHeight: createCol.height + bar.s(Theme.gapLg) * 2
+            radius: bar.s(Theme.radiusLg)
+            color: Theme.surfaceContainerLow
             border.width: 1
-            border.color: bar.colors.surface1
+            border.color: Theme.outlineVariant
 
             Column {
                 id: createCol
-                x: bar.s(15)
-                y: bar.s(15)
-                width: parent.width - bar.s(30)
-                spacing: bar.s(10)
+                x: bar.s(Theme.gapLg)
+                y: bar.s(Theme.gapLg)
+                width: parent.width - bar.s(Theme.gapLg) * 2
+                spacing: bar.s(Theme.gapMd)
 
                 RowLayout {
                     width: parent.width
-                    spacing: bar.s(12)
+                    spacing: bar.s(Theme.gapMd)
 
                     // Preview: misma card que el grid, no interactiva.
                     Rectangle {
                         Layout.preferredWidth: bar.s(150)
                         Layout.preferredHeight: bar.s(45)
-                        radius: bar.s(18)
-                        color: Qt.alpha(bar.colors.surface0, 0.4)
+                        radius: bar.s(Theme.radiusLg)
+                        color: Theme.surfaceContainerLow
                         border.width: 1
-                        border.color: bar.colors.surface1
+                        border.color: Theme.outlineVariant
                         RowLayout {
                             anchors.fill: parent
-                            anchors.margins: bar.s(10)
-                            spacing: bar.s(10)
+                            anchors.margins: bar.s(Theme.gapMd)
+                            spacing: bar.s(Theme.gapMd)
                             Item {
                                 Layout.preferredWidth: bar.s(24)
                                 Layout.preferredHeight: bar.s(24)
                                 Column {
                                     anchors.centerIn: parent
-                                    spacing: bar.s(2)
+                                    spacing: bar.s(Theme.gap2xs)
                                     Row {
-                                        spacing: bar.s(2)
+                                        spacing: bar.s(Theme.gap2xs)
                                         Repeater {
                                             model: [0, 1]
-                                            delegate: Rectangle { width: bar.s(9); height: bar.s(9); radius: bar.s(2); color: bar.paletteDraftColors[index] }
+                                            delegate: Rectangle { width: bar.s(9); height: bar.s(9); radius: bar.s(Theme.radiusXs); color: bar.paletteDraftColors[index] }
                                         }
                                     }
                                     Row {
-                                        spacing: bar.s(2)
+                                        spacing: bar.s(Theme.gap2xs)
                                         Repeater {
                                             model: [0, 1]
-                                            delegate: Rectangle { width: bar.s(9); height: bar.s(9); radius: bar.s(2); color: bar.paletteDraftColors[2 + index] }
+                                            delegate: Rectangle { width: bar.s(9); height: bar.s(9); radius: bar.s(Theme.radiusXs); color: bar.paletteDraftColors[2 + index] }
                                         }
                                     }
                                 }
@@ -436,9 +437,9 @@ Item {
                     // Name + slug vivo
                     Column {
                         Layout.fillWidth: true
-                        spacing: bar.s(4)
+                        spacing: bar.s(Theme.gapXs)
                         Row {
-                            spacing: bar.s(8)
+                            spacing: bar.s(Theme.gapSm)
                             Text {
                                 text: "Name"
                                 anchors.verticalCenter: parent.verticalCenter
@@ -461,10 +462,10 @@ Item {
                                 text: bar.paletteDraftName
                                 onTextChanged: bar.paletteDraftName = text
                                 background: Rectangle {
-                                    color: Qt.alpha(bar.colors.surface0, 0.4)
-                                    radius: bar.s(13)
+                                    color: Theme.surfaceContainerLow
+                                    radius: bar.s(Theme.radiusMd)
                                     border.width: 1
-                                    border.color: nameField.activeFocus ? bar.colors.mauve : bar.colors.surface1
+                                    border.color: nameField.activeFocus ? bar.colors.mauve : Theme.outlineVariant
                                 }
                             }
                         }
@@ -482,23 +483,23 @@ Item {
                 Flow {
                     id: baseFlow
                     width: parent.width
-                    spacing: bar.s(8)
+                    spacing: bar.s(Theme.gapSm)
                     Repeater {
                         model: 8
                         delegate: Item {
                             required property int index
-                            width: (baseFlow.width - bar.s(16)) / 3
+                            width: (baseFlow.width - bar.s(Theme.gapSm) * 2) / 3
                             height: bar.s(30)
                             Row {
                                 anchors.fill: parent
-                                spacing: bar.s(6)
+                                spacing: bar.s(Theme.gapSm)
                                 Rectangle {
                                     width: bar.s(18)
                                     height: bar.s(18)
                                     anchors.verticalCenter: parent.verticalCenter
-                                    radius: bar.s(6)
+                                    radius: bar.s(Theme.radiusSm)
                                     border.width: 1
-                                    border.color: bar.colors.surface2
+                                    border.color: Theme.outlineVariant
                                     color: bar.paletteDraftColors[index]
                                 }
                                 Text {
@@ -524,12 +525,12 @@ Item {
                                     text: bar.paletteDraftColors[index]
                                     validator: RegularExpressionValidator { regularExpression: /^#[0-9a-fA-F]{6}$/ }
                                     background: Rectangle {
-                                        color: Qt.alpha(bar.colors.surface0, 0.4)
-                                        radius: bar.s(13)
+                                        color: Theme.surfaceContainerLow
+                                        radius: bar.s(Theme.radiusMd)
                                         border.width: 1
                                         border.color: baseField.activeFocus
                                             ? bar.colors.mauve
-                                            : (baseField.acceptableInput ? bar.colors.surface1 : bar.colors.red)
+                                            : (baseField.acceptableInput ? Theme.outlineVariant : bar.colors.red)
                                     }
                                     onEditingFinished: bar.commitPaletteDraftColor(baseField, index)
                                     onActiveFocusChanged: {
@@ -543,7 +544,7 @@ Item {
 
                 RowLayout {
                     width: parent.width
-                    spacing: bar.s(10)
+                    spacing: bar.s(Theme.gapMd)
                     EditorButton {
                         bar: root.bar
                         icon: "󰄬"
@@ -579,21 +580,21 @@ Item {
         Rectangle {
             width: deleteLoader.width
             height: implicitHeight
-            implicitHeight: delCol.height + bar.s(30)
-            radius: bar.s(21)
-            color: Qt.alpha(bar.colors.surface0, 0.4)
+            implicitHeight: delCol.height + bar.s(Theme.gapLg) * 2
+            radius: bar.s(Theme.radiusLg)
+            color: Theme.surfaceContainerLow
             border.width: 1
             border.color: bar.colors.red
 
             Column {
                 id: delCol
-                x: bar.s(15)
-                y: bar.s(15)
-                width: parent.width - bar.s(30)
-                spacing: bar.s(10)
+                x: bar.s(Theme.gapLg)
+                y: bar.s(Theme.gapLg)
+                width: parent.width - bar.s(Theme.gapLg) * 2
+                spacing: bar.s(Theme.gapMd)
 
                 Row {
-                    spacing: bar.s(8)
+                    spacing: bar.s(Theme.gapSm)
                     Text {
                         text: "󰆴"
                         anchors.verticalCenter: parent.verticalCenter
@@ -620,7 +621,7 @@ Item {
                 }
                 RowLayout {
                     width: parent.width
-                    spacing: bar.s(10)
+                    spacing: bar.s(Theme.gapMd)
                     EditorButton {
                         bar: root.bar
                         icon: "󰆴"
@@ -655,37 +656,37 @@ Item {
         readonly property bool isSel: root.bar.bar.palette === pal.slug
         Layout.fillWidth: true
         height: bar.s(45)
-        radius: bar.s(18)
+        radius: bar.s(Theme.radiusLg)
         color: !bar ? "transparent"
             : (isSel ? bar.colors.mauve
-                     : (palMa.containsMouse ? Qt.alpha(bar.colors.mauve, 0.1) : Qt.alpha(bar.colors.surface0, 0.4)))
+                     : (palMa.containsMouse ? Qt.alpha(bar.colors.mauve, 0.1) : Theme.surfaceContainerLow))
         border.width: 1
         border.color: !bar ? "transparent"
-            : ((isSel || palMa.containsMouse) ? bar.colors.mauve : bar.colors.surface1)
+            : ((isSel || palMa.containsMouse) ? bar.colors.mauve : Theme.outlineVariant)
         Behavior on color { ColorAnimation { duration: 150 } }
         Behavior on border.color { ColorAnimation { duration: 150 } }
         RowLayout {
             anchors.fill: parent
-            anchors.margins: bar.s(10)
-            spacing: bar.s(10)
+            anchors.margins: bar.s(Theme.gapMd)
+            spacing: bar.s(Theme.gapMd)
             Item {
                 Layout.preferredWidth: bar.s(24)
                 Layout.preferredHeight: bar.s(24)
                 Column {
                     anchors.centerIn: parent
-                    spacing: bar.s(2)
+                    spacing: bar.s(Theme.gap2xs)
                     Row {
-                        spacing: bar.s(2)
+                        spacing: bar.s(Theme.gap2xs)
                         Repeater {
                             model: [0, 1]
-                            delegate: Rectangle { width: bar.s(9); height: bar.s(9); radius: bar.s(2); color: palCard.pal.colors[index] }
+                            delegate: Rectangle { width: bar.s(9); height: bar.s(9); radius: bar.s(Theme.radiusXs); color: palCard.pal.colors[index] }
                         }
                     }
                     Row {
-                        spacing: bar.s(2)
+                        spacing: bar.s(Theme.gap2xs)
                         Repeater {
                             model: [0, 1]
-                            delegate: Rectangle { width: bar.s(9); height: bar.s(9); radius: bar.s(2); color: palCard.pal.colors[2 + index] }
+                            delegate: Rectangle { width: bar.s(9); height: bar.s(9); radius: bar.s(Theme.radiusXs); color: palCard.pal.colors[2 + index] }
                         }
                     }
                 }

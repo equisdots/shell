@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import QtQuick.Controls
 import Quickshell
 import Quickshell.Io
+import "../../../core"
 
 Item {
     id: root
@@ -174,8 +175,8 @@ Item {
 
         Rectangle {
             anchors.fill: parent
-            color: root.cMantle
-            radius: root.s(13)
+            color: Theme.surfaceContainerLow
+            radius: Theme.radiusLg
             z: -1
         }
 
@@ -237,20 +238,20 @@ Item {
             id: tabBar
             anchors.top: parent.top
             anchors.horizontalCenter: parent.horizontalCenter
-            anchors.topMargin: root.s(15)
+            anchors.topMargin: Theme.gapLg
             width: root.s(280)
             height: root.s(36)
-            radius: root.s(13)
-            color: root.cSurface0
+            radius: Theme.radiusMd
+            color: Theme.surfaceContainer
             border.width: 1
-            border.color: root.cSurface1
+            border.color: Theme.outlineVariant
             z: 10
 
             Rectangle {
                 id: tabActiveHighlight
                 y: root.s(2)
                 height: root.s(32)
-                radius: root.s(18)
+                radius: Theme.radiusMd
                 color: root.cMauve
                 z: 0
 
@@ -279,7 +280,7 @@ Item {
 
             Row {
                 anchors.fill: parent
-                anchors.margins: root.s(2)
+                anchors.margins: Theme.gap2xs
                 z: 1
 
                 Repeater {
@@ -316,7 +317,7 @@ Item {
             anchors.bottom: parent.bottom
             anchors.left: parent.left
             anchors.right: parent.right
-            anchors.margins: root.s(15)
+            anchors.margins: Theme.gapLg
 
             // ---------------------------------------------------------
             // 1. TIMER VIEW
@@ -464,7 +465,7 @@ Item {
                     // Floating Keyboard Editor (Visible when idle)
                     Row {
                         anchors.centerIn: parent
-                        spacing: root.s(2)
+                        spacing: Theme.gap2xs
                         visible: root.isTimerIdle
 
                         TimerSegment {
@@ -510,13 +511,13 @@ Item {
                 RowLayout {
                     id: timerControlsRow
                     anchors.bottom: parent.bottom
-                    anchors.bottomMargin: root.s(10)
+                    anchors.bottomMargin: Theme.gapSm
                     anchors.horizontalCenter: parent.horizontalCenter
-                    spacing: root.s(20)
+                    spacing: Theme.gapXl
 
                     Rectangle {
-                        width: root.s(50); height: root.s(50); radius: root.s(13)
-                        color: root.cSurface0; border.width: 1; border.color: root.cSurface1
+                        width: root.s(50); height: root.s(50); radius: Theme.radiusMd
+                        color: Theme.surfaceContainer; border.width: 1; border.color: Theme.outlineVariant
                         Text { anchors.centerIn: parent; text: "\uF0E2"; font.family: root.iconFont; font.pixelSize: root.s(16); color: root.cText }
                         MouseArea {
                             anchors.fill: parent; cursorShape: Qt.PointingHandCursor
@@ -535,7 +536,7 @@ Item {
                     }
 
                     Rectangle {
-                        width: root.s(64); height: root.s(64); radius: root.s(13)
+                        width: root.s(64); height: root.s(64); radius: Theme.radiusMd
                         color: root.cMauve
                         Text {
                             anchors.centerIn: parent
@@ -574,7 +575,7 @@ Item {
 
                     Column {
                         anchors.centerIn: parent
-                        spacing: root.s(15)
+                        spacing: Theme.gapLg
 
                         Text {
                             id: swTimeText
@@ -600,22 +601,22 @@ Item {
                                 id: lapList
                                 anchors.fill: parent
                                 model: root.swLapData.length
-                                spacing: root.s(6)
+                                spacing: Theme.gapXs
                                 
                                 delegate: Rectangle {
                                     width: lapList.width
                                     height: root.s(32)
-                                    radius: root.s(13)
-                                    color: root.cSurface0
+                                    radius: Theme.radiusMd
+                                    color: Theme.surfaceContainer
                                     border.width: 1
-                                    border.color: root.cSurface1
+                                    border.color: Theme.outlineVariant
                                     
                                     property int trueIdx: root.swLapData.length - 1 - index
                                     property var lapItem: root.swLapData[trueIdx]
 
                                     RowLayout {
                                         anchors.fill: parent
-                                        anchors.leftMargin: root.s(15); anchors.rightMargin: root.s(15)
+                                        anchors.leftMargin: Theme.gapLg; anchors.rightMargin: Theme.gapLg
                                         Text { text: "Lap " + (trueIdx + 1); color: root.cSubtext0; font.family: "Hack Nerd Font"; font.pixelSize: root.s(12); font.bold: true; Layout.fillWidth: true }
                                         Text { text: lapItem ? "+" + root.formatTime(lapItem.diff, true) : ""; color: root.cMauve; font.family: "Hack Nerd Font"; font.pixelSize: root.s(12) }
                                         Text { text: lapItem ? root.formatTime(lapItem.total, true) : ""; color: root.cText; font.family: "Hack Nerd Font"; font.pixelSize: root.s(12); font.bold: true; Layout.alignment: Qt.AlignRight }
@@ -629,13 +630,13 @@ Item {
                 RowLayout {
                     id: swControlsRow
                     anchors.bottom: parent.bottom
-                    anchors.bottomMargin: root.s(10)
+                    anchors.bottomMargin: Theme.gapSm
                     anchors.horizontalCenter: parent.horizontalCenter
-                    spacing: root.s(20)
+                    spacing: Theme.gapXl
 
                     Rectangle {
-                        width: root.s(50); height: root.s(50); radius: root.s(13)
-                        color: root.cSurface0; border.width: 1; border.color: root.cSurface1
+                        width: root.s(50); height: root.s(50); radius: Theme.radiusMd
+                        color: Theme.surfaceContainer; border.width: 1; border.color: Theme.outlineVariant
                         Text { 
                             anchors.centerIn: parent
                             text: stopwatchView.isRunning ? "\uF024" : "\uF0E2" 
@@ -661,7 +662,7 @@ Item {
                     }
 
                     Rectangle {
-                        width: root.s(64); height: root.s(64); radius: root.s(13)
+                        width: root.s(64); height: root.s(64); radius: Theme.radiusMd
                         color: root.cMauve
                         Text {
                             anchors.centerIn: parent
@@ -729,7 +730,7 @@ Item {
                     // Main Clock View
                     ColumnLayout {
                         anchors.centerIn: parent
-                        spacing: root.s(10)
+                        spacing: Theme.gapSm
                         visible: !pomodoroView.showSettings
 
                         Text {
@@ -752,15 +753,15 @@ Item {
                         anchors.centerIn: parent
                         width: root.s(280)
                         height: root.s(160)
-                        radius: root.s(13)
-                        color: root.cSurface0
+                        radius: Theme.radiusMd
+                        color: Theme.surfaceContainer
                         border.width: 1
-                        border.color: root.cSurface1
+                        border.color: Theme.outlineVariant
                         visible: pomodoroView.showSettings
 
                         Column {
                             anchors.centerIn: parent
-                            spacing: root.s(12)
+                            spacing: Theme.gapMd
 
                             Repeater {
                                 model: [
@@ -773,13 +774,13 @@ Item {
                                     width: root.s(240)
                                     Text { text: modelData.label; color: root.cSubtext0; font.family: "Hack Nerd Font"; font.pixelSize: root.s(12); Layout.fillWidth: true }
                                     Rectangle {
-                                        width: root.s(24); height: root.s(24); radius: root.s(14); color: root.cSurface1
+                                        width: root.s(24); height: root.s(24); radius: width / 2; color: Theme.surfaceContainerHigh
                                         Text { anchors.centerIn: parent; text: "-"; color: root.cText; font.family: "Hack Nerd Font"; font.pixelSize: root.s(14) }
                                         MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: stateCache[modelData.target] = Math.max(modelData.min, stateCache[modelData.target] - modelData.step) }
                                     }
                                     Text { text: stateCache[modelData.target]; color: root.cText; font.family: "Hack Nerd Font"; font.bold: true; font.pixelSize: root.s(14); Layout.minimumWidth: root.s(24); horizontalAlignment: Text.AlignHCenter }
                                     Rectangle {
-                                        width: root.s(24); height: root.s(24); radius: root.s(14); color: root.cSurface1
+                                        width: root.s(24); height: root.s(24); radius: width / 2; color: Theme.surfaceContainerHigh
                                         Text { anchors.centerIn: parent; text: "+"; color: root.cText; font.family: "Hack Nerd Font"; font.pixelSize: root.s(14) }
                                         MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: stateCache[modelData.target] = Math.min(modelData.max, stateCache[modelData.target] + modelData.step) }
                                     }
@@ -792,13 +793,13 @@ Item {
                 RowLayout {
                     id: pomoControlsRow
                     anchors.bottom: parent.bottom
-                    anchors.bottomMargin: root.s(10)
+                    anchors.bottomMargin: Theme.gapSm
                     anchors.horizontalCenter: parent.horizontalCenter
-                    spacing: root.s(20)
+                    spacing: Theme.gapXl
 
                     Rectangle {
-                        width: root.s(50); height: root.s(50); radius: root.s(13)
-                        color: root.cSurface0; border.width: 1; border.color: root.cSurface1
+                        width: root.s(50); height: root.s(50); radius: Theme.radiusMd
+                        color: Theme.surfaceContainer; border.width: 1; border.color: Theme.outlineVariant
                         Text { anchors.centerIn: parent; text: "\uF013"; font.family: root.iconFont; font.pixelSize: root.s(16); color: pomodoroView.showSettings ? root.cMauve : root.cText }
                         MouseArea {
                             anchors.fill: parent; cursorShape: Qt.PointingHandCursor
@@ -807,7 +808,7 @@ Item {
                     }
 
                     Rectangle {
-                        width: root.s(64); height: root.s(64); radius: root.s(13)
+                        width: root.s(64); height: root.s(64); radius: Theme.radiusMd
                         color: pomodoroView.getPhaseColor()
                         Text {
                             anchors.centerIn: parent
@@ -825,8 +826,8 @@ Item {
                     }
 
                     Rectangle {
-                        width: root.s(50); height: root.s(50); radius: root.s(13)
-                        color: root.cSurface0; border.width: 1; border.color: root.cSurface1
+                        width: root.s(50); height: root.s(50); radius: Theme.radiusMd
+                        color: Theme.surfaceContainer; border.width: 1; border.color: Theme.outlineVariant
                         Text { anchors.centerIn: parent; text: "\uF051"; font.family: root.iconFont; font.pixelSize: root.s(16); color: root.cText } // Skip
                         MouseArea {
                             anchors.fill: parent; cursorShape: Qt.PointingHandCursor

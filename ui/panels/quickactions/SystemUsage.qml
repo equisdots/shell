@@ -172,7 +172,7 @@ Item {
     component LiquidSquare: Item {
         id: ls
         property real value: 0.0 
-        property color colorBase: root.cSurface0
+        property color colorBase: Theme.surfaceContainer
         property color colorFill: root.cMauve
         property string icon: ""
         property string title: ""
@@ -188,9 +188,9 @@ Item {
 
         Rectangle {
             anchors.fill: parent
-            radius: root.s(16)
+            radius: Theme.radiusMd
             color: ls.colorBase
-            border.color: root.alpha(root.cText, 0.08)
+            border.color: Theme.outlineVariant
             border.width: 1
         }
 
@@ -204,7 +204,7 @@ Item {
 
                 ctx.save();
                 
-                var r = root.s(12);
+                var r = Theme.radiusMd;
                 ctx.beginPath();
                 ctx.moveTo(r, 0);
                 ctx.lineTo(width - r, 0);
@@ -251,7 +251,7 @@ Item {
 
         Item {
             anchors.fill: parent
-            anchors.margins: root.s(12)
+            anchors.margins: Theme.gapMd
 
             Text {
                 id: baseIcon
@@ -269,7 +269,7 @@ Item {
             Text {
                 anchors.bottom: parent.bottom
                 anchors.left: parent.left
-                anchors.bottomMargin: root.s(4) 
+                anchors.bottomMargin: Theme.gapXs 
                 font.family: "Hack Nerd Font"; font.bold: true; font.pixelSize: root.s(12)
                 color: root.cSubtext0; text: ls.subText
             }
@@ -295,7 +295,7 @@ Item {
                 anchors.left: parent.left
                 anchors.right: parent.right
                 height: ls.height
-                anchors.margins: root.s(12)
+                anchors.margins: Theme.gapMd
 
                 Text {
                     id: filledIcon
@@ -313,7 +313,7 @@ Item {
                 Text {
                     anchors.bottom: parent.bottom
                     anchors.left: parent.left
-                    anchors.bottomMargin: root.s(4) 
+                    anchors.bottomMargin: Theme.gapXs 
                     font.family: "Hack Nerd Font"; font.bold: true; font.pixelSize: root.s(12)
                     color: root.cCrust; text: ls.subText
                 }
@@ -329,7 +329,7 @@ Item {
         Item {
             id: customContent
             anchors.fill: parent
-            anchors.margins: root.s(12)
+            anchors.margins: Theme.gapMd
             z: 10
         }
     }
@@ -409,16 +409,16 @@ Item {
 
             ColumnLayout {
                 anchors.centerIn: parent
-                spacing: root.s(15)
+                spacing: Theme.gapLg
 
                 RowLayout {
-                    spacing: root.s(12)
+                    spacing: Theme.gapMd
                     Text { text: "\uF063"; font.family: root.iconFont; font.pixelSize: root.s(16); color: root.cGreen }
                     Text { text: root.rxSpeedStr; color: root.textPrimary; font.family: "Hack Nerd Font"; font.pixelSize: root.s(16); font.bold: true }
                 }
 
                 RowLayout {
-                    spacing: root.s(12)
+                    spacing: Theme.gapMd
                     Text { text: "\uF062"; font.family: root.iconFont; font.pixelSize: root.s(16); color: root.cPeach }
                     Text { text: root.txSpeedStr; color: root.textPrimary; font.family: "Hack Nerd Font"; font.pixelSize: root.s(16); font.bold: true }
                 }

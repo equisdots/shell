@@ -824,7 +824,7 @@ Item {
         Repeater {
             model: 3
             Rectangle {
-                width: window.s(6); height: window.s(6); radius: window.s(4); color: dotCol
+                width: window.s(6); height: window.s(6); radius: Theme.radiusFull; color: dotCol
                 SequentialAnimation on y {
                     loops: Animation.Infinite
                     PauseAnimation { duration: index * 100 }
@@ -841,9 +841,9 @@ Item {
 
         Rectangle {
             anchors.fill: parent
-            radius: window.s(26)
-            color: window.base
-            border.color: window.surface0
+            radius: window.s(Theme.radiusLg)
+            color: Theme.surfaceContainerLow
+            border.color: Theme.outlineVariant
             border.width: 1
             clip: true
             
@@ -1309,8 +1309,8 @@ Item {
                                     Rectangle {
                                         Layout.alignment: Qt.AlignHCenter
                                         Layout.preferredWidth: pwdLayer.width - window.s(40); height: window.s(36)
-                                        radius: window.s(23)
-                                        color: window.surface0
+                                        radius: Theme.radiusFull
+                                        color: Theme.surfaceContainer
                                         border.color: wifiPasswordField.activeFocus ? window.crust : "transparent"
                                         border.width: 1
                                         Behavior on border.color { ColorAnimation { duration: 200 } }
@@ -1318,7 +1318,7 @@ Item {
                                         TextInput {
                                             id: wifiPasswordField
                                             anchors.fill: parent
-                                            anchors.leftMargin: window.s(15); anchors.rightMargin: window.s(15)
+                                            anchors.leftMargin: window.s(Theme.gapLg); anchors.rightMargin: window.s(Theme.gapLg)
                                             verticalAlignment: TextInput.AlignVCenter
                                             font.family: "Hack Nerd Font"; font.pixelSize: window.s(13); color: window.text
                                             echoMode: TextInput.Password; clip: true
@@ -1628,7 +1628,7 @@ Item {
                             Rectangle {
                                 id: floatCard
                                 anchors.fill: parent
-                                radius: window.s(18)
+                                radius: window.s(Theme.radiusMd)
                                 
                                 property string itemId: id
                                 property string itemName: name
@@ -1703,7 +1703,7 @@ Item {
                                     }
                                 }
 
-                                color: locksList ? "#2affffff" : "#0effffff"
+                                color: locksList ? Theme.stateLayer(window.activeColor, Theme.stateHover) : Theme.surfaceContainer
                                 Behavior on color { ColorAnimation { duration: 200 } }
                                 
                                 Rectangle {
@@ -1716,17 +1716,17 @@ Item {
 
                                 Rectangle {
                                     anchors.fill: parent
-                                    radius: window.s(18)
+                                    radius: window.s(Theme.radiusMd)
                                     color: "transparent"
                                     border.width: 1
-                                    border.color: floatCard.isFailed ? window.red : window.surface2
+                                    border.color: floatCard.isFailed ? window.red : Theme.outlineVariant
                                     visible: !parent.isHighlighted && !parent.locksList
                                     Behavior on border.color { ColorAnimation { duration: 300 } }
                                 }
 
                                 Rectangle {
                                     anchors.fill: parent
-                                    radius: window.s(18)
+                                    radius: window.s(Theme.radiusMd)
                                     opacity: parent.locksList || parent.isHighlighted ? 1.0 : 0.0
                                     color: "transparent"
                                     border.width: parent.isHighlighted && !parent.locksList ? 1 : window.s(2)
@@ -1736,8 +1736,8 @@ Item {
                                     Rectangle {
                                         anchors.fill: parent
                                         anchors.margins: parent.isHighlighted && !parent.locksList ? 1 : window.s(2)
-                                        radius: window.s(16)
-                                        color: window.base
+                                        radius: window.s(Theme.radiusSm)
+                                        color: Theme.surfaceContainerLow
                                         opacity: parent.locksList ? 0.9 : 1.0
                                     }
                                     
@@ -1751,7 +1751,7 @@ Item {
 
                                 Rectangle {
                                     anchors.fill: parent
-                                    radius: window.s(18)
+                                    radius: window.s(Theme.radiusMd)
                                     color: "#ffffff"
                                     opacity: floatCard.flashOpacity
                                     PropertyAnimation on opacity { id: cardFlashAnim; to: 0; duration: 500; easing.type: Easing.OutExpo }
@@ -1852,8 +1852,8 @@ Item {
                                 RowLayout {
                                     id: baseTextRow
                                     anchors.fill: parent
-                                    anchors.margins: window.s(12)
-                                    spacing: window.s(10)
+                                    anchors.margins: window.s(Theme.gapMd)
+                                    spacing: window.s(Theme.gapSm)
                                     
                                     Text {
                                         font.family: "Hack Nerd Font"
@@ -2052,12 +2052,12 @@ Item {
                 id: bottomTabsContainer
                 anchors.bottom: parent.bottom
                 anchors.horizontalCenter: parent.horizontalCenter
-                anchors.bottomMargin: window.s(25)
+                anchors.bottomMargin: window.s(Theme.gapXl)
                 width: window.s(360)
                 height: window.s(54)
-                radius: window.s(18)
-                color: "#1affffff" 
-                border.color: "#1affffff"
+                radius: window.s(Theme.radiusMd)
+                color: Theme.surfaceContainer
+                border.color: Theme.outlineVariant
                 border.width: 1
                 visible: window.ethPresent || window.wifiPresent || window.btPresent
 
@@ -2066,7 +2066,7 @@ Item {
                     id: activeTabHighlight
                     y: window.s(6)
                     height: bottomTabsContainer.height - window.s(12)
-                    radius: window.s(13)
+                    radius: window.s(Theme.radiusXs)
                     z: 0
 
                     property int prevIdx: 1
@@ -2117,8 +2117,8 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         visible: window.ethPresent
-                        radius: window.s(13)
-                        color: window.activeMode === "eth" ? "transparent" : (ethTabMa.containsMouse ? window.surface1 : "transparent")
+                        radius: window.s(Theme.radiusXs)
+                        color: window.activeMode === "eth" ? "transparent" : (ethTabMa.containsMouse ? Theme.stateLayer(Theme.text, Theme.stateHover) : "transparent")
                         Behavior on color { ColorAnimation { duration: 200 } }
 
                         RowLayout {
@@ -2141,16 +2141,16 @@ Item {
                         }
                     }
 
-                    Rectangle { visible: window.ethPresent && (window.wifiPresent || window.btPresent); width: 1; Layout.fillHeight: true; Layout.margins: window.s(5); color: "#33ffffff" }
+                    Rectangle { visible: window.ethPresent && (window.wifiPresent || window.btPresent); width: 1; Layout.fillHeight: true; Layout.margins: window.s(5); color: Theme.outlineVariant }
 
                     Rectangle {
                         id: wifiTabRect
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         visible: window.wifiPresent
-                        radius: window.s(13)
+                        radius: window.s(Theme.radiusXs)
                         
-                        color: window.activeMode === "wifi" ? "transparent" : (wifiTabMa.containsMouse ? window.surface1 : "transparent")
+                        color: window.activeMode === "wifi" ? "transparent" : (wifiTabMa.containsMouse ? Theme.stateLayer(Theme.text, Theme.stateHover) : "transparent")
                         Behavior on color { ColorAnimation { duration: 200 } }
 
                         RowLayout {
@@ -2173,15 +2173,15 @@ Item {
                         }
                     }
 
-                    Rectangle { visible: window.wifiPresent && window.btPresent; width: 1; Layout.fillHeight: true; Layout.margins: window.s(5); color: "#33ffffff" }
+                    Rectangle { visible: window.wifiPresent && window.btPresent; width: 1; Layout.fillHeight: true; Layout.margins: window.s(5); color: Theme.outlineVariant }
 
                     Rectangle {
                         id: btTabRect
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         visible: window.btPresent
-                        radius: window.s(13)
-                        color: window.activeMode === "bt" ? "transparent" : (btTabMa.containsMouse ? window.surface1 : "transparent")
+                        radius: window.s(Theme.radiusXs)
+                        color: window.activeMode === "bt" ? "transparent" : (btTabMa.containsMouse ? Theme.stateLayer(Theme.text, Theme.stateHover) : "transparent")
                         Behavior on color { ColorAnimation { duration: 200 } }
 
                         RowLayout {
@@ -2253,11 +2253,11 @@ Item {
 
                     gradient: Gradient {
                         orientation: Gradient.Vertical
-                        GradientStop { position: 0.0; color: window.currentPower ? "transparent" : window.surface1 }
+                        GradientStop { position: 0.0; color: window.currentPower ? "transparent" : Theme.surfaceContainer }
                         GradientStop { position: 1.0; color: window.currentPower ? "transparent" : window.crust }
                     }
 
-                    border.color: window.currentPowerPending ? window.activeColor : (window.currentPower ? "transparent" : window.surface2)
+                    border.color: window.currentPowerPending ? window.activeColor : (window.currentPower ? "transparent" : Theme.outlineVariant)
                     border.width: window.s(2)
                     Behavior on border.color { enabled: window.powerAnimAllowed; ColorAnimation { duration: 800; easing.type: Easing.InOutQuint } }
 

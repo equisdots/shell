@@ -78,14 +78,14 @@ Item {
         visible: root.selected === ""
         clip: true
         boundsBehavior: Flickable.StopAtBounds
-        contentHeight: listCol.height + 16
+        contentHeight: listCol.height + Theme.gapLg
         ScrollBar.vertical: ScrollBar { width: 4; policy: ScrollBar.AsNeeded }
 
         Column {
             id: listCol
-            x: 8; y: 8
-            width: listFlick.width - 16
-            spacing: 10
+            x: Theme.gapSm; y: Theme.gapSm
+            width: listFlick.width - Theme.gapLg
+            spacing: Theme.gapSm
 
             Text { text: "Plugins"; font.family: "Hack Nerd Font"; font.weight: Font.Black; font.pixelSize: 24; color: barShim.colors.text }
             EditLabel {
@@ -99,29 +99,29 @@ Item {
                     id: card
                     required property var modelData
                     width: listCol.width
-                    height: cardCol.implicitHeight + 22
-                    radius: 16
-                    color: Qt.alpha(barShim.colors.surface0, 0.4)
+                    height: cardCol.implicitHeight + Theme.gapXl
+                    radius: Theme.radiusLg
+                    color: Theme.surfaceContainer
                     border.width: 1
-                    border.color: cardMa.containsMouse ? barShim.colors.mauve : barShim.colors.surface1
+                    border.color: cardMa.containsMouse ? barShim.colors.mauve : Theme.outlineVariant
 
                     MouseArea { id: cardMa; anchors.fill: parent; hoverEnabled: true; acceptedButtons: Qt.NoButton }
 
                     ColumnLayout {
                         id: cardCol
                         anchors.left: parent.left; anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter
-                        anchors.margins: 14
-                        spacing: 6
+                        anchors.margins: Theme.gapMd
+                        spacing: Theme.gapXs
 
                         RowLayout {
-                            Layout.fillWidth: true; spacing: 8
+                            Layout.fillWidth: true; spacing: Theme.gapSm
                             Text { text: "󰏗"; font.family: "Hack Nerd Font"; font.pixelSize: 16; color: root.typeColor(card.modelData.type) }
                             Text { text: card.modelData.name || card.modelData.id; font.family: "Hack Nerd Font"; font.weight: Font.Bold; font.pixelSize: 13; color: barShim.colors.text }
                             Text { text: "v" + (card.modelData.version || "?"); font.family: "Hack Nerd Font"; font.pixelSize: 10; color: barShim.colors.subtext0 }
                             Rectangle {
-                                radius: 6; color: Qt.alpha(root.typeColor(card.modelData.type), 0.15)
+                                radius: Theme.radiusSm; color: Qt.alpha(root.typeColor(card.modelData.type), 0.15)
                                 border.width: 1; border.color: root.typeColor(card.modelData.type)
-                                implicitWidth: tt.implicitWidth + 12; implicitHeight: tt.implicitHeight + 4
+                                implicitWidth: tt.implicitWidth + Theme.gapMd; implicitHeight: tt.implicitHeight + Theme.gapXs
                                 Text { id: tt; anchors.centerIn: parent; text: card.modelData.type || "plugin"; font.family: "Hack Nerd Font"; font.pixelSize: 9; color: root.typeColor(card.modelData.type) }
                             }
                             Item { Layout.fillWidth: true }
@@ -134,7 +134,7 @@ Item {
                             font.pixelSize: 11; color: barShim.colors.subtext0; wrapMode: Text.WordWrap
                         }
                         RowLayout {
-                            Layout.fillWidth: true; spacing: 8
+                            Layout.fillWidth: true; spacing: Theme.gapSm
                             EditorButton { bar: barShim; compact: true; icon: "󰒓"; label: "Configure"; visible: !!(card.modelData.settings && card.modelData.settings.page); onActivated: root.selected = card.modelData.id }
                             Item { Layout.fillWidth: true }
                             Text { text: card.modelData._base || ""; font.family: "Hack Nerd Font"; font.pixelSize: 9; color: Qt.alpha(barShim.colors.subtext0, 0.7) }

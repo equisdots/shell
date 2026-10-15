@@ -161,7 +161,7 @@ Item {
                 anchors.fill: parent
                 clip: true
                 boundsBehavior: Flickable.StopAtBounds
-                contentHeight: pageCol.height + bar.s(16)
+                contentHeight: pageCol.height + bar.s(Theme.gapLg)
                 ScrollBar.vertical: ScrollBar {
                     id: vScroll
                     width: bar.s(4)
@@ -169,8 +169,8 @@ Item {
                     hoverEnabled: true
                     active: pageFlick.moving || vScroll.hovered
                     contentItem: Rectangle {
-                        radius: bar.s(2)
-                        color: bar.colors.surface2
+                        radius: bar.s(Theme.radiusXs)
+                        color: Theme.surfaceContainerHighest
                         opacity: vScroll.active ? 1.0 : 0.45
                     }
                     background: Item {}
@@ -178,10 +178,10 @@ Item {
 
                 Column {
                     id: pageCol
-                    x: bar.s(8)
-                    y: bar.s(8)
-                    width: pageFlick.width - bar.s(16)
-                    spacing: bar.s(12)
+                    x: bar.s(Theme.gapSm)
+                    y: bar.s(Theme.gapSm)
+                    width: pageFlick.width - bar.s(Theme.gapLg)
+                    spacing: bar.s(Theme.gapLg)
 
                     Text {
                         text: "Frame"
@@ -208,7 +208,7 @@ Item {
                     }
                     Flow {
                         width: parent.width
-                        spacing: bar.s(8)
+                        spacing: bar.s(Theme.gapSm)
                         Repeater {
                             model: FG.presets()
                             delegate: EditorButton {
@@ -361,22 +361,22 @@ Item {
                         Rectangle {
                             anchors.right: parent.right
                             anchors.verticalCenter: parent.verticalCenter
-                            width: bar.s(64); height: bar.s(24); radius: bar.s(7)
+                            width: bar.s(64); height: bar.s(24); radius: bar.s(Theme.radiusSm)
                             color: root.colorOf(root.frColor)
-                            border.width: 1; border.color: bar.colors.surface1
+                            border.width: 1; border.color: Theme.outlineVariant
                         }
                     }
                     Flow {
                         width: parent.width
-                        spacing: bar.s(6)
+                        spacing: bar.s(Theme.gapSm)
                         Repeater {
                             model: root.frameColors
                             delegate: Rectangle {
                                 readonly property bool sel: String(root.frColor) === String(modelData)
-                                width: bar.s(24); height: bar.s(24); radius: bar.s(7)
+                                width: bar.s(24); height: bar.s(24); radius: bar.s(Theme.radiusSm)
                                 color: root.colorOf(modelData)
                                 border.width: sel ? 2 : 1
-                                border.color: sel ? bar.colors.text : bar.colors.surface2
+                                border.color: sel ? bar.colors.text : Theme.outlineVariant
                                 MouseArea {
                                     anchors.fill: parent
                                     cursorShape: Qt.PointingHandCursor
@@ -417,23 +417,23 @@ Item {
                         Rectangle {
                             anchors.right: parent.right
                             anchors.verticalCenter: parent.verticalCenter
-                            width: bar.s(64); height: bar.s(24); radius: bar.s(7)
+                            width: bar.s(64); height: bar.s(24); radius: bar.s(Theme.radiusSm)
                             color: root.colorOf(root.frFillColor)
-                            border.width: 1; border.color: bar.colors.surface1
+                            border.width: 1; border.color: Theme.outlineVariant
                         }
                     }
                     Flow {
                         width: parent.width
                         visible: root.frFill
-                        spacing: bar.s(6)
+                        spacing: bar.s(Theme.gapSm)
                         Repeater {
                             model: root.frameColors
                             delegate: Rectangle {
                                 readonly property bool sel: String(root.frFillColor) === String(modelData)
-                                width: bar.s(24); height: bar.s(24); radius: bar.s(7)
+                                width: bar.s(24); height: bar.s(24); radius: bar.s(Theme.radiusSm)
                                 color: root.colorOf(modelData)
                                 border.width: sel ? 2 : 1
-                                border.color: sel ? bar.colors.text : bar.colors.surface2
+                                border.color: sel ? bar.colors.text : Theme.outlineVariant
                                 MouseArea {
                                     anchors.fill: parent
                                     cursorShape: Qt.PointingHandCursor

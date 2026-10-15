@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import "../../../core"
 
 // ═══════════════════════════════════════════════════════════════════════════
 // OptionCard — card de opción estilo GuidePopup (GP:1276-1302).
@@ -24,14 +25,14 @@ Rectangle {
         ? bar.colors[accentRole] : "#948ae3"
 
     height: bar ? bar.s(45) : 45
-    radius: bar ? bar.s(18) : 18
+    radius: bar ? bar.s(Theme.radiusLg) : Theme.radiusLg
     color: !bar ? "transparent"
         : card.active
             ? card.accent
-            : (cardMa.containsMouse ? Qt.alpha(card.accent, 0.1) : Qt.alpha(bar.colors.surface0, 0.4))
+            : (cardMa.containsMouse ? Theme.stateLayer(card.accent, Theme.stateHover) : Theme.surfaceContainerLow)
     border.width: 1
     border.color: !bar ? "transparent"
-        : (card.active || cardMa.containsMouse) ? card.accent : bar.colors.surface1
+        : (card.active || cardMa.containsMouse) ? card.accent : Theme.outlineVariant
     scale: cardMa.pressed ? 0.98 : 1.0
     Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutQuart } }
     Behavior on color { ColorAnimation { duration: 150 } }
@@ -39,8 +40,8 @@ Rectangle {
 
     RowLayout {
         anchors.fill: parent
-        anchors.margins: bar ? bar.s(10) : 10
-        spacing: bar ? bar.s(10) : 10
+        anchors.margins: bar ? bar.s(Theme.gapSm) : Theme.gapSm
+        spacing: bar ? bar.s(Theme.gapSm) : Theme.gapSm
         Item {
             Layout.preferredWidth: bar ? bar.s(24) : 24
             Layout.alignment: Qt.AlignVCenter

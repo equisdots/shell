@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import "../../../core"
 
 // ═══════════════════════════════════════════════════════════════════════════
 // FieldCard — card de texto de ancho completo (familia GuidePopup).
@@ -25,25 +26,25 @@ Rectangle {
     signal edited(string text)
 
     height: bar ? bar.s(44) : 44
-    radius: bar ? bar.s(18) : 18
-    color: !bar ? "transparent" : Qt.alpha(bar.colors.surface0, 0.4)
+    radius: bar ? bar.s(Theme.radiusLg) : Theme.radiusLg
+    color: !bar ? "transparent" : Theme.surfaceContainerLow
     border.width: 1
-    border.color: bar ? bar.colors.surface1 : "transparent"
+    border.color: bar ? Theme.outlineVariant : "transparent"
 
     RowLayout {
         anchors.fill: parent
-        anchors.leftMargin: bar ? bar.s(15) : 15
-        anchors.rightMargin: bar ? bar.s(10) : 10
-        spacing: bar ? bar.s(10) : 10
+        anchors.leftMargin: bar ? bar.s(Theme.gapLg) : Theme.gapLg
+        anchors.rightMargin: bar ? bar.s(Theme.gapSm) : Theme.gapSm
+        spacing: bar ? bar.s(Theme.gapSm) : Theme.gapSm
         Rectangle {
             Layout.alignment: Qt.AlignVCenter
             visible: fld.swatch.a > 0
             width: bar ? bar.s(10) : 10
             height: bar ? bar.s(10) : 10
-            radius: bar ? bar.s(3) : 3
+            radius: bar ? bar.s(Theme.radiusXs) : Theme.radiusXs
             color: fld.swatch
             border.width: 1
-            border.color: bar ? bar.colors.surface1 : "transparent"
+            border.color: bar ? Theme.outlineVariant : "transparent"
         }
         Text {
             text: fld.label
@@ -67,10 +68,10 @@ Rectangle {
             selectByMouse: true
             maximumLength: fld.maxLength
             background: Rectangle {
-                color: bar ? Qt.alpha(bar.colors.surface0, 0.4) : "transparent"
-                radius: bar ? bar.s(13) : 13
+                color: bar ? Theme.surfaceContainer : "transparent"
+                radius: bar ? bar.s(Theme.radiusMd) : Theme.radiusMd
                 border.width: 1
-                border.color: bar ? (field.activeFocus ? bar.colors.mauve : bar.colors.surface1) : "transparent"
+                border.color: bar ? (field.activeFocus ? bar.colors.mauve : Theme.outlineVariant) : "transparent"
             }
             onEditingFinished: fld.edited(field.text)
         }

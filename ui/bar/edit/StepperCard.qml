@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import "../../../core"
 
 // ═══════════════════════════════════════════════════════════════════════════
 // StepperCard — card numérica de ancho completo (familia GuidePopup).
@@ -20,16 +21,16 @@ Rectangle {
     signal inc()
 
     height: bar ? bar.s(44) : 44
-    radius: bar ? bar.s(18) : 18
-    color: !bar ? "transparent" : Qt.alpha(bar.colors.surface0, 0.4)
+    radius: bar ? bar.s(Theme.radiusLg) : Theme.radiusLg
+    color: !bar ? "transparent" : Theme.surfaceContainerLow
     border.width: 1
-    border.color: bar ? bar.colors.surface1 : "transparent"
+    border.color: bar ? Theme.outlineVariant : "transparent"
 
     RowLayout {
         anchors.fill: parent
-        anchors.leftMargin: bar ? bar.s(15) : 15
-        anchors.rightMargin: bar ? bar.s(10) : 10
-        spacing: bar ? bar.s(8) : 8
+        anchors.leftMargin: bar ? bar.s(Theme.gapLg) : Theme.gapLg
+        anchors.rightMargin: bar ? bar.s(Theme.gapSm) : Theme.gapSm
+        spacing: bar ? bar.s(Theme.gapSm) : Theme.gapSm
 
         Text {
             text: stp.label
@@ -45,10 +46,10 @@ Rectangle {
             Layout.preferredWidth: bar ? bar.s(28) : 28
             Layout.preferredHeight: bar ? bar.s(28) : 28
             Layout.alignment: Qt.AlignVCenter
-            radius: bar ? bar.s(14) : 14
-            color: !bar ? "transparent" : (decMa.containsMouse ? Qt.alpha(bar.colors.mauve, 0.15) : Qt.alpha(bar.colors.surface0, 0.4))
+            radius: bar ? bar.s(Theme.radiusMd) : Theme.radiusMd
+            color: !bar ? "transparent" : (decMa.containsMouse ? Theme.stateLayer(bar.colors.mauve, Theme.stateHover) : Theme.surfaceContainerLow)
             border.width: 1
-            border.color: !bar ? "transparent" : (decMa.containsMouse ? bar.colors.mauve : bar.colors.surface1)
+            border.color: !bar ? "transparent" : (decMa.containsMouse ? bar.colors.mauve : Theme.outlineVariant)
             scale: decMa.pressed ? 0.9 : 1.0
             Behavior on scale { NumberAnimation { duration: 120; easing.type: Easing.OutQuart } }
             Behavior on color { ColorAnimation { duration: 150 } }
@@ -83,10 +84,10 @@ Rectangle {
             Layout.preferredWidth: bar ? bar.s(28) : 28
             Layout.preferredHeight: bar ? bar.s(28) : 28
             Layout.alignment: Qt.AlignVCenter
-            radius: bar ? bar.s(14) : 14
-            color: !bar ? "transparent" : (incMa.containsMouse ? Qt.alpha(bar.colors.mauve, 0.15) : Qt.alpha(bar.colors.surface0, 0.4))
+            radius: bar ? bar.s(Theme.radiusMd) : Theme.radiusMd
+            color: !bar ? "transparent" : (incMa.containsMouse ? Theme.stateLayer(bar.colors.mauve, Theme.stateHover) : Theme.surfaceContainerLow)
             border.width: 1
-            border.color: !bar ? "transparent" : (incMa.containsMouse ? bar.colors.mauve : bar.colors.surface1)
+            border.color: !bar ? "transparent" : (incMa.containsMouse ? bar.colors.mauve : Theme.outlineVariant)
             scale: incMa.pressed ? 0.9 : 1.0
             Behavior on scale { NumberAnimation { duration: 120; easing.type: Easing.OutQuart } }
             Behavior on color { ColorAnimation { duration: 150 } }

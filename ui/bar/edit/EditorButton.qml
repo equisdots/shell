@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import "../../../core"
 
 // ═══════════════════════════════════════════════════════════════════════════
 // EditorButton — botón de acción del BarEditor (Fase 4, familia GuidePopup).
@@ -27,16 +28,16 @@ Rectangle {
 
     height: bar ? bar.s(compact ? 36 : 44) : (compact ? 36 : 44)
     implicitWidth: btnRow.implicitWidth + (bar ? bar.s(compact ? 28 : 36) : (compact ? 28 : 36))
-    radius: bar ? bar.s(18) : 18
+    radius: bar ? bar.s(Theme.radiusLg) : Theme.radiusLg
     color: !bar ? "transparent"
         : btn.active
             ? btn.accent
-            : (btnMa.containsMouse ? Qt.alpha(btn.accent, 0.15) : Qt.alpha(bar.colors.surface0, 0.4))
+            : (btnMa.containsMouse ? Theme.stateLayer(btn.accent, Theme.stateHover) : Theme.surfaceContainerLow)
     border.width: 1
     border.color: !bar ? "transparent"
         : btn.active
             ? btn.accent
-            : (btnMa.containsMouse ? btn.accent : bar.colors.surface1)
+            : (btnMa.containsMouse ? btn.accent : Theme.outlineVariant)
     scale: btnMa.pressed ? 0.95 : 1.0
     Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutQuart } }
     Behavior on color { ColorAnimation { duration: 150 } }
@@ -45,7 +46,7 @@ Rectangle {
     RowLayout {
         id: btnRow
         anchors.centerIn: parent
-        spacing: bar ? bar.s(8) : 8
+        spacing: bar ? bar.s(Theme.gapSm) : Theme.gapSm
         Text {
             visible: btn.icon !== ""
             text: btn.icon

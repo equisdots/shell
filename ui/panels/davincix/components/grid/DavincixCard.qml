@@ -9,6 +9,7 @@
 import QtQuick
 import QtQuick.Effects
 import QtMultimedia
+import "../../../../../core"
 
 Item {
     id: cardRoot
@@ -146,7 +147,7 @@ Item {
             anchors.margins: ctx.borderWidth
             color: cardRoot.isFlat ? "transparent" : theme.base
             radius: cardRoot.isCircle ? (width / 2) : ctx.thumbRadius
-            border.color: cardRoot.isFlat ? theme.surface1 : "transparent"
+            border.color: cardRoot.isFlat ? Theme.outlineVariant : "transparent"
             border.width: cardRoot.isFlat ? 1 : 0
             clip: true
 
@@ -235,7 +236,7 @@ Item {
                 anchors.margins: ctx.s(10)
                 width: ctx.s(32)
                 height: ctx.s(32)
-                radius: ctx.s(8)
+                radius: Theme.radiusSm
                 color: Qt.rgba(theme.base.r, theme.base.g, theme.base.b, 0.6)
 
                 transform: Matrix4x4 {
@@ -273,7 +274,7 @@ Item {
                 anchors.margins: ctx.s(10)
                 width: ctx.s(32)
                 height: ctx.s(32)
-                radius: ctx.s(8)
+                radius: Theme.radiusSm
                 color: Qt.rgba(theme.mauve.r, theme.mauve.g, theme.mauve.b, 0.8)
 
                 transform: Matrix4x4 {
@@ -305,13 +306,13 @@ Item {
                 anchors.margins: ctx.s(10)
                 width: ctx.s(28)
                 height: ctx.s(28)
-                radius: ctx.s(8)
+                radius: Theme.radiusSm
                 z: 20
                 color: cardRoot.isFavorite
                     ? Qt.rgba(theme.mauve.r, theme.mauve.g, theme.mauve.b, 0.9)
                     : Qt.rgba(theme.base.r, theme.base.g, theme.base.b, 0.55)
                 border.width: 1
-                border.color: theme.surface1
+                border.color: Theme.outlineVariant
 
                 // Contra-shear idéntico al badge de play para que la
                 // estrella se vea derecha; identidad en circle (effSkew = 0).

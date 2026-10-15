@@ -38,6 +38,7 @@ Item {
     property real uiScale: 1
     // --- target screen (the screen this popup window lives on) ------------------
     property string targetScreen: ""
+
     property string safeTarget: ""
     property int sw: Personalization.value("widgets", Config.rawSettings.widgets, "redactorWidth")
     property int sh: Personalization.value("widgets", Config.rawSettings.widgets, "redactorHeight")
@@ -406,7 +407,15 @@ Item {
             "ew0": e.w,
             "eh0": e.h,
             "sx": 0,
-            "sy": 0
+            "sy": 0,
+            "moved": false,
+            "snap": false,
+            // Last applied geometry (change detection); the anchors wx0/wy0 and
+            // ew0/eh0 stay FIXED for the whole gesture.
+            "lx": r.wX,
+            "ly": r.wY,
+            "lw": e.w,
+            "lh": e.h
         };
     }
 
@@ -417,6 +426,15 @@ Item {
 
         let dx = gx - g.sx;
         let dy = gy - g.sy;
+        // Dead-zone: a bare click must not nudge the widget. Snapping is
+        // opt-in (hold Alt) so free dragging never "sticks" to the grid.
+        if (!g.moved) {
+            if (Math.abs(dx) + Math.abs(dy) < root.s(3))
+                return;
+
+            g.moved = true;
+        }
+        let doSnap = g.snap === true;
         let p = root.parityOf(g.rot);
         let others = root.otherBoxes(g.id);
         let guideX = [];
@@ -426,33 +444,35 @@ Item {
         if (g.mode === "move") {
             let nx = g.wx0 + dx;
             let ny = g.wy0 + dy;
-            // Snap: our left/right/center edges against grid / screen / others.
-            let cand = null;
-            let pick = c => {
-                if (c && (!cand || Math.abs(c.d) < Math.abs(cand.d)))
-                    cand = c;
-            };
-            pick(root.snapCoordinate(nx, false, others, root.sw));
-            pick(root.snapCoordinate(nx + bw0, false, others, root.sw));
-            pick(root.snapCoordinate(nx + bw0 / 2, true, others, root.sw));
-            if (cand) {
-                nx += cand.d;
-                guideX.push(cand.guide);
+            if (doSnap) {
+                // Snap: our left/right/center edges against grid / screen / others.
+                let cand = null;
+                let pick = c => {
+                    if (c && (!cand || Math.abs(c.d) < Math.abs(cand.d)))
+                        cand = c;
+                };
+                pick(root.snapCoordinate(nx, false, others, root.sw));
+                pick(root.snapCoordinate(nx + bw0, false, others, root.sw));
+                pick(root.snapCoordinate(nx + bw0 / 2, true, others, root.sw));
+                if (cand) {
+                    nx += cand.d;
+                    guideX.push(cand.guide);
+                }
+                cand = null;
+                pick(root.snapCoordinate(ny, false, others, root.sh));
+                pick(root.snapCoordinate(ny + bh0, false, others, root.sh));
+                pick(root.snapCoordinate(ny + bh0 / 2, true, others, root.sh));
+                if (cand) {
+                    ny += cand.d;
+                    guideY.push(cand.guide);
+                }
             }
-            cand = null;
-            pick(root.snapCoordinate(ny, false, others, root.sh));
-            pick(root.snapCoordinate(ny + bh0, false, others, root.sh));
-            pick(root.snapCoordinate(ny + bh0 / 2, true, others, root.sh));
-            if (cand) {
-                ny += cand.d;
-                guideY.push(cand.guide);
-            }
-            // Loader-consistent screen clamp (positions use the stored logical w/h).
-            nx = Math.max(0, Math.min(nx, Math.max(0, root.sw - g.ew0)));
-            ny = Math.max(0, Math.min(ny, Math.max(0, root.sh - g.eh0)));
+            // Loader-consistent screen clamp (uses the visual box, rotation-aware).
+            nx = Math.max(0, Math.min(nx, Math.max(0, root.sw - bw0)));
+            ny = Math.max(0, Math.min(ny, Math.max(0, root.sh - bh0)));
             root.guidesX = guideX;
             root.guidesY = guideY;
-            if (nx === g.wx0 && ny === g.wy0)
+            if (nx === g.lx && ny === g.ly)
                 return;
 
             let i = root.rowIndex(g.id);
@@ -461,8 +481,11 @@ Item {
 
             proxyModel.setProperty(i, "wX", nx);
             proxyModel.setProperty(i, "wY", ny);
-            g.wx0 = nx;
-            g.wy0 = ny;
+            // g.wx0/g.wy0 (the dx origin) stay fixed for the whole drag; only the
+            // last-applied value is tracked. Mutating the anchor here while dx
+            // stays measured from press would double-count every frame.
+            g.lx = nx;
+            g.ly = ny;
             root.pushGeometry(g.id, nx, ny, g.ew0, g.eh0, true);
         } else {
             // Resize: work on the visual box; derive logical sizes afterwards.
@@ -476,7 +499,7 @@ Item {
             let B = bottom0;
             if (g.pullL) {
                 let raw = left0 + dx;
-                let s = root.snapCoordinate(raw, false, others, root.sw);
+                let s = doSnap ? root.snapCoordinate(raw, false, others, root.sw) : null;
                 if (s) {
                     raw += s.d;
                     guideX.push(s.guide);
@@ -485,7 +508,7 @@ Item {
             }
             if (g.pullR) {
                 let raw = right0 + dx;
-                let s = root.snapCoordinate(raw, false, others, root.sw);
+                let s = doSnap ? root.snapCoordinate(raw, false, others, root.sw) : null;
                 if (s) {
                     raw += s.d;
                     guideX.push(s.guide);
@@ -494,7 +517,7 @@ Item {
             }
             if (g.pullT) {
                 let raw = top0 + dy;
-                let s = root.snapCoordinate(raw, false, others, root.sh);
+                let s = doSnap ? root.snapCoordinate(raw, false, others, root.sh) : null;
                 if (s) {
                     raw += s.d;
                     guideY.push(s.guide);
@@ -503,7 +526,7 @@ Item {
             }
             if (g.pullB) {
                 let raw = bottom0 + dy;
-                let s = root.snapCoordinate(raw, false, others, root.sh);
+                let s = doSnap ? root.snapCoordinate(raw, false, others, root.sh) : null;
                 if (s) {
                     raw += s.d;
                     guideY.push(s.guide);
@@ -529,17 +552,18 @@ Item {
             if (i === -1)
                 return;
 
-            if (nx === g.wx0 && ny === g.wy0 && c.w === g.ew0 && c.h === g.eh0)
+            if (nx === g.lx && ny === g.ly && c.w === g.lw && c.h === g.lh)
                 return;
 
             proxyModel.setProperty(i, "wX", nx);
             proxyModel.setProperty(i, "wY", ny);
             proxyModel.setProperty(i, "wW", c.w);
             proxyModel.setProperty(i, "wH", c.h);
-            g.wx0 = nx;
-            g.wy0 = ny;
-            g.ew0 = c.w;
-            g.eh0 = c.h;
+            // Gesture anchors/sizes stay fixed; only last-applied is tracked.
+            g.lx = nx;
+            g.ly = ny;
+            g.lw = c.w;
+            g.lh = c.h;
             root.pushGeometry(g.id, nx, ny, c.w, c.h, true);
         }
     }
@@ -563,6 +587,9 @@ Item {
     }
 
     function addWidgetOfType(type) {
+        if (!type || !registry.types[type])
+            return;
+
         WidgetSync.addWidget(type, root.targetScreen);
         root.selectLastAdded();
         if (type === "image")
@@ -1095,6 +1122,7 @@ Item {
                         if (!g || g.id !== proxy.wId || g.mode !== "move")
                             return;
 
+                        g.snap = (mouse.modifiers & Qt.AltModifier) !== 0;
                         let c = proxy.mapToItem(root, mouse.x, mouse.y);
                         root.updateGesturePos(c.x, c.y);
                     }
@@ -1205,6 +1233,7 @@ Item {
                                 if (!g || g.id !== proxy.wId || g.mode !== "resize")
                                     return;
 
+                                g.snap = (mouse.modifiers & Qt.AltModifier) !== 0;
                                 let c = proxy.mapToItem(root, mouse.x, mouse.y);
                                 root.updateGesturePos(c.x, c.y);
                             }
@@ -1296,6 +1325,33 @@ Item {
 
                 height: toolbarScroll.height
                 spacing: s(6)
+
+                // ---- Done: finish editing. Edits are already applied live; the
+                // real widgets (hidden while editing) reappear on the desktop. ----
+                Button {
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: s(86)
+                    height: s(30)
+                    hoverEnabled: true
+                    onClicked: root.exitRedactor()
+
+                    background: Rectangle {
+                        radius: s(8)
+                        border.width: 1
+                        border.color: Theme.mauve
+                        color: parent.down || parent.hovered ? Qt.darker(Theme.mauve, 1.15) : Theme.mauve
+                    }
+                    contentItem: Text {
+                        text: "󰄬  Done"
+                        font.family: Theme.fontFamily
+                        font.pixelSize: s(10)
+                        font.weight: Font.Bold
+                        color: Theme.crust
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                }
+                Rectangle { width: 1; height: s(22); anchors.verticalCenter: parent.verticalCenter; color: Theme.surface2 }
 
                 // ---- add types ----
                 Repeater {
@@ -1666,7 +1722,7 @@ Item {
             id: hintText
 
             anchors.centerIn: parent
-            text: "Drag to move · pull handles to resize · snap: 20 px grid / monitor center / other widgets · ESC to finish"
+            text: "Drag to move · handles to resize · hold Alt to snap · Done (or ESC) finishes — widgets then show on the desktop"
             font.family: Theme.fontFamily
             font.pixelSize: s(10)
             color: Theme.overlay0

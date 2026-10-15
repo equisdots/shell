@@ -6,6 +6,7 @@
 // reads the selected set via ctx.getMonitorOutputs() when applying.
 // ═══════════════════════════════════════════════════════════════════════════
 import QtQuick
+import "../../../../../core"
 
 Rectangle {
     id: monitorDrawer
@@ -20,12 +21,12 @@ Rectangle {
     property real expandedWidth: ctx.s(44) + monitorListRow.width + ctx.s(8)
     width: visible ? (ctx.isMonitorSelectorOpen ? expandedWidth : ctx.s(44)) : 0
 
-    radius: ctx.s(13)
+    radius: Theme.radiusMd
     clip: true
     anchors.verticalCenter: parent.verticalCenter
 
-    color: ctx.isMonitorSelectorOpen ? theme.surface2 : "transparent"
-    border.color: ctx.isMonitorSelectorOpen ? theme.text : theme.surface1
+    color: ctx.isMonitorSelectorOpen ? Theme.surfaceContainerHighest : "transparent"
+    border.color: ctx.isMonitorSelectorOpen ? theme.text : Theme.outlineVariant
     border.width: ctx.isMonitorSelectorOpen ? ctx.s(2) : 1
 
     Behavior on width { NumberAnimation { duration: 500; easing.type: Easing.OutBack; easing.overshoot: 0.5 } }
@@ -81,7 +82,7 @@ Rectangle {
         id: monitorListRow
         anchors.left: monitorIconMouse.right
         anchors.verticalCenter: parent.verticalCenter
-        spacing: ctx.s(8)
+        spacing: Theme.gapSm
 
         opacity: ctx.isMonitorSelectorOpen ? 1.0 : 0.0
         Behavior on opacity { NumberAnimation { duration: 300 } }
@@ -95,9 +96,9 @@ Rectangle {
 
                 Rectangle {
                     anchors.fill: parent
-                    radius: ctx.s(8)
-                    color: model.selected ? theme.text : theme.surface1
-                    border.color: model.selected ? theme.text : theme.surface2
+                    radius: Theme.radiusSm
+                    color: model.selected ? theme.text : Theme.surfaceContainerHigh
+                    border.color: model.selected ? theme.text : Theme.outlineVariant
                     border.width: 1
 
                     Behavior on color { ColorAnimation { duration: 250 } }

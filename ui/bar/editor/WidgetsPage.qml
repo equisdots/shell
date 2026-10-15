@@ -53,19 +53,19 @@ Item {
                 anchors.fill: parent
                 clip: true
                 boundsBehavior: Flickable.StopAtBounds
-                contentHeight: pageCol.height + bar.s(16)
+                contentHeight: pageCol.height + bar.s(Theme.gapLg)
                 ScrollBar.vertical: ScrollBar {
                     width: bar.s(4)
                     policy: ScrollBar.AsNeeded
-                    contentItem: Rectangle { radius: bar.s(2); color: bar.colors.surface2; opacity: parent.active ? 1 : 0.45 }
+                    contentItem: Rectangle { radius: bar.s(Theme.radiusXs); color: Theme.surfaceContainerHighest; opacity: parent.active ? 1 : 0.45 }
                     background: Item {}
                 }
 
                 Column {
                     id: pageCol
-                    x: bar.s(8); y: bar.s(8)
-                    width: pageFlick.width - bar.s(16)
-                    spacing: bar.s(12)
+                    x: bar.s(Theme.gapSm); y: bar.s(Theme.gapSm)
+                    width: pageFlick.width - bar.s(Theme.gapLg)
+                    spacing: bar.s(Theme.gapLg)
 
                     Text {
                         text: "Widgets"
@@ -86,24 +86,24 @@ Item {
                     GridLayout {
                         width: parent.width
                         columns: 2
-                        columnSpacing: bar.s(10)
-                        rowSpacing: bar.s(10)
+                        columnSpacing: bar.s(Theme.gapMd)
+                        rowSpacing: bar.s(Theme.gapMd)
                         Repeater {
                             model: root.sections
                             delegate: Rectangle {
                                 id: secCard
                                 required property var modelData
                                 Layout.fillWidth: true
-                                radius: bar.s(16)
-                                color: Qt.alpha(bar.colors.surface0, 0.4)
+                                radius: bar.s(Theme.radiusLg)
+                                color: Theme.surfaceContainerLow
                                 border.width: 1
-                                border.color: bar.colors.surface1
-                                height: secCol.height + bar.s(24)
+                                border.color: Theme.outlineVariant
+                                height: secCol.height + bar.s(Theme.gapMd) * 2
                                 Column {
                                     id: secCol
-                                    x: bar.s(14); y: bar.s(12)
-                                    width: parent.width - bar.s(28)
-                                    spacing: bar.s(6)
+                                    x: bar.s(Theme.gapMd); y: bar.s(Theme.gapMd)
+                                    width: parent.width - bar.s(Theme.gapMd) * 2
+                                    spacing: bar.s(Theme.gapSm)
                                     Text {
                                         text: secCard.modelData.label
                                         font.family: "Hack Nerd Font"
@@ -117,7 +117,7 @@ Item {
                                             id: optRow
                                             required property var modelData
                                             width: secCol.width
-                                            spacing: bar.s(8)
+                                            spacing: bar.s(Theme.gapSm)
                                             readonly property var val: (root.tick, root.cfg(secCard.modelData.id)[modelData])
                                             readonly property bool isBool: typeof val === "boolean"
                                             Text {
@@ -131,14 +131,14 @@ Item {
                                             }
                                             Rectangle {
                                                 visible: optRow.isBool
-                                                width: bar.s(40); height: bar.s(20); radius: bar.s(10)
-                                                color: optRow.val ? bar.colors.mauve : Qt.alpha(bar.colors.surface1, 0.5)
+                                                width: bar.s(40); height: bar.s(20); radius: bar.s(Theme.radiusFull)
+                                                color: optRow.val ? bar.colors.mauve : Theme.surfaceContainer
                                                 border.width: 1
-                                                border.color: optRow.val ? bar.colors.mauve : Qt.alpha(bar.colors.surface1, 0.9)
+                                                border.color: optRow.val ? bar.colors.mauve : Theme.outlineVariant
                                                 Rectangle {
-                                                    width: bar.s(14); height: bar.s(14); radius: bar.s(7)
-                                                    y: bar.s(3)
-                                                    x: optRow.val ? parent.width - width - bar.s(3) : bar.s(3)
+                                                    width: bar.s(14); height: bar.s(14); radius: bar.s(Theme.radiusFull)
+                                                    y: bar.s(Theme.gapXs)
+                                                    x: optRow.val ? parent.width - width - bar.s(Theme.gapXs) : bar.s(Theme.gapXs)
                                                     color: optRow.val ? bar.colors.crust : bar.colors.subtext0
                                                     Behavior on x { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
                                                 }
@@ -154,9 +154,9 @@ Item {
                                                 anchors.verticalCenter: parent.verticalCenter
                                                 Rectangle {
                                                     anchors.left: parent.left; anchors.verticalCenter: parent.verticalCenter
-                                                    width: bar.s(20); height: bar.s(20); radius: bar.s(5)
-                                                    color: Qt.alpha(bar.colors.surface1, 0.5)
-                                                    border.width: 1; border.color: Qt.alpha(bar.colors.surface1, 0.9)
+                                                    width: bar.s(20); height: bar.s(20); radius: bar.s(Theme.radiusXs)
+                                                    color: Theme.surfaceContainer
+                                                    border.width: 1; border.color: Theme.outlineVariant
                                                     Text { anchors.centerIn: parent; text: "−"; color: bar.colors.text; font.pixelSize: bar.s(12); font.family: "Hack Nerd Font" }
                                                     MouseArea {
                                                         anchors.fill: parent
@@ -171,9 +171,9 @@ Item {
                                                 }
                                                 Rectangle {
                                                     anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter
-                                                    width: bar.s(20); height: bar.s(20); radius: bar.s(5)
-                                                    color: Qt.alpha(bar.colors.surface1, 0.5)
-                                                    border.width: 1; border.color: Qt.alpha(bar.colors.surface1, 0.9)
+                                                    width: bar.s(20); height: bar.s(20); radius: bar.s(Theme.radiusXs)
+                                                    color: Theme.surfaceContainer
+                                                    border.width: 1; border.color: Theme.outlineVariant
                                                     Text { anchors.centerIn: parent; text: "+"; color: bar.colors.text; font.pixelSize: bar.s(12); font.family: "Hack Nerd Font" }
                                                     MouseArea {
                                                         anchors.fill: parent

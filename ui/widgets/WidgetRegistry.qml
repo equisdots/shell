@@ -12,7 +12,9 @@ import "../../core"
 // Types (id -> metadata):
 //   visualizer (bars | continuous), time (digital | analog | minimal),
 //   music (full | round), weather (compact | full | round),
-//   image (rect | rounded | round) — requiresFilePicker.
+//   image (rect | rounded | round) — requiresFilePicker,
+//   date (card), system (rings), calendar (month), battery (card),
+//   countdown (card).
 //
 // API:
 //   faceFile(type, variant)                       -> resolved URL or ""
@@ -83,6 +85,66 @@ QtObject {
                 "rect": { file: "faces/ImageFaceRect.qml", icon: "1", label: "Rect" },
                 "rounded": { file: "faces/ImageFaceRounded.qml", icon: "2", label: "Rounded" },
                 "round": { file: "faces/ImageFaceRound.qml", icon: "3", label: "Round" }
+            }
+        },
+        "date": {
+            name: "Date",
+            icon: "󰃴",
+            defaultWidth: 340,
+            defaultHeight: 150,
+            defaultVariant: "card",
+            stretchWidth: true,
+            requiresFilePicker: false,
+            variants: {
+                "card": { file: "faces/DateGreetingFace.qml", icon: "1", label: "Card" }
+            }
+        },
+        "system": {
+            name: "System",
+            icon: "󰍛",
+            defaultWidth: 340,
+            defaultHeight: 170,
+            defaultVariant: "rings",
+            stretchWidth: true,
+            requiresFilePicker: false,
+            variants: {
+                "rings": { file: "faces/SystemFace.qml", icon: "1", label: "Rings" }
+            }
+        },
+        "calendar": {
+            name: "Calendar",
+            icon: "󰃭",
+            defaultWidth: 280,
+            defaultHeight: 280,
+            defaultVariant: "month",
+            stretchWidth: false,
+            requiresFilePicker: false,
+            variants: {
+                "month": { file: "faces/CalendarFace.qml", icon: "1", label: "Month" }
+            }
+        },
+        "battery": {
+            name: "Battery",
+            icon: "󰁹",
+            defaultWidth: 200,
+            defaultHeight: 150,
+            defaultVariant: "card",
+            stretchWidth: false,
+            requiresFilePicker: false,
+            variants: {
+                "card": { file: "faces/BatteryFace.qml", icon: "1", label: "Card" }
+            }
+        },
+        "countdown": {
+            name: "Countdown",
+            icon: "󰔛",
+            defaultWidth: 340,
+            defaultHeight: 150,
+            defaultVariant: "card",
+            stretchWidth: true,
+            requiresFilePicker: false,
+            variants: {
+                "card": { file: "faces/CountdownFace.qml", icon: "1", label: "Card" }
             }
         }
     })

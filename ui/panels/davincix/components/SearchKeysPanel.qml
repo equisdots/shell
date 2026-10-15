@@ -11,6 +11,7 @@
 // Se renderiza centrado bajo la tira de wallpapers, ancho de la búsqueda.
 // ═══════════════════════════════════════════════════════════════════════════
 import QtQuick
+import "../../../../core"
 
 Item {
     id: panelRoot
@@ -43,13 +44,13 @@ Item {
         id: card
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: ctx.s(14)
+        anchors.bottomMargin: Theme.gapMd
         width: ctx.s(440)
         height: rows.implicitHeight + ctx.s(20)
-        radius: ctx.s(18)
+        radius: Theme.radiusLg
 
-        color: Qt.rgba(theme.mantle.r, theme.mantle.g, theme.mantle.b, 0.90)
-        border.color: theme.surface2
+        color: Theme.surfaceContainerHigh
+        border.color: Theme.outlineVariant
         border.width: 1
 
         // Los clicks dentro de la card no cierran el panel.
@@ -58,15 +59,15 @@ Item {
         Column {
             id: rows
             anchors.fill: parent
-            anchors.margins: ctx.s(10)
-            spacing: ctx.s(8)
+            anchors.margins: Theme.gapSm
+            spacing: Theme.gapSm
 
             Repeater {
                 model: panelRoot.keys
 
                 delegate: Row {
                     width: rows.width
-                    spacing: ctx.s(8)
+                    spacing: Theme.gapSm
 
                     // Pill del proveedor: mismo estilo que el botón de
                     // transición de la barra (surface0, borde surface1).
@@ -74,21 +75,21 @@ Item {
                         id: provPill
                         width: provRow.width + ctx.s(20)
                         height: ctx.s(36)
-                        radius: ctx.s(13)
+                        radius: Theme.radiusMd
 
-                        color: theme.surface0
-                        border.color: theme.surface1
+                        color: Theme.surfaceContainer
+                        border.color: Theme.outlineVariant
                         border.width: 1
 
                         Row {
                             id: provRow
                             anchors.centerIn: parent
-                            spacing: ctx.s(6)
+                            spacing: Theme.gapXs
 
                             Rectangle {
                                 width: ctx.s(8)
                                 height: ctx.s(8)
-                                radius: ctx.s(4)
+                                radius: Theme.radiusXs
                                 color: modelData.set ? theme.green : theme.yellow
                             }
 
@@ -114,10 +115,10 @@ Item {
                         id: inputBox
                         width: rows.width - provPill.width - savePill.width - ctx.s(16)
                         height: ctx.s(36)
-                        radius: ctx.s(13)
+                        radius: Theme.radiusMd
 
-                        color: Qt.rgba(theme.surface2.r, theme.surface2.g, theme.surface2.b, 0.8)
-                        border.color: keyInput.activeFocus ? theme.text : theme.surface1
+                        color: Theme.surfaceContainer
+                        border.color: keyInput.activeFocus ? theme.text : Theme.outlineVariant
                         border.width: keyInput.activeFocus ? ctx.s(2) : 1
 
                         Behavior on border.color { ColorAnimation { duration: 200 } }
@@ -125,8 +126,8 @@ Item {
                         TextInput {
                             id: keyInput
                             anchors.fill: parent
-                            anchors.leftMargin: ctx.s(12)
-                            anchors.rightMargin: ctx.s(12)
+                            anchors.leftMargin: Theme.gapMd
+                            anchors.rightMargin: Theme.gapMd
                             verticalAlignment: TextInput.AlignVCenter
                             color: theme.text
                             font.family: "Hack Nerd Font"
@@ -142,9 +143,9 @@ Item {
                         Text {
                             visible: keyInput.text === ""
                             anchors.left: parent.left
-                            anchors.leftMargin: ctx.s(12)
+                            anchors.leftMargin: Theme.gapMd
                             anchors.right: parent.right
-                            anchors.rightMargin: ctx.s(12)
+                            anchors.rightMargin: Theme.gapMd
                             anchors.verticalCenter: parent.verticalCenter
                             text: modelData.set
                                 ? "replace " + modelData.name + "..."
@@ -162,11 +163,11 @@ Item {
                         id: savePill
                         width: saveRow.width + ctx.s(22)
                         height: ctx.s(36)
-                        radius: ctx.s(13)
+                        radius: Theme.radiusMd
                         property bool ready: keyInput.text.trim() !== ""
 
-                        color: (saveMouse.containsMouse && ready) ? theme.surface1 : theme.surface0
-                        border.color: ready && saveMouse.containsMouse ? theme.text : theme.surface1
+                        color: (saveMouse.containsMouse && ready) ? Theme.surfaceContainerHigh : Theme.surfaceContainer
+                        border.color: ready && saveMouse.containsMouse ? theme.text : Theme.outlineVariant
                         border.width: 1
 
                         Behavior on color { ColorAnimation { duration: 150 } }
@@ -175,7 +176,7 @@ Item {
                         Row {
                             id: saveRow
                             anchors.centerIn: parent
-                            spacing: ctx.s(6)
+                            spacing: Theme.gapXs
 
                             Text {
                                 text: "\uF00C"  // fa-check

@@ -207,9 +207,9 @@ exit 0
         height: window.s(600)
         anchors.centerIn: parent 
         
-        radius: window.s(21)
-        color: window.base
-        border.color: window.surface1
+        radius: window.s(Theme.radiusLg)
+        color: Theme.surfaceContainerLow
+        border.color: Theme.outlineVariant
         border.width: 1
         clip: true
 
@@ -234,8 +234,8 @@ exit 0
 
         ColumnLayout {
             anchors.fill: parent
-            anchors.margins: window.s(25)
-            spacing: window.s(20)
+            anchors.margins: window.s(Theme.gapXl)
+            spacing: window.s(Theme.gapLg)
 
             // --- ANIMATED CHOREOGRAPHED VERSIONS ---
             Item {
@@ -327,7 +327,7 @@ exit 0
                     anchors.fill: parent
                     clip: true
                     model: commitModel
-                    spacing: window.s(8)
+                    spacing: window.s(Theme.gapSm)
 
                     ScrollBar.vertical: ScrollBar {
                         active: true
@@ -347,9 +347,9 @@ exit 0
 
                     delegate: Rectangle {
                         width: changelogList.width - window.s(12) 
-                        height: Math.max(window.s(40), commitText.implicitHeight + window.s(20))
-                        color: window.surface0 
-                        radius: window.s(16)
+                        height: Math.max(window.s(40), commitText.implicitHeight + window.s(Theme.gapLg))
+                        color: Theme.surfaceContainer
+                        radius: window.s(Theme.radiusMd)
 
                         // Subtle Matugen Tint Overlay
                         Rectangle {
@@ -362,9 +362,9 @@ exit 0
                         Text {
                             id: commitText
                             anchors.fill: parent
-                            anchors.margins: window.s(10)
-                            anchors.leftMargin: window.s(16)
-                            anchors.rightMargin: window.s(16)
+                            anchors.margins: window.s(Theme.gapSm)
+                            anchors.leftMargin: window.s(Theme.gapLg)
+                            anchors.rightMargin: window.s(Theme.gapLg)
                             text: model.lineText
                             font.family: "Hack Nerd Font"
                             font.pixelSize: window.s(13)
@@ -383,9 +383,9 @@ exit 0
                 Layout.alignment: Qt.AlignHCenter 
                 Layout.preferredWidth: window.s(240) 
                 Layout.preferredHeight: window.s(54)
-                radius: window.s(16)
-                color: window.surface0
-                border.color: btnMa.containsMouse ? window.green : window.surface2
+                radius: window.s(Theme.radiusMd)
+                color: Theme.surfaceContainer
+                border.color: btnMa.containsMouse ? window.green : Theme.outlineVariant
                 border.width: btnMa.containsMouse ? window.s(2) : 1
                 clip: true
                 
@@ -453,7 +453,7 @@ exit 0
 
                 RowLayout {
                     anchors.centerIn: parent
-                    spacing: window.s(10)
+                    spacing: window.s(Theme.gapSm)
                     
                     Text { 
                         text: "󰚰"

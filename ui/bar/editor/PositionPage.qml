@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import "../edit"
+import "../../../core"
 
 // ═══════════════════════════════════════════════════════════════════════════
 // PositionPage — BarEditor tab: bar position selector.
@@ -47,7 +48,7 @@ Item {
                 anchors.fill: parent
                 clip: true
                 boundsBehavior: Flickable.StopAtBounds
-                contentHeight: pageCol.height + bar.s(16)
+                contentHeight: pageCol.height + bar.s(Theme.gapLg)
                 ScrollBar.vertical: ScrollBar {
                     id: vScroll
                     width: bar.s(4)
@@ -55,8 +56,8 @@ Item {
                     hoverEnabled: true
                     active: pageFlick.moving || vScroll.hovered
                     contentItem: Rectangle {
-                        radius: bar.s(2)
-                        color: bar.colors.surface2
+                        radius: bar.s(Theme.radiusXs)
+                        color: Theme.surfaceContainerHighest
                         opacity: vScroll.active ? 1.0 : 0.45
                     }
                     background: Item {}
@@ -64,10 +65,10 @@ Item {
 
                 Column {
                     id: pageCol
-                    x: bar.s(8)
-                    y: bar.s(8)
-                    width: pageFlick.width - bar.s(16)
-                    spacing: bar.s(12)
+                    x: bar.s(Theme.gapSm)
+                    y: bar.s(Theme.gapSm)
+                    width: pageFlick.width - bar.s(Theme.gapLg)
+                    spacing: bar.s(Theme.gapLg)
 
                     // Título de página (GP:1007-1014)
                     Text {
@@ -82,8 +83,8 @@ Item {
                     GridLayout {
                         width: parent.width
                         columns: 2
-                        columnSpacing: bar.s(10)
-                        rowSpacing: bar.s(10)
+                        columnSpacing: bar.s(Theme.gapMd)
+                        rowSpacing: bar.s(Theme.gapMd)
                         visible: bar.engine === "bar"
                         PosCard { Layout.fillWidth: true; bar: root.bar; barRef: root.bar.bar; pos: "top"; label: "Top"; glyph: "↑" }
                         PosCard { Layout.fillWidth: true; bar: root.bar; barRef: root.bar.bar; pos: "bottom"; label: "Bottom"; glyph: "↓" }
@@ -95,8 +96,8 @@ Item {
                     GridLayout {
                         width: parent.width
                         columns: 2
-                        columnSpacing: bar.s(10)
-                        rowSpacing: bar.s(10)
+                        columnSpacing: bar.s(Theme.gapMd)
+                        rowSpacing: bar.s(Theme.gapMd)
                         visible: bar.engine === "classic"
                         PosCardClassic { Layout.fillWidth: true; bar: root.bar; pos: "top"; label: "Top"; glyph: "↑"; onActivated: root.bar.applyClassic({ position: "top" }) }
                         PosCardClassic { Layout.fillWidth: true; bar: root.bar; pos: "bottom"; label: "Bottom"; glyph: "↓"; onActivated: root.bar.applyClassic({ position: "bottom" }) }
@@ -108,10 +109,10 @@ Item {
                     Rectangle {
                         id: posPreview
                         width: parent.width
-                        radius: bar.s(16)
-                        color: Qt.alpha(bar.colors.surface0, 0.4)
+                        radius: bar.s(Theme.radiusLg)
+                        color: Theme.surfaceContainerLow
                         border.width: 1
-                        border.color: bar.colors.surface1
+                        border.color: Theme.outlineVariant
                         height: bar.s(240)
                         readonly property string activePos: bar.engine === "classic"
                             ? (bar.classic.position || "top") : (bar.bar.position || "top")
@@ -120,10 +121,10 @@ Item {
                             anchors.centerIn: parent
                             width: Math.round(parent.width * 0.62)
                             height: parent.height - bar.s(28)
-                            radius: bar.s(10)
-                            color: Qt.alpha(bar.colors.surface1, 0.35)
+                            radius: bar.s(Theme.radiusMd)
+                            color: Theme.surfaceContainer
                             border.width: 1
-                            border.color: Qt.alpha(bar.colors.surface1, 0.9)
+                            border.color: Theme.outlineVariant
                             Rectangle {
                                 id: barMock
                                 readonly property bool vertical: posPreview.activePos === "left" || posPreview.activePos === "right"
@@ -138,7 +139,7 @@ Item {
                                 y: posPreview.activePos === "bottom" ? parent.height - height : 0
                                 width: vertical ? mockThick : parent.width
                                 height: vertical ? parent.height : mockThick
-                                radius: bar.s(4)
+                                radius: bar.s(Theme.radiusXs)
                                 color: Qt.alpha(bar.colors.mauve, 0.85)
                                 border.width: 1
                                 border.color: bar.colors.mauve
@@ -151,7 +152,7 @@ Item {
                         Text {
                             anchors.horizontalCenter: parent.horizontalCenter
                             anchors.bottom: parent.bottom
-                            anchors.bottomMargin: bar.s(6)
+                            anchors.bottomMargin: bar.s(Theme.gapSm)
                             text: "position: " + posPreview.activePos
                             font.family: "Hack Nerd Font"
                             font.pixelSize: bar.s(11)

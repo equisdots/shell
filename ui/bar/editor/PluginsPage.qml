@@ -180,7 +180,7 @@ Item {
                 anchors.fill: parent
                 clip: true
                 boundsBehavior: Flickable.StopAtBounds
-                contentHeight: pageCol.height + bar.s(16)
+                contentHeight: pageCol.height + bar.s(Theme.gapLg)
                 ScrollBar.vertical: ScrollBar {
                     id: vScroll
                     width: bar.s(4)
@@ -188,8 +188,8 @@ Item {
                     hoverEnabled: true
                     active: pageFlick.moving || vScroll.hovered
                     contentItem: Rectangle {
-                        radius: bar.s(2)
-                        color: bar.colors.surface2
+                        radius: bar.s(Theme.radiusXs)
+                        color: Theme.surfaceContainerHighest
                         opacity: vScroll.active ? 1.0 : 0.45
                     }
                     background: Item {}
@@ -197,10 +197,10 @@ Item {
 
                 Column {
                     id: pageCol
-                    x: bar.s(8)
-                    y: bar.s(8)
-                    width: pageFlick.width - bar.s(16)
-                    spacing: bar.s(12)
+                    x: bar.s(Theme.gapSm)
+                    y: bar.s(Theme.gapSm)
+                    width: pageFlick.width - bar.s(Theme.gapLg)
+                    spacing: bar.s(Theme.gapLg)
 
                     Text {
                         text: "Plugins"
@@ -212,7 +212,7 @@ Item {
 
                     RowLayout {
                         width: parent.width
-                        spacing: bar.s(10)
+                        spacing: bar.s(Theme.gapMd)
                         EditLabel {
                             bar: root.bar
                             Layout.fillWidth: true
@@ -236,11 +236,11 @@ Item {
                             id: card
                             required property var modelData
                             width: pageCol.width
-                            height: cardCol.implicitHeight + bar.s(24)
-                            radius: bar.s(18)
-                            color: Qt.alpha(bar.colors.surface0, 0.4)
+                            height: cardCol.implicitHeight + bar.s(Theme.gapMd) * 2
+                            radius: bar.s(Theme.radiusLg)
+                            color: Theme.surfaceContainerLow
                             border.width: 1
-                            border.color: cardMa.containsMouse ? bar.colors.mauve : bar.colors.surface1
+                            border.color: cardMa.containsMouse ? bar.colors.mauve : Theme.outlineVariant
                             Behavior on border.color { ColorAnimation { duration: 150 } }
 
                             MouseArea {
@@ -255,13 +255,13 @@ Item {
                                 anchors.left: parent.left
                                 anchors.right: parent.right
                                 anchors.verticalCenter: parent.verticalCenter
-                                anchors.leftMargin: bar.s(14)
-                                anchors.rightMargin: bar.s(14)
-                                spacing: bar.s(6)
+                                anchors.leftMargin: bar.s(Theme.gapMd)
+                                anchors.rightMargin: bar.s(Theme.gapMd)
+                                spacing: bar.s(Theme.gapSm)
 
                                 RowLayout {
                                     Layout.fillWidth: true
-                                    spacing: bar.s(8)
+                                    spacing: bar.s(Theme.gapSm)
                                     Text {
                                         text: "󰏗"
                                         font.family: "Hack Nerd Font"
@@ -282,12 +282,12 @@ Item {
                                         color: bar.colors.subtext0
                                     }
                                     Rectangle {
-                                        radius: bar.s(6)
+                                        radius: bar.s(Theme.radiusSm)
                                         color: Qt.alpha(root.typeColor(card.modelData.type), 0.15)
                                         border.width: 1
                                         border.color: root.typeColor(card.modelData.type)
-                                        implicitWidth: typeText.implicitWidth + bar.s(12)
-                                        implicitHeight: typeText.implicitHeight + bar.s(4)
+                                        implicitWidth: typeText.implicitWidth + bar.s(Theme.gapMd)
+                                        implicitHeight: typeText.implicitHeight + bar.s(Theme.gapXs)
                                         Text {
                                             id: typeText
                                             anchors.centerIn: parent
@@ -299,10 +299,10 @@ Item {
                                     }
                                     Item { Layout.fillWidth: true }
                                     ColumnLayout {
-                                        spacing: bar.s(4)
+                                        spacing: bar.s(Theme.gapXs)
                                         RowLayout {
                                             Layout.alignment: Qt.AlignRight
-                                            spacing: bar.s(6)
+                                            spacing: bar.s(Theme.gapSm)
                                             Text {
                                                 text: card.modelData.enabled ? "Enabled" : "Disabled"
                                                 font.family: "Hack Nerd Font"
@@ -319,7 +319,7 @@ Item {
                                         RowLayout {
                                             Layout.alignment: Qt.AlignRight
                                             visible: !!(card.modelData.settings && card.modelData.settings.page)
-                                            spacing: bar.s(6)
+                                            spacing: bar.s(Theme.gapSm)
                                             Text {
                                                 text: "Config menu"
                                                 font.family: "Hack Nerd Font"
@@ -347,7 +347,7 @@ Item {
 
                                 RowLayout {
                                     Layout.fillWidth: true
-                                    spacing: bar.s(8)
+                                    spacing: bar.s(Theme.gapSm)
                                     EditorButton {
                                         bar: root.bar
                                         compact: true
@@ -406,11 +406,11 @@ Item {
                             id: availCard
                             required property var modelData
                             width: pageCol.width
-                            height: availCol.implicitHeight + bar.s(20)
-                            radius: bar.s(18)
-                            color: Qt.alpha(bar.colors.surface0, 0.25)
+                            height: availCol.implicitHeight + bar.s(Theme.gapMd) * 2
+                            radius: bar.s(Theme.radiusLg)
+                            color: Theme.surfaceContainerLow
                             border.width: 1
-                            border.color: availMa.containsMouse ? bar.colors.blue : bar.colors.surface1
+                            border.color: availMa.containsMouse ? bar.colors.blue : Theme.outlineVariant
                             Behavior on border.color { ColorAnimation { duration: 150 } }
 
                             MouseArea {
@@ -425,13 +425,13 @@ Item {
                                 anchors.left: parent.left
                                 anchors.right: parent.right
                                 anchors.verticalCenter: parent.verticalCenter
-                                anchors.leftMargin: bar.s(14)
-                                anchors.rightMargin: bar.s(14)
-                                spacing: bar.s(6)
+                                anchors.leftMargin: bar.s(Theme.gapMd)
+                                anchors.rightMargin: bar.s(Theme.gapMd)
+                                spacing: bar.s(Theme.gapSm)
 
                                 RowLayout {
                                     Layout.fillWidth: true
-                                    spacing: bar.s(8)
+                                    spacing: bar.s(Theme.gapSm)
                                     Text {
                                         text: "󰏗"
                                         font.family: "Hack Nerd Font"
@@ -446,12 +446,12 @@ Item {
                                         color: bar.colors.text
                                     }
                                     Rectangle {
-                                        radius: bar.s(6)
+                                        radius: bar.s(Theme.radiusSm)
                                         color: Qt.alpha(bar.colors.blue, 0.12)
                                         border.width: 1
                                         border.color: Qt.alpha(bar.colors.blue, 0.6)
-                                        implicitWidth: srcText.implicitWidth + bar.s(12)
-                                        implicitHeight: srcText.implicitHeight + bar.s(4)
+                                        implicitWidth: srcText.implicitWidth + bar.s(Theme.gapMd)
+                                        implicitHeight: srcText.implicitHeight + bar.s(Theme.gapXs)
                                         Text {
                                             id: srcText
                                             anchors.centerIn: parent
