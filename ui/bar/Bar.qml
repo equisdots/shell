@@ -827,9 +827,6 @@ Variants {
             property int typeInIndex: 0
             property string dateStr: fullDateStr.substring(0, typeInIndex)
 
-            property string weatherIcon: ""
-            property string weatherTemp: "--°"
-            property string weatherHex: colors.yellow
 
             // --- focused window (FocusModule) -------------------------------------
             property string focusTitle: ""
@@ -852,10 +849,6 @@ Variants {
                 };
                 return icons[c] || "󰋼";
             }
-
-            property string cpuPercent: "--"
-            property string ramPercent: "--"
-            property bool sysDataReady: false
 
             property string wifiStatus: "Off"
             property string wifiIcon: "󰤮"
@@ -1121,29 +1114,6 @@ Variants {
             Timer { id: wsPollTimer; interval: 1500; running: true; repeat: true; onTriggered: { wsReader.running = false; wsReader.running = true; } }
 
             // ================================================================
-            // WEATHER
-            // ================================================================
-            Process {
-                id: weatherPoller
-                command: ["bash", "-c", `
-                    echo "$(~/.config/hypr/scripts/quickshell/ui/bar/popups/calendar/weather.sh --current-icon)"
-                    echo "$(~/.config/hypr/scripts/quickshell/ui/bar/popups/calendar/weather.sh --current-temp)"
-                    echo "$(~/.config/hypr/scripts/quickshell/ui/bar/popups/calendar/weather.sh --current-hex)"
-                `]
-                stdout: StdioCollector {
-                    onStreamFinished: {
-                        let lines = this.text.trim().split("\n");
-                        if (lines.length >= 3) {
-                            barWindow.weatherIcon = lines[0];
-                            barWindow.weatherTemp = lines[1];
-                            barWindow.weatherHex = lines[2] || colors.yellow;
-                        }
-                    }
-                }
-            }
-            Timer { interval: 150000; running: true; repeat: true; triggeredOnStart: true; onTriggered: { weatherPoller.running = false; weatherPoller.running = true; } }
-
-            // ================================================================
             // FOCUSED WINDOW (FocusModule)
             // ================================================================
             Process {
@@ -1176,27 +1146,6 @@ Variants {
                 repeat: true
                 onTriggered: { focusPoller.running = false; focusPoller.running = true; }
             }
-
-            // ================================================================
-            // SYSTEM MONITOR
-            // ================================================================
-            Process {
-                id: sysmonPoller; running: true
-                command: ["bash", "-c", Quickshell.env("HOME") + "/.config/hypr/scripts/quickshell/ui/bar/popups/system-monitor/fetch.sh"]
-                stdout: StdioCollector {
-                    onStreamFinished: {
-                        try {
-                            if (this.text && this.text.trim().length > 0) {
-                                let d = JSON.parse(this.text.trim());
-                                barWindow.cpuPercent = (d.cpu || 0) + "%";
-                                barWindow.ramPercent = (d.ram_pct || 0) + "%";
-                                barWindow.sysDataReady = true;
-                            }
-                        } catch(e) {}
-                    }
-                }
-            }
-            Timer { interval: 8000; running: true; repeat: true; triggeredOnStart: false; onTriggered: { sysmonPoller.running = false; sysmonPoller.running = true; } }
 
             // ================================================================
             // CLOCK + TYPEWRITER DATE

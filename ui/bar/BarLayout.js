@@ -53,11 +53,11 @@ var MODULES = [
     { id: "keyboard",   label: "Keyboard",    icon: "󰌌", component: "modules/KeyboardModule.qml" },
     { id: "wifi",       label: "Network",     icon: "󰤨", component: "modules/WifiModule.qml" },
     { id: "bluetooth",  label: "Bluetooth",   icon: "󰂯", component: "modules/BluetoothModule.qml" },
-    { id: "sysmon",     label: "Resources",   icon: "󰍛", component: "modules/SysmonModule.qml" },
+    { id: "sysmon",     label: "Resources",   icon: "󰍛", component: "" },  // implementation from the sysmon plugin (provides.bar.modules)
     { id: "volume",     label: "Volume",      icon: "󰕾", component: "modules/VolumeModule.qml" },
     { id: "battery",    label: "Battery",     icon: "󰁹", component: "modules/BatteryModule.qml" },
     { id: "recording",  label: "Recording",   icon: "",  component: "" },  // implementation from a plugin (provides.bar.modules)
-    { id: "weather",    label: "Timex",       icon: "󰖐", component: "modules/WeatherModule.qml" },
+    { id: "weather",    label: "Timex",       icon: "󰖐", component: "" },  // implementation from the timex plugin (provides.bar.modules)
     { id: "focus",      label: "Focus",       icon: "󰋼", component: "modules/FocusModule.qml" }
 ];
 
