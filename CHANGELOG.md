@@ -8,10 +8,13 @@ Dates use YYYY-MM-DD.
 ### Changed
 - **Screenshots overlay left the shell**: `ScreenshotOverlay.qml` now ships with the `screenshots` plugin (deployed to `ui/plugins/screenshots/ui/`); the recording bar module resolves the plugin's script across deploy layouts (managed registry/tree, user plugin, transitional core path).
 - **Timex and RSS Reader moved to plugins**: `ui/Main.qml` resolves plugin-provided panels (`manifest provides.panels`) and the General position grid lists them dynamically; the `timex` plugin ships the calendar/weather popup + its settings page, the `rss-reader` plugin a rebuilt reader panel + its own feed manager page. `SUPER+S`/`SUPER+O` come from the plugins' `hypr.lua`.
+- **Clipboard, QuickNotes and File Search moved to plugins**: same panel mechanism + their own settings pages; `SUPER+C`, `SUPER+Y` and `SUPER+'` come from each plugin's `hypr.lua`.
+- **Bar modules can be plugin-provided**: `provides.bar.modules.<id>` lets a plugin supply a module implementation for a core slot; the recording indicator is now `screenshots`' `bar/Recording.qml` and the shell keeps no recording state (`bar.isRecording` and the core poller were removed).
 
 ### Removed
 - `ScreenshotOverlay.qml` (the plugin owns it; `dots` installs the plugin by default).
 - `ui/timex/` (popup + settings tab) and `ui/panels/rss-reader/` (panel + fetcher + feeds) — both ship with their plugins now.
+- `ui/panels/clipboard/`, `ui/panels/quicknotes/`, `ui/panels/file-search/` and `ui/bar/modules/RecordingModule.qml` — the plugins ship them now.
 
 ## [2026-10-02]
 

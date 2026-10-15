@@ -158,12 +158,13 @@ override); the generic `colors` map is normalized by `moduleConfig`.
 Ported subsystems without a dedicated module expose their options through
 `core/Personalization.js`, one settings section per subsystem:
 
-`lock`, `battery`, `volume`, `music`, `network`, `calendar`, `updater`, `applauncher`, `system-monitor`, `clipboard`, `focustime`, `quicknotes`, `idle`, `file-search`, `scale`, `window-controls`, `widgets`
+`lock`, `battery`, `volume`, `music`, `network`, `calendar`, `updater`, `applauncher`, `system-monitor`, `focustime`, `idle`, `scale`, `window-controls`, `widgets`
 
-The `timex` and `rss-reader` subsystems moved to plugins: their options
-(`settings.json → "timex"` and `→ "rss-reader"`, including the calendar
-popup's layout keys) are plugin-owned now and edited by their own settings
-pages (`p_timex`, `p_rss-reader` in the Plugins group).
+The `timex`, `rss-reader`, `clipboard`, `quicknotes` and `file-search`
+subsystems moved to plugins: their options (including the calendar popup's
+layout keys) are plugin-owned now and edited by their own settings pages
+(`p_timex`, `p_rss-reader`, `p_clipboard`, `p_quicknotes`,
+`p_file-search` in the Plugins group).
 
 The `lock` section configures the lock screen (`Lock.qml`, the alternate
 entry point at the repo root launched by `lock.sh`):

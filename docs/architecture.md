@@ -30,10 +30,10 @@ Lock.qml                   alternate entry: PAM session lock (WlSessionLock,
     │   ├── edit/          editor controls (FieldCard, ToggleCard, ...)
     │   └── popups/        applauncher, battery, guide, music, network,
     │                      system-monitor, updater, volume (bar-triggered)
-    ├── panels/            clipboard, davincix, file-search, focustime, idle,
-    │                      quickactions, quicknotes, scale, window-controls
-    │                      (plugin panels — timex, rss-reader — resolve from
-    │                      their manifests via ui/Main.qml)
+    ├── panels/            davincix, focustime, idle, quickactions, scale,
+    │                      window-controls (plugin panels — timex,
+    │                      rss-reader, clipboard, quicknotes, file-search —
+    │                      resolve from their manifests via ui/Main.qml)
     ├── notifications/     NotificationPopups
     ├── frame/             screen frame: ScreenFrame per edge/fullscreen
     │                      (Frame.qml) + geometry in core/FrameGeometry.js and

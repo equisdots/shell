@@ -43,16 +43,16 @@ dispatch through `qs_manager.sh` → `Main.qml` → `core/WindowRegistry.js`:
 | Network | `ui/bar/popups/network/NetworkPopup.qml` | SUPER + N | Top right |
 | Volume | `ui/bar/popups/volume/VolumePopup.qml` | SUPER + V | Top right |
 | App Launcher | `ui/bar/popups/applauncher/appLauncher.qml` | SUPER + D | Center |
-| Clipboard | `ui/panels/clipboard/ClipboardManager.qml` | SUPER + C | Center |
+| Clipboard | `ui/plugins/clipboard/ui/ClipboardManager.qml` (clipboard plugin panel) | SUPER + C | Center |
 | Calendar | `ui/plugins/timex/ui/TimexPopup.qml` (timex plugin panel) | SUPER + S | Top center |
 | Music Player | `ui/bar/popups/music/MusicPopup.qml` | SUPER + M | Top left |
 | Davincix (wallpaper) | `ui/panels/davincix/DavincixPicker.qml` | SUPER + W | Center |
 | About | Settings panel, About tab (`ui/bar/editor/GuidePage.qml`) | SUPER + H | Center |
 | System Monitor | `ui/bar/popups/system-monitor/SystemMonitor.qml` | SUPER + I | Center |
 | Updater | `ui/bar/popups/updater/UpdaterPopup.qml` | SUPER + U | Center |
-| Quick Notes | `ui/panels/quicknotes/QuickNotes.qml` | SUPER + Y | Center |
+| Quick Notes | `ui/plugins/quicknotes/ui/QuickNotes.qml` (quicknotes plugin panel) | SUPER + Y | Center |
 | RSS Reader | `ui/plugins/rss-reader/ui/RssReader.qml` (rss-reader plugin panel) | SUPER + O | Center |
-| File Search | `ui/panels/file-search/FileSearch.qml` | SUPER + ' | Center |
+| File Search | `ui/plugins/file-search/ui/FileSearch.qml` (file-search plugin panel) | SUPER + ' | Center |
 | Focus Time | `ui/panels/focustime/FocusTimePopup.qml` | SUPER + SHIFT + T | Center |
 | Display Scale | `ui/panels/scale/ScalePicker.qml` | SUPER + Z | Center |
 | Idle | `ui/panels/idle/IdlePopup.qml` | SUPER + P | Center |
