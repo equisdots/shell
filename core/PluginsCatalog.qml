@@ -20,6 +20,12 @@ import Quickshell.Io
 //
 // The Settings → Plugins page renders this catalog; `rev` bumps after every
 // scan so bindings re-evaluate.
+//
+// Besides the installed scan, the catalog reads the install registry copy
+// (plugins-registry.json, deployed by `dots`) to expose the *available*
+// plugins — registry entries whose id is not installed yet — for the Plugins
+// page's install flow (`dots plugins add <id>`). The scan itself never needs
+// the registry: installed plugins stay discovery-driven.
 // ═══════════════════════════════════════════════════════════════════════════
 
 Item {
@@ -34,7 +40,40 @@ Item {
     property var plugins: []
     property int rev: 0
 
-    function refresh() { scan.running = false; scan.running = true }
+    // ── available (install registry, deployed by dots) ────────────────────
+    readonly property string registryPath: home + "/.config/hypr/scripts/quickshell/plugins-registry.json"
+    property var registry: ({ version: 0, plugins: [] })
+    property int registryRev: 0
+
+    function parseRegistry() {
+        try {
+            let o = JSON.parse(registryFile.text() || "{}");
+            registry = (o && typeof o === "object") ? o : ({ version: 0, plugins: [] });
+        } catch (e) {
+            registry = ({ version: 0, plugins: [] });
+        }
+        registryRev++;
+    }
+
+    function registryEntries() {
+        return (registry && Array.isArray(registry.plugins)) ? registry.plugins : [];
+    }
+
+    function isInstalled(id) {
+        return plugins.some(p => p && p.id === id);
+    }
+
+    // Registry entries whose id is not installed yet (user plugins win: an id
+    // lives in either the installed scan or this list, never both).
+    function availablePlugins() {
+        return registryEntries().filter(r => r && r.id && !isInstalled(r.id));
+    }
+
+    function refresh() {
+        scan.running = false;
+        scan.running = true;
+        registryFile.reload();
+    }
 
     // ── origin ────────────────────────────────────────────────────────────
     // Managed plugins are deployed by dots into the shell tree; user plugins
@@ -82,5 +121,17 @@ Item {
                 } catch (e) {}
             }
         }
+    }
+
+    // Install registry copy (deployed by dots). Watched so the Available list
+    // follows add/remove and the copy appearing after the first `dots plugins`
+    // run; a missing file just resolves to an empty registry.
+    FileView {
+        id: registryFile
+        path: catalog.registryPath
+        watchChanges: true
+        onLoaded: catalog.parseRegistry()
+        onFileChanged: catalog.parseRegistry()
+        onLoadFailed: catalog.parseRegistry()
     }
 }
