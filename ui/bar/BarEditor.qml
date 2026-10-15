@@ -107,7 +107,7 @@ Item {
     function applyActiveMode() {
         if (root.activeMode === "") return;
         let map = {
-            "general": "s_general", "timex": "s_timex", "keyboard": "s_keyboard",
+            "general": "s_general", "keyboard": "s_keyboard",
             "monitors": "s_monitors", "startup": "s_startup", "topbar": "d_engine",
             "bar": "d_engine", "engine": "d_engine", "launcher": "d_launcher",
             "hyprland": "d_hyprland", "idle": "d_idle", "gpu": "d_gpu",
@@ -580,7 +580,7 @@ Item {
     // Plugins, Behavior, Widgets, System): orden, visibilidad y estado vienen
     // de settings.editor. Los plugins instalados aportan su ítem (p_<id>).
     // currentPage usa ids prefijados:
-    // s_* = settings/tabs/*.qml + ui/timex (host = settingsHost) · d_* = bar/editor/*.qml
+    // s_* = settings/tabs/*.qml (host = settingsHost) · d_* = bar/editor/*.qml
     // p_* = plugin pages (ui/plugins/<id>/, loaded on demand; bar = root).
     // La píldora mauve sigue al item activo por su POSICIÓN REAL
     // (navItemMap + mapToItem) con scroll-follow por contentY.
@@ -686,7 +686,6 @@ Item {
         let map = {
             // Tabs compartidas de settings (host = settingsHost)
             "s_general":  "../settings/tabs/GeneralTab.qml",
-            "s_timex":  "../timex/TimexTab.qml",
             "s_keyboard": "../settings/tabs/KeybindTab.qml",
             "s_monitors": "../settings/tabs/MonitorsTab.qml",
             "s_startup":  "../settings/tabs/StartupTab.qml",
@@ -718,7 +717,6 @@ Item {
     function pageLoader(id) {
         let map = {
             "s_general":  sGeneralLoader,
-            "s_timex":  sTimexLoader,
             "s_keyboard": sKeyboardLoader,
             "s_monitors": sMonitorsLoader,
             "s_startup":  sStartupLoader,
@@ -1939,16 +1937,6 @@ Item {
                         property real slideY: visible ? 0 : root.s(10)
                         Behavior on slideY { NumberAnimation { duration: 250; easing.type: Easing.OutQuart } }
                         transform: Translate { y: sGeneralLoader.slideY }
-                        Behavior on opacity { NumberAnimation { duration: 250 } }
-                    }
-                    Loader {
-                        id: sTimexLoader
-                        anchors.fill: parent
-                        visible: root.currentPage === "s_timex"
-                        opacity: visible ? 1.0 : 0.0
-                        property real slideY: visible ? 0 : root.s(10)
-                        Behavior on slideY { NumberAnimation { duration: 250; easing.type: Easing.OutQuart } }
-                        transform: Translate { y: sTimexLoader.slideY }
                         Behavior on opacity { NumberAnimation { duration: 250 } }
                     }
                     Loader {

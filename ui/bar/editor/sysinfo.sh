@@ -63,7 +63,16 @@ else
 fi
 
 # timex engine status (provider|city|unit|configured|key_set|last_update|error)
-TX="$("$HOME/.local/bin/timex" status 2>/dev/null || timex status 2>/dev/null)"
+# The engine ships with the timex plugin: resolve its copy across deploy
+# layouts (managed shell tree, user plugin, classic wrapper).
+TIMEX_BIN=""
+for c in "$HOME/.config/hypr/scripts/quickshell/ui/plugins/timex/core/timex.sh" \
+         "$HOME/.config/hypr/plugins-user/timex/core/timex.sh" \
+         "$HOME/.local/bin/timex"; do
+    [ -f "$c" ] && { TIMEX_BIN="$c"; break; }
+done
+TX=""
+[ -n "$TIMEX_BIN" ] && TX="$(bash "$TIMEX_BIN" status 2>/dev/null)"
 if [ -n "$TX" ]; then
     IFS='|' read -r t_prov t_city t_unit _t_conf _t_key t_up t_err <<< "$TX"
     echo "timex_provider=${t_prov:-—}"
