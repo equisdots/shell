@@ -362,6 +362,14 @@ Item {
     }
 
     function refreshPalette() {
+        // Build the command HERE (imperatively) so it always matches the CURRENT
+        // paletteName. A `command:` binding re-evaluates one tick late — after
+        // the Process has already been launched — so it would read the PREVIOUS
+        // palette and leave the whole shell tinted with the old theme.
+        paletteReader.command = ["bash", "-c",
+            "cat '" + root.palettesDir + "/" + root.paletteName + ".json' 2>/dev/null"
+            + " || cat '" + root.palettesDir + "/community/" + root.paletteName + ".json' 2>/dev/null"
+            + " || cat '" + root.palettesDir + "/x.json' 2>/dev/null || true"];
         paletteReader.running = false;
         paletteReader.running = true;
     }
@@ -388,9 +396,12 @@ Item {
     }
 
     // --- palette file reader -----------------------------------------------------
+    // Tries the top-level file first, then the community/ dir, then the built-in
+    // `x` fallback — the SAME resolution order as ui/bar/Colors.qml, so Theme and
+    // the bar never disagree after switching to a community palette.
     Process {
         id: paletteReader
-        command: ["bash", "-c", "cat '" + root.palettesDir + "/" + root.paletteName + ".json' 2>/dev/null || cat '" + root.palettesDir + "/x.json' 2>/dev/null || true"]
+        // command is assigned imperatively by refreshPalette() (never a binding).
         running: false
         stdout: StdioCollector {
             onStreamFinished: root.applyPaletteText(this.text)
@@ -402,10 +413,17 @@ Item {
     // (tmp + mv) and FileView follows the path across renames — no shell
     // processes, reload-safe. applyPaletteText() re-reads and only re-applies
     // when the parsed content really differs. The watch retargets itself when
-    // paletteName changes through the FileView.path binding.
+    // paletteName changes through the FileView.path binding. Two watchers
+    // (top-level + community) mirror Colors.qml so community palettes stay live.
     FileView {
         id: paletteWatcher
         path: root.palettesDir + "/" + root.paletteName + ".json"
+        watchChanges: true
+        onFileChanged: root.refreshPalette()
+    }
+    FileView {
+        id: paletteWatcherCommunity
+        path: root.palettesDir + "/community/" + root.paletteName + ".json"
         watchChanges: true
         onFileChanged: root.refreshPalette()
     }
@@ -413,6 +431,7 @@ Item {
     onPaletteNameChanged: {
         root.refreshPalette();
         paletteWatcher.reload();
+        paletteWatcherCommunity.reload();
     }
 
     Component.onCompleted: root.refreshSettings()

@@ -271,6 +271,14 @@ Item {
     }
 
     function readSettings() {
+        // Build the command imperatively so it matches the CURRENT paletteName:
+        // a `command:` binding re-evaluates one tick late (after the Process has
+        // already launched), which would read the previous palette and leave the
+        // bar/dock tinted with the old theme.
+        paletteReader.command = ["bash", "-c",
+            "cat '" + root.palettesDir + "/" + root.paletteName + ".json' 2>/dev/null"
+            + " || cat '" + root.palettesDir + "/community/" + root.paletteName + ".json' 2>/dev/null"
+            + " || cat '" + root.palettesDir + "/x.json'"];
         paletteReader.running = false;
         paletteReader.running = true;
     }
@@ -338,7 +346,7 @@ Item {
     // --- palette file reader --------------------------------------------------------
     Process {
         id: paletteReader
-        command: ["bash", "-c", "cat '" + root.palettesDir + "/" + root.paletteName + ".json' 2>/dev/null || cat '" + root.palettesDir + "/community/" + root.paletteName + ".json' 2>/dev/null || cat '" + root.palettesDir + "/x.json'"]
+        // command is assigned imperatively by readSettings() (never a binding).
         running: false
         stdout: StdioCollector {
             onStreamFinished: root.applyPaletteText(this.text)

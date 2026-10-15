@@ -71,7 +71,7 @@ function getLayout(name, mx, my, mw, mh, userScale) {
         // --- Extralarge / Custom Centered ---
         "updater": { w: s(950, scale), h: s(850, scale), rx: Math.floor((mw/2)-(s(950, scale)/2)), ry: Math.floor((mh/2)-(s(850, scale)/2)), comp: "ui/bar/popups/updater/UpdaterPopup.qml" },
         "system-monitor": { w: s(720, scale), h: s(600, scale), rx: Math.floor((mw/2)-(s(720, scale)/2)), ry: Math.floor((mh/2)-(s(600, scale)/2)), comp: "ui/bar/popups/system-monitor/SystemMonitor.qml" },
-        "palette": { w: s(620, scale), h: s(650, scale), rx: Math.floor((mw/2)-(s(620, scale)/2)), ry: Math.floor((mh/2)-(s(650, scale)/2)), comp: "ui/panels/palette/PaletteWidget.qml" },
+        "palette": { w: mw - s(40, scale), h: Math.min(s(880, scale), mh - s(60, scale)), rx: s(20, scale), ry: Math.floor((mh - Math.min(s(880, scale), mh - s(60, scale))) / 2), comp: "ui/panels/palette/PaletteWidget.qml" },
         "scale": { w: s(520, scale), h: s(560, scale), rx: Math.floor((mw/2)-(s(520, scale)/2)), ry: Math.floor((mh/2)-(s(560, scale)/2)), comp: "ui/panels/scale/ScalePicker.qml" },
         "window-controls": { w: s(480, scale), h: s(800, scale), rx: Math.floor((mw/2)-(s(480, scale)/2)), ry: Math.floor((mh/2)-(s(800, scale)/2)), comp: "ui/panels/window-controls/WindowControls.qml" },
         "bar-editor": { w: Math.min(s(1260, scale), mw - s(40, scale)), h: s(760, scale), rx: Math.floor((mw - Math.min(s(1260, scale), mw - s(40, scale))) / 2), ry: Math.floor((mh/2)-(s(760, scale)/2)), comp: "ui/bar/BarEditor.qml" },
