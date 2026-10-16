@@ -17,6 +17,9 @@ Dates use YYYY-MM-DD.
 ### Removed
 - **Classic bar engine**: `ui/bar/ClassicBar.qml`, the Classic Bar editor page, `PosCardClassic`, `ClassicSectionCard`, the `classic*` helpers in `BarLayout.js` and the classic branches in `Bar.qml`/`BarEditor.qml`.
 
+### Fixed
+- **Empty-file trap in the plugin settings writes** (Plugins manager + Plugins panel): the jq guards now seed with `[ -s ]` (exists *and* non-empty) instead of `[ -f ]` — `jq` on an empty file exits 0 with no output, so a truncated `settings.json` could never repair itself through the old seed.
+
 ### Documentation
 - `docs/bar.md` rewritten for the single bar + plugin bars; `docs/personalization.md` updated.
 

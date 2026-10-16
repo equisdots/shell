@@ -78,7 +78,7 @@ Item {
         let pathJson = JSON.stringify(path);
         let v = value ? "true" : "false";
         let cmd = "f='" + file + "'; mkdir -p \"$(dirname \"$f\")\"; " +
-                  "[ -f \"$f\" ] || echo '{}' > \"$f\"; " +
+                  "[ -s \"$f\" ] || echo '{}' > \"$f\"; " +
                   "tmp=$(mktemp \"$f\".tmp.XXXXXX) && " +
                   "jq --argjson p '" + pathJson + "' --argjson v " + v + " 'setpath($p; $v)' \"$f\" > \"$tmp\" && mv \"$tmp\" \"$f\"";
         Quickshell.execDetached(["bash", "-c", cmd]);
