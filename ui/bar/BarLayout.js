@@ -428,12 +428,15 @@ function normalizeBar(raw) {
         out.zones[zi].zoneBgSolid = z.zoneBgSolid === true;
         out.zones[zi].borderWidth = (typeof z.borderWidth === "number") ? z.borderWidth : out.borderWidth;
         out.zones[zi].borderColor = (typeof z.borderColor === "string" && z.borderColor !== "") ? z.borderColor : out.borderColor;
-        // drop unknown / duplicate module ids
+        // Keep EVERY module id: plugin-provided modules (provides.bar.modules)
+        // are unknown to this JS catalog and must survive normalization, or the
+        // bar would silently drop them on every apply. Only drop duplicates and
+        // entries without an id.
         let clean = [];
         let mseen = {};
         for (let m = 0; m < out.zones[zi].modules.length; m++) {
             let mid = out.zones[zi].modules[m].id;
-            if (!getModule(mid) || mseen[mid]) continue;
+            if (!mid || mseen[mid]) continue;
             mseen[mid] = true;
             clean.push(out.zones[zi].modules[m]);
         }
@@ -634,6 +637,48 @@ function enabledIndexOf(zone, id) {
         n++;
     }
     return -1;
+}
+
+// Is module `id` placed in ANY zone (enabled or not)?
+function modulePlaced(bar, id) {
+    if (!bar || !isList(bar.zones)) return false;
+    for (let z = 0; z < bar.zones.length; z++) {
+        let mods = bar.zones[z].modules || [];
+        for (let m = 0; m < mods.length; m++) {
+            let mid = (typeof mods[m] === "string") ? mods[m] : (mods[m] && mods[m].id);
+            if (mid === id) return true;
+        }
+    }
+    return false;
+}
+
+// Add module `id` to the bar (first placement): appends it ENABLED to the
+// 'end' zone (fallback: the last zone). Used by the editor's "Add to bar"
+// button so plugin-provided modules — which are not in the core catalog and
+// therefore never auto-added by normalizeBar — become placeable from the UI.
+// Returns a new bar; never mutates the input.
+function addModuleToBar(bar, id) {
+    if (!bar || !isList(bar.zones) || bar.zones.length === 0) return bar;
+    let out = cloneBar(bar);
+    if (modulePlaced(out, id)) return out;
+    let zi = -1;
+    for (let z = 0; z < out.zones.length; z++)
+        if (out.zones[z].align === "end") { zi = z; break; }
+    if (zi === -1) zi = out.zones.length - 1;
+    if (!isList(out.zones[zi].modules)) out.zones[zi].modules = [];
+    out.zones[zi].modules.push({ id: id, enabled: true });
+    return out;
+}
+
+// Remove module `id` from every zone. Returns a new bar.
+function removeModuleFromBar(bar, id) {
+    if (!bar || !isList(bar.zones)) return bar;
+    let out = cloneBar(bar);
+    for (let z = 0; z < out.zones.length; z++) {
+        let mods = out.zones[z].modules || [];
+        out.zones[z].modules = mods.filter(m => ((typeof m === "string") ? m : (m && m.id)) !== id);
+    }
+    return out;
 }
 
 // Move module `id` into `targetZoneId` at `insertIndex`. The index is expressed

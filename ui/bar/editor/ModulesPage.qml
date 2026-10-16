@@ -233,6 +233,24 @@ Item {
                                             radius: bar.s(Theme.radiusFull)
                                             color: card.effAccent !== "" ? root.colorOf(card.effAccent) : Theme.surfaceContainer
                                         }
+
+                                        // Add/remove the module from the bar. Plugin
+                                        // modules are not in the core catalog, so
+                                        // normalizeBar never auto-adds them: this
+                                        // is the only way to place them.
+                                        EditorButton {
+                                            readonly property bool placed: BarLayout.modulePlaced(root.bar.bar, modelData.id)
+                                            Layout.alignment: Qt.AlignVCenter
+                                            compact: true
+                                            bar: root.bar
+                                            accentRole: "mauve"
+                                            icon: placed ? "󰄬" : "󰐕"
+                                            label: placed ? "On bar" : "Add"
+                                            active: placed
+                                            onActivated: root.bar.applyBar(placed
+                                                ? BarLayout.removeModuleFromBar(root.bar.bar, modelData.id)
+                                                : BarLayout.addModuleToBar(root.bar.bar, modelData.id))
+                                        }
                                     }
 
                                     // Rows con anchos explícitos: los GridLayout anidados

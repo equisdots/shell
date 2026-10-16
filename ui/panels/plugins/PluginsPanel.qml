@@ -136,6 +136,16 @@ Item {
                         RowLayout {
                             Layout.fillWidth: true; spacing: Theme.gapSm
                             EditorButton { bar: barShim; compact: true; icon: "󰒓"; label: "Configure"; visible: !!(card.modelData.settings && card.modelData.settings.page); onActivated: root.selected = card.modelData.id }
+                            // Plugins that ship a panel/popup get a direct opener.
+                            EditorButton {
+                                bar: barShim; compact: true; icon: "󰖯"; label: "Open"
+                                visible: { let ps = (card.modelData.provides || {}).panels; return !!ps && Object.keys(ps).length > 0; }
+                                onActivated: {
+                                    let ps = (card.modelData.provides || {}).panels || {};
+                                    let k = Object.keys(ps)[0];
+                                    if (k) Quickshell.execDetached(["bash", Quickshell.env("HOME") + "/.config/hypr/scripts/qs_manager.sh", "toggle", k]);
+                                }
+                            }
                             Item { Layout.fillWidth: true }
                             Text { text: card.modelData._base || ""; font.family: "Hack Nerd Font"; font.pixelSize: 9; color: Qt.alpha(barShim.colors.subtext0, 0.7) }
                         }
