@@ -8,9 +8,10 @@ import "../../bar"
 import "../../bar/edit"
 
 // ═══════════════════════════════════════════════════════════════════════════
-// PluginsPanel — the dedicated PLUGINS panel (separate from the core config
-// panel). It is the ONLY plugin surface: the manager (list + enable/disable +
-// compat) and each plugin's OWN settings page, rendered inside this panel.
+// PluginsPanel — the dedicated PLUGINS panel (SUPER+SHIFT+M). Material-You
+// restyle: page header with live counts, a filled search field and type filter
+// chips, and roomy list cards with a leading icon chip, description and per-
+// plugin actions.
 //
 // Autonomy: it never touches the core settings.json. Enabling/disabling writes
 // the plugin's OWN settings file (~/.config/hypr/plugins/<id>/settings.json);
@@ -25,8 +26,13 @@ Item {
         return PluginsCatalog.plugins || [];
     }
 
-    // Kit context shim handed to plugin pages as `bar` (the same contract the
-    // editor provides: bar.s(), bar.colors, bar.gotoPage()).
+    property string selected: ""          // plugin id whose page is open ("" = list)
+    property string activeMode: ""        // Main sets this from `open plugins <id>`
+    property string query: ""
+    property string filterType: "all"     // all | shell | hypr | mixed | cli
+
+    // Kit context shim handed to plugin pages as `bar` (same contract the editor
+    // provides: bar.s(), bar.colors, bar.gotoPage()).
     Colors { id: themeColors }
     QtObject {
         id: barShim
@@ -35,9 +41,30 @@ Item {
         function gotoPage(id) { root.selected = ""; }
     }
 
-    property string selected: ""          // plugin id whose page is open ("" = list)
-    property string activeMode: ""        // Main sets this from `open plugins <id>`
     onActiveModeChanged: if (root.activeMode !== "" && root.activeMode !== root.selected) root.selected = root.activeMode
+
+    // ── filtering ────────────────────────────────────────────────────────────
+    function matches(p) {
+        if (!p) return false;
+        if (root.filterType !== "all" && String(p.type || "") !== root.filterType) return false;
+        let q = root.query.trim().toLowerCase();
+        if (q === "") return true;
+        let hay = (String(p.name || "") + " " + String(p.id || "") + " " +
+                   String(p.description || "") + " " + String(p.author || "")).toLowerCase();
+        return hay.indexOf(q) !== -1;
+    }
+    readonly property var filtered: (root.plugins || []).filter(function (p) { return root.matches(p); })
+    readonly property int enabledCount: (root.plugins || []).filter(function (p) { return p && p.enabled === true; }).length
+    readonly property var typeList: {
+        let seen = {}; let out = [];
+        let l = root.plugins || [];
+        for (let i = 0; i < l.length; i++) {
+            let t = String((l[i] || {}).type || "");
+            if (t !== "" && !seen[t]) { seen[t] = true; out.push(t); }
+        }
+        out.sort();
+        return out;
+    }
 
     function pluginById(id) {
         let l = root.plugins;
@@ -70,115 +97,328 @@ Item {
         if (t === "cli")   return barShim.colors.yellow;
         return barShim.colors.subtext0;
     }
+    function openPanel(p) {
+        let ps = (p && p.provides ? p.provides.panels : null) || {};
+        let k = Object.keys(ps)[0];
+        if (k) Quickshell.execDetached(["bash", Quickshell.env("HOME") + "/.config/hypr/scripts/qs_manager.sh", "toggle", k]);
+    }
+    function hasPanel(p) {
+        let ps = (p && p.provides ? p.provides.panels : null) || {};
+        return Object.keys(ps).length > 0;
+    }
 
-    // ── list ───────────────────────────────────────────────────────────────
-    Flickable {
-        id: listFlick
+    // ══ LIST ═══════════════════════════════════════════════════════════════
+    ColumnLayout {
         anchors.fill: parent
+        anchors.margins: Theme.gapLg
+        spacing: Theme.gapMd
         visible: root.selected === ""
-        clip: true
-        boundsBehavior: Flickable.StopAtBounds
-        contentHeight: listCol.height + Theme.gapLg
-        ScrollBar.vertical: ScrollBar { width: 4; policy: ScrollBar.AsNeeded }
 
-        Column {
-            id: listCol
-            x: Theme.gapSm; y: Theme.gapSm
-            width: listFlick.width - Theme.gapLg
+        // ── header ──────────────────────────────────────────────────────────
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: Theme.gapMd
+
+            Rectangle {
+                Layout.alignment: Qt.AlignVCenter
+                width: 44; height: 44; radius: Theme.radiusMd
+                color: Qt.alpha(barShim.colors.mauve, 0.15)
+                Text {
+                    anchors.centerIn: parent; text: "󰏗"
+                    font.family: "Hack Nerd Font"; font.pixelSize: 20
+                    color: barShim.colors.mauve
+                }
+            }
+            ColumnLayout {
+                spacing: 0
+                Text {
+                    text: "Plugins"
+                    font.family: "Hack Nerd Font"; font.weight: Font.Black; font.pixelSize: 24
+                    color: barShim.colors.text
+                }
+                Text {
+                    text: root.plugins.length + " installed · " + root.enabledCount + " enabled"
+                    font.family: "Hack Nerd Font"; font.pixelSize: 11
+                    color: barShim.colors.subtext0
+                }
+            }
+            Item { Layout.fillWidth: true }
+        }
+
+        // ── search field (MD3 filled) ───────────────────────────────────────
+        Rectangle {
+            Layout.fillWidth: true
+            implicitHeight: 44
+            radius: Theme.radiusFull
+            color: Theme.surfaceContainerHigh
+            border.width: 1
+            border.color: searchInput.activeFocus ? barShim.colors.mauve : "transparent"
+
+            RowLayout {
+                anchors.fill: parent
+                anchors.leftMargin: Theme.gapMd
+                anchors.rightMargin: Theme.gapSm
+                spacing: Theme.gapSm
+
+                Text {
+                    text: "󰍉"
+                    font.family: "Hack Nerd Font"; font.pixelSize: 16
+                    color: barShim.colors.subtext0
+                }
+                TextInput {
+                    id: searchInput
+                    Layout.fillWidth: true
+                    clip: true
+                    color: barShim.colors.text
+                    font.family: "Hack Nerd Font"; font.pixelSize: 13
+                    selectByMouse: true
+                    selectionColor: Qt.alpha(barShim.colors.mauve, 0.35)
+                    selectedTextColor: barShim.colors.text
+                    onTextChanged: root.query = text
+
+                    Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        visible: searchInput.text === ""
+                        text: "Search plugins…"
+                        font.family: "Hack Nerd Font"; font.pixelSize: 13
+                        color: Qt.alpha(barShim.colors.subtext0, 0.8)
+                    }
+                    Keys.onEscapePressed: { text = ""; root.query = ""; focus = false; }
+                }
+                Rectangle {
+                    Layout.alignment: Qt.AlignVCenter
+                    visible: searchInput.text !== ""
+                    width: 24; height: 24; radius: Theme.radiusFull
+                    color: clearMa.containsMouse ? Theme.stateLayer(barShim.colors.text, Theme.stateHover) : "transparent"
+                    Text { anchors.centerIn: parent; text: "󰅖"; font.family: "Hack Nerd Font"; font.pixelSize: 13; color: barShim.colors.subtext0 }
+                    MouseArea { id: clearMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: { searchInput.text = ""; root.query = ""; } }
+                }
+            }
+        }
+
+        // ── type filter chips ───────────────────────────────────────────────
+        RowLayout {
+            Layout.fillWidth: true
             spacing: Theme.gapSm
 
-            Text { text: "Plugins"; font.family: "Hack Nerd Font"; font.weight: Font.Black; font.pixelSize: 24; color: barShim.colors.text }
-            EditLabel {
-                width: parent.width; text: "Installed plugins (discovered, never written by the core). Enable/disable writes each plugin's own settings file."
-                font.pixelSize: 11; color: barShim.colors.subtext0; wrapMode: Text.WordWrap
-            }
-
             Repeater {
-                model: root.plugins
+                model: [["all", "All"]].concat(root.typeList.map(function (t) { return [t, t.charAt(0).toUpperCase() + t.slice(1)]; }))
                 delegate: Rectangle {
-                    id: card
                     required property var modelData
-                    width: listCol.width
-                    height: cardCol.implicitHeight + Theme.gapXl
-                    radius: Theme.radiusLg
-                    color: Theme.surfaceContainer
+                    readonly property bool on: root.filterType === modelData[0]
+                    readonly property color accent: modelData[0] === "all" ? barShim.colors.mauve : root.typeColor(modelData[0])
+                    radius: Theme.radiusFull
+                    color: on ? Theme.stateLayer(accent, Theme.statePress) : Theme.surfaceContainerHigh
                     border.width: 1
-                    border.color: cardMa.containsMouse ? barShim.colors.mauve : Theme.outlineVariant
+                    border.color: on ? accent : Theme.outlineVariant
+                    implicitWidth: chipText.implicitWidth + Theme.gapLg * 2
+                    implicitHeight: 30
+                    Text {
+                        id: chipText
+                        anchors.centerIn: parent
+                        text: modelData[1]
+                        font.family: "Hack Nerd Font"; font.pixelSize: 12
+                        font.weight: on ? Font.Bold : Font.Normal
+                        color: on ? barShim.colors.text : barShim.colors.subtext0
+                    }
+                    MouseArea {
+                        anchors.fill: parent; cursorShape: Qt.PointingHandCursor
+                        onClicked: root.filterType = modelData[0]
+                    }
+                }
+            }
+            Item { Layout.fillWidth: true }
+        }
 
-                    MouseArea { id: cardMa; anchors.fill: parent; hoverEnabled: true; acceptedButtons: Qt.NoButton }
+        // ── list ────────────────────────────────────────────────────────────
+        Flickable {
+            id: listFlick
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            clip: true
+            boundsBehavior: Flickable.StopAtBounds
+            contentHeight: listCol.height + Theme.gapLg
+            ScrollBar.vertical: ScrollBar { width: 4; policy: ScrollBar.AsNeeded }
 
-                    ColumnLayout {
-                        id: cardCol
-                        anchors.left: parent.left; anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter
-                        anchors.margins: Theme.gapMd
-                        spacing: Theme.gapXs
+            Column {
+                id: listCol
+                width: listFlick.width - Theme.gapMd
+                spacing: Theme.gapSm
+
+                Repeater {
+                    model: root.filtered
+                    delegate: Rectangle {
+                        id: card
+                        required property var modelData
+                        width: listCol.width
+                        implicitHeight: 96
+                        radius: Theme.radiusLg
+                        color: cardHover.hovered ? Theme.surfaceContainerHigh : Theme.surfaceContainerLow
+                        border.width: 1
+                        border.color: cardHover.hovered ? Qt.alpha(root.typeColor(card.modelData.type), 0.7) : Theme.outlineVariant
+                        Behavior on color { ColorAnimation { duration: Theme.durShort } }
+
+                        HoverHandler { id: cardHover; cursorShape: Qt.PointingHandCursor }
 
                         RowLayout {
-                            Layout.fillWidth: true; spacing: Theme.gapSm
-                            Text { text: "󰏗"; font.family: "Hack Nerd Font"; font.pixelSize: 16; color: root.typeColor(card.modelData.type) }
-                            Text { text: card.modelData.name || card.modelData.id; font.family: "Hack Nerd Font"; font.weight: Font.Bold; font.pixelSize: 13; color: barShim.colors.text }
-                            Text { text: "v" + (card.modelData.version || "?"); font.family: "Hack Nerd Font"; font.pixelSize: 10; color: barShim.colors.subtext0 }
+                            anchors.fill: parent
+                            anchors.margins: Theme.gapMd
+                            spacing: Theme.gapMd
+
+                            // leading type icon chip
                             Rectangle {
-                                radius: Theme.radiusSm; color: Qt.alpha(root.typeColor(card.modelData.type), 0.15)
-                                border.width: 1; border.color: root.typeColor(card.modelData.type)
-                                implicitWidth: tt.implicitWidth + Theme.gapMd; implicitHeight: tt.implicitHeight + Theme.gapXs
-                                Text { id: tt; anchors.centerIn: parent; text: card.modelData.type || "plugin"; font.family: "Hack Nerd Font"; font.pixelSize: 9; color: root.typeColor(card.modelData.type) }
-                            }
-                            Item { Layout.fillWidth: true }
-                            Text { text: card.modelData.enabled ? "Enabled" : "Disabled"; font.family: "Hack Nerd Font"; font.weight: Font.Bold; font.pixelSize: 11; color: card.modelData.enabled ? barShim.colors.mauve : barShim.colors.subtext0 }
-                            ToggleSwitch { bar: barShim; checked: card.modelData.enabled === true; onToggled: root.setEnabled(card.modelData, !card.modelData.enabled) }
-                        }
-                        EditLabel {
-                            Layout.fillWidth: true
-                            text: (card.modelData.description || "") + (card.modelData.author ? "  ·  " + card.modelData.author : "")
-                            font.pixelSize: 11; color: barShim.colors.subtext0; wrapMode: Text.WordWrap
-                        }
-                        RowLayout {
-                            Layout.fillWidth: true; spacing: Theme.gapSm
-                            EditorButton { bar: barShim; compact: true; icon: "󰒓"; label: "Configure"; visible: !!(card.modelData.settings && card.modelData.settings.page); onActivated: root.selected = card.modelData.id }
-                            // Plugins that ship a panel/popup get a direct opener.
-                            EditorButton {
-                                bar: barShim; compact: true; icon: "󰖯"; label: "Open"
-                                visible: { let ps = (card.modelData.provides || {}).panels; return !!ps && Object.keys(ps).length > 0; }
-                                onActivated: {
-                                    let ps = (card.modelData.provides || {}).panels || {};
-                                    let k = Object.keys(ps)[0];
-                                    if (k) Quickshell.execDetached(["bash", Quickshell.env("HOME") + "/.config/hypr/scripts/qs_manager.sh", "toggle", k]);
+                                Layout.alignment: Qt.AlignVCenter
+                                width: 42; height: 42; radius: Theme.radiusMd
+                                color: Qt.alpha(root.typeColor(card.modelData.type), 0.15)
+                                Text {
+                                    anchors.centerIn: parent; text: "󰏗"
+                                    font.family: "Hack Nerd Font"; font.pixelSize: 18
+                                    color: root.typeColor(card.modelData.type)
                                 }
                             }
-                            Item { Layout.fillWidth: true }
-                            Text { text: card.modelData._base || ""; font.family: "Hack Nerd Font"; font.pixelSize: 9; color: Qt.alpha(barShim.colors.subtext0, 0.7) }
+
+                            // middle: name / description / actions
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: 2
+
+                                RowLayout {
+                                    spacing: Theme.gapSm
+                                    Text {
+                                        text: card.modelData.name || card.modelData.id
+                                        font.family: "Hack Nerd Font"; font.weight: Font.Bold; font.pixelSize: 14
+                                        color: barShim.colors.text
+                                    }
+                                    Text {
+                                        text: "v" + (card.modelData.version || "?")
+                                        font.family: "Hack Nerd Font"; font.pixelSize: 10
+                                        color: barShim.colors.subtext0
+                                    }
+                                    Rectangle {
+                                        radius: Theme.radiusSm
+                                        color: Qt.alpha(root.typeColor(card.modelData.type), 0.15)
+                                        border.width: 1; border.color: root.typeColor(card.modelData.type)
+                                        implicitWidth: typeTxt.implicitWidth + Theme.gapMd
+                                        implicitHeight: typeTxt.implicitHeight + Theme.gapXs
+                                        Text {
+                                            id: typeTxt; anchors.centerIn: parent
+                                            text: card.modelData.type || "plugin"
+                                            font.family: "Hack Nerd Font"; font.pixelSize: 9
+                                            color: root.typeColor(card.modelData.type)
+                                        }
+                                    }
+                                    Item { Layout.fillWidth: true }
+                                }
+
+                                EditLabel {
+                                    Layout.fillWidth: true
+                                    text: (card.modelData.description || "No description")
+                                    font.pixelSize: 11; color: barShim.colors.subtext0
+                                    elide: Text.ElideRight
+                                }
+
+                                RowLayout {
+                                    spacing: Theme.gapSm
+                                    EditorButton { bar: barShim; compact: true; icon: "󰒓"; label: "Configure"; visible: !!(card.modelData.settings && card.modelData.settings.page); onActivated: root.selected = card.modelData.id }
+                                    EditorButton { bar: barShim; compact: true; icon: "󰖯"; label: "Open"; visible: root.hasPanel(card.modelData); onActivated: root.openPanel(card.modelData) }
+                                    Item { Layout.fillWidth: true }
+                                }
+                            }
+
+                            // trailing: enable state + toggle
+                            ColumnLayout {
+                                Layout.alignment: Qt.AlignVCenter
+                                spacing: Theme.gapXs
+                                Text {
+                                    Layout.alignment: Qt.AlignHCenter
+                                    text: card.modelData.enabled ? "Enabled" : "Disabled"
+                                    font.family: "Hack Nerd Font"; font.weight: Font.Bold; font.pixelSize: 10
+                                    color: card.modelData.enabled ? barShim.colors.mauve : barShim.colors.subtext0
+                                }
+                                ToggleSwitch {
+                                    Layout.alignment: Qt.AlignHCenter
+                                    bar: barShim
+                                    checked: card.modelData.enabled === true
+                                    onToggled: root.setEnabled(card.modelData, !card.modelData.enabled)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // empty state
+                Item {
+                    width: listCol.width
+                    height: 160
+                    visible: root.filtered.length === 0
+                    Column {
+                        anchors.centerIn: parent
+                        spacing: Theme.gapSm
+                        Text {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            text: "󰍉"; font.family: "Hack Nerd Font"; font.pixelSize: 34
+                            color: Qt.alpha(barShim.colors.subtext0, 0.6)
+                        }
+                        Text {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            text: (root.plugins.length === 0) ? "No plugins installed." : "No plugins match your search."
+                            font.family: "Hack Nerd Font"; font.pixelSize: 12
+                            color: barShim.colors.subtext0
                         }
                     }
                 }
             }
-            EditLabel { visible: root.plugins.length === 0; width: parent.width; text: "No plugins installed."; font.pixelSize: 11; color: barShim.colors.subtext0 }
         }
     }
 
-    // ── plugin page (own settings page, hosted here) ─────────────────────────
-    Item {
+    // ══ PLUGIN PAGE (own settings page, hosted here) ═══════════════════════
+    ColumnLayout {
         anchors.fill: parent
+        anchors.margins: Theme.gapLg
+        spacing: Theme.gapMd
         visible: root.selected !== ""
 
         RowLayout {
-            id: pageBar
-            anchors.top: parent.top; anchors.left: parent.left; anchors.right: parent.right
-            height: 36
-            EditorButton { bar: barShim; compact: true; icon: "←"; label: "Plugins"; onActivated: root.selected = "" }
-            Item { Layout.fillWidth: true }
-            Text {
-                text: {
-                    let p = root.pluginById(root.selected);
-                    return p ? (p.name || p.id) : "";
-                }
-                font.family: "Hack Nerd Font"; font.weight: Font.Bold; font.pixelSize: 12; color: barShim.colors.text
+            Layout.fillWidth: true
+            spacing: Theme.gapSm
+
+            Rectangle {
+                Layout.alignment: Qt.AlignVCenter
+                width: 34; height: 34; radius: Theme.radiusFull
+                color: backMa.containsMouse ? Theme.surfaceContainerHigh : Theme.surfaceContainerLow
+                border.width: 1; border.color: Theme.outlineVariant
+                Text { anchors.centerIn: parent; text: "←"; font.family: "Hack Nerd Font"; font.pixelSize: 15; color: barShim.colors.text }
+                MouseArea { id: backMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: root.selected = "" }
             }
+            Text {
+                id: pageName
+                text: { let p = root.pluginById(root.selected); return p ? (p.name || p.id) : ""; }
+                font.family: "Hack Nerd Font"; font.weight: Font.Black; font.pixelSize: 18
+                color: barShim.colors.text
+            }
+            Rectangle {
+                visible: { let p = root.pluginById(root.selected); return !!(p && p.type); }
+                radius: Theme.radiusSm
+                color: Qt.alpha(root.typeColor((root.pluginById(root.selected) || {}).type), 0.15)
+                border.width: 1; border.color: root.typeColor((root.pluginById(root.selected) || {}).type)
+                implicitWidth: ptxt.implicitWidth + Theme.gapMd
+                implicitHeight: ptxt.implicitHeight + Theme.gapXs
+                Text {
+                    id: ptxt; anchors.centerIn: parent
+                    text: (root.pluginById(root.selected) || {}).type || ""
+                    font.family: "Hack Nerd Font"; font.pixelSize: 9
+                    color: root.typeColor((root.pluginById(root.selected) || {}).type)
+                }
+            }
+            Item { Layout.fillWidth: true }
         }
+
+        Rectangle { Layout.fillWidth: true; height: 1; color: Theme.outlineVariant }
 
         Loader {
             id: pageLoader
-            anchors.top: pageBar.bottom; anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom
+            Layout.fillWidth: true
+            Layout.fillHeight: true
             active: root.selected !== ""
             source: {
                 if (!active || root.selected === "") return "";
