@@ -120,6 +120,20 @@ Item {
         return String(r.source || "") + (r.path ? "/" + r.path : "");
     }
 
+    // Id-integrity notes (local validation, never silent): a plugin can shadow
+    // another copy (the user dir wins by design) or live in a folder that does
+    // not match its manifest id. Both are surfaced here in plain words.
+    function integrityText(p) {
+        if (!p) return "";
+        let parts = [];
+        if (p.dirMismatch === true)
+            parts.push("folder name does not match its manifest id");
+        let sh = p.shadowed || [];
+        if (sh.length > 0)
+            parts.push("shadows " + sh.map(s => s.base || s).join(", "));
+        return parts.join("  ·  ");
+    }
+
     // Where Configure goes: the plugin's own deployed page (settings.page →
     // dynamic p_<id>, only while enabled + config menu on) or the legacy
     // fixed settings tab.
@@ -343,6 +357,27 @@ Item {
                                     font.pixelSize: bar.s(11)
                                     color: bar.colors.subtext0
                                     wrapMode: Text.WordWrap
+                                }
+
+                                // Id-integrity warning (local, never silent).
+                                RowLayout {
+                                    Layout.fillWidth: true
+                                    visible: root.integrityText(card.modelData) !== ""
+                                    spacing: bar.s(Theme.gapXs)
+                                    Text {
+                                        text: "󰀦"
+                                        font.family: "Hack Nerd Font"
+                                        font.pixelSize: bar.s(12)
+                                        color: bar.colors.peach
+                                    }
+                                    EditLabel {
+                                        Layout.fillWidth: true
+                                        bar: root.bar
+                                        text: root.integrityText(card.modelData)
+                                        font.pixelSize: bar.s(10)
+                                        color: bar.colors.peach
+                                        wrapMode: Text.WordWrap
+                                    }
                                 }
 
                                 RowLayout {

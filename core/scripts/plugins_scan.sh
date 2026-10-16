@@ -73,7 +73,8 @@ one() {
             _base: $base,
             toggle: $toggle,
             enabled: (if $val == null then ($m.defaultEnabled // false) else ($val == true) end),
-            config: (if $cfg == null then true else ($cfg == true) end)
+            config: (if $cfg == null then true else ($cfg == true) end),
+            dirMismatch: (($base | split("/") | last) != $m.id)
           }) | .compat = $verdict' "$dir/plugin.json" 2>/dev/null || true
 }
 
@@ -86,7 +87,22 @@ scan_dir() {
     done
 }
 
+# Id integrity (local, never silent): the user dir is scanned first and wins
+# on id collisions (documented precedence), but every shadowed copy is listed
+# on the winner under "shadowed" — a duplicate can only happen visibly.
 { scan_dir "$USER_DIR"; scan_dir "$MANAGED_DIR"; } \
-    | jq -s 'reduce .[] as $x ([]; if any(.[]; .id == $x.id) then . else . + [$x] end)
+    | jq -s 'reduce .[] as $x (
+                 [];
+                 if any(.[]; .id == $x.id)
+                 then map(if .id == $x.id
+                          then .shadowed = ((.shadowed // []) + [{
+                                 base: $x._base,
+                                 dirMismatch: ($x.dirMismatch // false)
+                               }])
+                          else . end)
+                 else . + [$x]
+                 end
+             )
+             | map(.shadowed = (.shadowed // []))
              | sort_by((.name // .id) | ascii_downcase)' \
     || printf '[]\n'

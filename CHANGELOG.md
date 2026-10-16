@@ -8,6 +8,7 @@ Dates use YYYY-MM-DD.
 ### Added
 - **Bar master switch** (`bar.enabled`): the Bar group's new **General** page toggles the whole bar live — off unmaps every bar window (no UI, no reserved edge) and preserves the layout for the way back on.
 - **Complete plugin bars** (`provides.bar.provider`): a plugin can ship a whole bar; `ui/PluginHosts.qml` mounts it exactly like a host adapter (injected `host` handle, `surfaces`/`frameObstacle` contracts) with the plugin's master switch and its own settings page as its menu. POC fixture: `plugins/hello-bar` in `equisdots/plugins`.
+- **Id-integrity warnings in the Plugins manager**: a card whose plugin shadows another copy (the scan's `shadowed` list) or lives in a folder that does not match its manifest id (`dirMismatch`) shows a short warning note — duplicates are never silent.
 
 ### Changed
 - **Bar group pages**: Engine → **General** (`d_engine` → `d_general`), now hosting the master switch, a live overview and the popup-position grid.
