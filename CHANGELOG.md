@@ -3,6 +3,22 @@
 All notable changes to the equisdots shell are documented here.
 Dates use YYYY-MM-DD.
 
+## [2026-10-16]
+
+### Added
+- **Bar master switch** (`bar.enabled`): the Bar group's new **General** page toggles the whole bar live — off unmaps every bar window (no UI, no reserved edge) and preserves the layout for the way back on.
+- **Complete plugin bars** (`provides.bar.provider`): a plugin can ship a whole bar; `ui/PluginHosts.qml` mounts it exactly like a host adapter (injected `host` handle, `surfaces`/`frameObstacle` contracts) with the plugin's master switch and its own settings page as its menu. POC fixture: `plugins/hello-bar` in `equisdots/plugins`.
+
+### Changed
+- **Bar group pages**: Engine → **General** (`d_engine` → `d_general`), now hosting the master switch, a live overview and the popup-position grid.
+- `barEngine` and `classicbar` are no longer read: leftover keys in user files are ignored, never rewritten.
+
+### Removed
+- **Classic bar engine**: `ui/bar/ClassicBar.qml`, the Classic Bar editor page, `PosCardClassic`, `ClassicSectionCard`, the `classic*` helpers in `BarLayout.js` and the classic branches in `Bar.qml`/`BarEditor.qml`.
+
+### Documentation
+- `docs/bar.md` rewritten for the single bar + plugin bars; `docs/personalization.md` updated.
+
 ## [2026-10-15]
 
 ### Changed

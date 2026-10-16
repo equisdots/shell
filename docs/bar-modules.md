@@ -11,7 +11,7 @@ The same modules are used by **both bar engines** (zones and classic).
 
 ## 1. The module contract (what Zone injects)
 
-When `Zone.qml` (or `ClassicBar.qml`) instantiates a module it always injects
+When `Zone.qml` instantiates a module it always injects
 these 7 properties:
 
 | property                  | type   | meaning |

@@ -32,11 +32,10 @@ var GROUPS = [
         label: "Bar",
         icon: "󰮯",
         items: [
-            { id: "d_engine",     icon: "󰮯", label: "Engine" },
+            { id: "d_general",    icon: "󰮯", label: "General" },
             { id: "d_position",   icon: "󱂬", label: "Position" },
-            { id: "d_style",      icon: "󰏘", label: "Style",      engine: "bar" },
-            { id: "d_zones",      icon: "󰮯", label: "Zones",      engine: "bar" },
-            { id: "d_classic",    icon: "󰹑", label: "Classic Bar", engine: "classic" },
+            { id: "d_style",      icon: "󰏘", label: "Style" },
+            { id: "d_zones",      icon: "󰮯", label: "Zones" },
             { id: "d_modules",    icon: "󰍜", label: "Modules" },
             { id: "d_workspaces", icon: "󰠰", label: "Workspaces" }
         ]

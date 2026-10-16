@@ -126,8 +126,7 @@ Variants {
             readonly property real shadowPad: shadowOn
                 ? shadowBlur + shadowSpread + Math.max(shadowOffX, shadowOffY, 0)
                 : 0
-            // Bar-engine only for now (the classic engine keeps its geometry).
-            readonly property bool barShadow: shadowOn && !classicMode && configReady && shadowPad > 0
+            readonly property bool barShadow: shadowOn && configReady && shadowPad > 0
             readonly property real padTop: !barShadow ? 0
                 : (orientation === "horizontal" ? (position === "top" ? Math.min(shadowPad, s(edgeGap)) : shadowPad) : 0)
             readonly property real padBottom: !barShadow ? 0
@@ -155,13 +154,11 @@ Variants {
             property real barOpacity: 0.85
             // Master switch for live island drag & drop (bar.dragModules).
             property bool dragModulesEnabled: true
-            // Flat-mode icon tinting for the classic engine (solid/fill styles):
-            // when true, ModulePill tints its content with the module accent
-            // color instead of filling an island (no double fill on a strip).
-            property bool accentTintMode: false
-            // Clock format used while the classic engine is active (classicbar.timeFormat).
-            property string classicTimeFormat: ""
-            // Zones-engine clock format (bar.timeFormat); the classic engine uses classicTimeFormat.
+            // Master switch for the whole bar (bar.enabled): a disabled bar
+            // unmaps its windows (no UI, no reserved edge) and comes back
+            // exactly as configured when re-enabled (see syncBarConfig).
+            property bool barEnabled: true
+            // Clock format for the clock island (bar.timeFormat).
             property string timeFormat: "HH:mm:ss"
             property string dateFormat: "dddd, MMMM dd" 
             // Tracks the last applied orientation: an axis change (horizontal ↔
@@ -169,36 +166,6 @@ Variants {
             // re-reads bar.orientation at creation — no full shell reload.
             property string _lastOrientation: ""
 
-            // ================================================================
-            // DUAL BAR ENGINES (Phase D4-E1b): "bar" ⇄ "classic"
-            //
-            // The same window hosts two render engines. In engine "classic" the
-            // classic left/center/right bar (bar/ClassicBar.qml) is mounted
-            // instead of the zone Repeater, driven by settings.json's top-level
-            // "classicbar" key (see BarLayout.js classicbar section). No data is
-            // duplicated and no "bar" settings are written: while classicMode the
-            // host simply applies the classic style's visual flags (pillBg/
-            // pillSolid/barBg/edgeGap via classicStyleFlags()) + the classicbar
-            // position onto ITSELF; modules only see the standard contract, so
-            // they behave identically in both engines. Switching back to
-            // "bar" restores the persisted barConfig through syncBarConfig().
-            // ================================================================
-            property string barEngine: "bar"
-            property var classicConfig: BarLayout.classicbarDefaults()
-            // Revealed state of the optional classic autohide (ClassicBar drives it
-            // through the bar object; the exclusiveZone binding reacts to it).
-            property bool classicAutohideRevealed: true
-            readonly property bool classicMode: barWindow.barEngine === "classic"
-            // Fill forces widthPercent to 100 (BarLayout.isFillStyle) — the
-            // strip then spans the whole content frame edge-to-edge.
-            readonly property bool classicFillStyle: barWindow.classicMode && BarLayout.isFillStyle(barWindow.classicConfig.style)
-            // The strip/tab sits flush against the screen edge: fill always,
-            // autohide bars need the flush edge so the 5px reveal tab is at the
-            // very screen edge (the ClassicBar translate leaves only that sliver).
-            readonly property bool classicEdgeFlush: barWindow.classicMode && (barWindow.classicFillStyle || barWindow.classicConfig.autohide === true)
-            // ClassicBar's content box (the strip band + sections). The click
-            // mask follows this item's geometry (see the Region above).
-            property Item classicAreaItem: classicLoader.item ? classicLoader.item.classicContentArea : null
             // Content choke point for the settings reader: text of the last
             // successfully parsed settings.json. Keeps the directory watcher's
             // wakeups on unrelated config files completely silent.
@@ -219,14 +186,6 @@ Variants {
             // remount then runs at the end of the gesture instead (see
             // endDragAt/cancelDrag).
             property bool pendingAxisRemount: false
-            // Same deferral for engine/config switches that affect the classic
-            // visuals (barEngine/classicConfig/position flips mid-drag).
-            property bool pendingClassicRefresh: false
-            // Orientation the currently mounted ClassicBar was created with
-            // ("" = nothing mounted yet). Classic modules bake compact/horizontal
-            // branches at creation exactly like bar zones, so an axis flip
-            // must recreate the ClassicBar loader (see syncClassicLoader()).
-            property string _classicOrientation: ""
 
             // Begin a drag session for module `id` (called by Zone slots).
             function startDrag(id) {
@@ -291,8 +250,6 @@ Variants {
                 // An axis flip that arrived mid-drag remounts now that the
                 // gesture no longer owns the config.
                 barWindow.flushPendingAxisRemount();
-                // Same for classic engine/config switches deferred mid-drag.
-                barWindow.flushPendingClassicRefresh();
             }
 
             // Abort the session (drag cancelled by the slot MouseArea).
@@ -308,7 +265,6 @@ Variants {
                     settingsReader.running = true;
                 }
                 barWindow.flushPendingAxisRemount();
-                barWindow.flushPendingClassicRefresh();
             }
 
             // Rebuild every zone delegate in THIS process (Phase D3). Crossing
@@ -339,163 +295,18 @@ Variants {
                 barWindow.remountZones();
             }
 
-            // Deferred classic-visual refresh after a drag gesture ends.
-            function flushPendingClassicRefresh() {
-                if (!barWindow.pendingClassicRefresh) return;
-                barWindow.pendingClassicRefresh = false;
-                barWindow.syncVisualEngine();
-            }
-
-            // ---- dual engine: visuals ---------------------------------------
-            // In classic mode the host overrides ITS OWN visual flags with the
-            // ones derived from the classicbar style, plus the classicbar position
-            // (the classicbar owns the screen edge while active). Nothing is ever
-            // written back into settings.json's "bar" key — syncBarConfig()
-            // restores the persisted values when the engine switches back.
-            function applyClassicVisuals() {
-                if (!barWindow.classicMode || !barWindow.barConfig) return;
-                let f = BarLayout.classicStyleFlags(barWindow.classicConfig.style);
-                if (f.pillBg !== undefined) barWindow.pillBg = f.pillBg;
-                if (f.pillSolid !== undefined) barWindow.pillSolid = f.pillSolid;
-                if (f.barBg !== undefined) barWindow.barBg = f.barBg;
-                if (f.edgeGap !== undefined) barWindow.edgeGap = f.edgeGap;
-                // Distinct pills (reference BarTab, shown for modular + solid):
-                // island fills become SOLID so each pill reads clearly even in
-                // modular; on the strip the ClassicBar draws the raised slabs.
-                if (barWindow.classicConfig.distinctPills === true) barWindow.pillSolid = true;
-                // Reference corners follow the theme radius; ours is a knob
-                // (classicbar.roundness) mapped onto the shared pillRadius() so
-                // islands/strip/groups stay in sync. Restored on engine exit.
-                barWindow.roundness = (typeof barWindow.classicConfig.roundness === "number")
-                    ? barWindow.classicConfig.roundness : barWindow.roundness;
-                // Time format for the clock island (bar engine keeps HH:mm:ss).
-                if (typeof barWindow.classicConfig.timeFormat === "string"
-                    && barWindow.classicConfig.timeFormat !== ""
-                    && barWindow.classicTimeFormat !== barWindow.classicConfig.timeFormat) {
-                    barWindow.classicTimeFormat = barWindow.classicConfig.timeFormat;
-                }
-                // classicbar.position is normalized (POSITIONS) by getClassicbar().
-                if (barWindow.position !== barWindow.classicConfig.position) {
-                    barWindow.position = barWindow.classicConfig.position;
-                    // orientation is a plain property (kept in sync manually,
-                    // see syncBarConfig) — never a derived binding.
-                    barWindow.orientation = (barWindow.position === "top" || barWindow.position === "bottom") ? "horizontal" : "vertical";
-                }
-                barWindow.accentTintMode = barWindow.classicConfig.style !== "modular";
-                // ---- Phase R1: classicbar visual keys (reference BarTab parity) ----
-                // These live on the host while the classic engine renders and are
-                // restored by syncBarConfig() when the engine leaves "classic":
-                //   • edgeGap: reference floats its bar s(4) off the screen edge
-                //     in every non-fill style (Bar.qml:265-270 margins s(4)); the
-                //     bar's default 8px edge breathing would read differently on
-                //     the classic bar. Style flags may still force 0 (fill).
-                //   • thickness: classicbar.thickness (px) overrides the band size;
-                //     null = keep the bar's own thickness (inherit).
-                //   • barOpacity: classicbar.opacity (percent) → strip alpha; the
-                //     strip reads bar.barOpacity only (see ClassicBar.qml), so a
-                //     leftover bar pillSolid:true can never freeze it opaque.
-                barWindow.edgeGap = (f.edgeGap !== undefined) ? f.edgeGap : 4;
-                if (typeof barWindow.classicConfig.thickness === "number") {
-                    barWindow.thickness = Math.max(24, Math.min(120, barWindow.classicConfig.thickness));
-                }
-                if (typeof barWindow.classicConfig.opacity === "number") {
-                    barWindow.barOpacity = Math.max(0.2, Math.min(1.0, barWindow.classicConfig.opacity / 100));
-                }
-                // Config/engine edits always re-reveal (never leave the bar
-                // hidden behind a fresh config).
-                barWindow.classicAutohideRevealed = true;
-            }
-
-            // Re-apply whichever engine owns the window visuals right now:
-            // classic → classic flags/position; bar → the persisted barConfig.
-            // Visual-only: zones are never touched here. Deferred while a drag
-            // owns the config (same pattern as the axis remount).
-            function syncVisualEngine() {
-                if (!barWindow.configReady) return;
-                if (barWindow.dragBusy) { barWindow.pendingClassicRefresh = true; return; }
-                if (barWindow.classicMode) barWindow.applyClassicVisuals();
-                else barWindow.syncBarConfig();
-                barWindow.syncClassicLoader();
-            }
-
-            // Mount/unmount the ClassicBar loader (engine switch) or recreate it
-            // when the axis flipped while classic mode was active (classic modules
-            // bake compact/horizontal branches at creation, exactly like bar
-            // zones do — hence the same in-process remount approach).
-            //
-            // Robust mount contract: the loader is driven by STATE (engine +
-            // configReady), not by one-shot event ordering. We mount whenever
-            // the item is missing and retry a few times at boot, because the
-            // reader pass that flips the engine may race the very first
-            // request. A null item here means NO bar at all, so never leave
-            // it half-mounted.
-            function syncClassicLoader() {
-                if (!barWindow.configReady) return;
-                let want = barWindow.classicMode;
-                let item = classicLoader.item;
-                if (want) {
-                    let axisFlip = barWindow._classicOrientation !== "" && barWindow._classicOrientation !== barWindow.orientation;
-                    if (!item || classicLoader.status !== Loader.Ready || axisFlip) {
-                        classicLoader.setSource("ClassicBar.qml", classicLoader.classicInitialProps());
-                        barWindow._classicOrientation = barWindow.orientation;
-                    }
-                } else if (classicLoader.source !== "") {
-                    classicLoader.source = "";
-                    barWindow._classicOrientation = "";
-                }
-            }
-            // Boot/late-config safety: reader passes and handlers can fire out
-            // of order (engine flips right after configReady). Re-check the
-            // loader a few times after startup until it is actually mounted.
-            Timer {
-                id: classicMountGuard
-                interval: 400
-                repeat: true
-                running: barWindow.classicMode && barWindow.configReady
-                property int ticks: 0
-                onTriggered: {
-                    if (!classicLoader.item || classicLoader.status !== Loader.Ready) barWindow.syncClassicLoader();
-                    ticks++;
-                    if (classicLoader.item || ticks > 12) running = false;
-                }
-            }
             onBarConfigChanged: {
-                // syncBarConfig() applies the PERSISTED bar values; while the
-                // classic engine is active the classic visuals/position override them
-                // right after (restored automatically when engine === "bar").
+                // syncBarConfig() applies the persisted bar values.
                 syncBarConfig();
-                if (barWindow.classicMode) barWindow.applyClassicVisuals();
                 // Only remount on an ACTUAL axis change (vertical ↔ horizontal),
                 // and never during boot (before configReady). Same-axis position
-                // moves and pure visual changes never rebuild anything. The
-                // orientation is read AFTER the classic override above so classic-side
-                // flips are caught by the same detector.
+                // moves and pure visual changes never rebuild anything.
                 let axisFlip = barWindow.configReady && barWindow._lastOrientation !== "" && barWindow.orientation !== barWindow._lastOrientation;
                 if (axisFlip) {
-                    if (barWindow.classicMode) {
-                        if (barWindow.dragBusy) barWindow.pendingClassicRefresh = true;
-                        else barWindow.syncClassicLoader();
-                    } else if (barWindow.dragBusy) {
-                        barWindow.pendingAxisRemount = true;
-                    } else {
-                        barWindow.remountZones();
-                    }
+                    if (barWindow.dragBusy) barWindow.pendingAxisRemount = true;
+                    else barWindow.remountZones();
                 }
                 barWindow._lastOrientation = barWindow.orientation;
-            }
-            // Engine switch ("bar" ⇄ "classic") and classicbar edits re-run the
-            // visual pass without touching zones. When the engine returns to
-            // "bar", syncVisualEngine() restores the persisted barConfig.
-            onBarEngineChanged: barWindow.syncVisualEngine()
-            onClassicConfigChanged: barWindow.syncVisualEngine()
-            // ClassicBar modules bake compact/horizontal branches at creation;
-            // remount the bar loader on axis flips in classic mode (see
-            // syncClassicLoader). Bar-mode flips keep using the zone remount
-            // path above.
-            onOrientationChanged: {
-                if (!barWindow.classicMode || !barWindow.configReady) return;
-                if (barWindow.dragBusy) { barWindow.pendingClassicRefresh = true; return; }
-                barWindow.syncClassicLoader();
             }
             Component.onCompleted: {
                 syncBarConfig();
@@ -520,7 +331,7 @@ Variants {
                 barWindow.barBg = barConfig.barBg;
                 barWindow.barOpacity = (typeof barConfig.barOpacity === "number") ? barConfig.barOpacity : 0.85;
                 barWindow.dragModulesEnabled = barConfig.dragModules !== false;
-                barWindow.accentTintMode = false;
+                barWindow.barEnabled = barConfig.enabled !== false;
                 barWindow.workspacesMarker = (typeof barConfig.workspacesMarker === "string") ? barConfig.workspacesMarker : "number";
                 barWindow.workspacesMarkerText = (typeof barConfig.workspacesMarkerText === "string") ? barConfig.workspacesMarkerText : "";
                 barWindow.borderWidth = barConfig.borderWidth;
@@ -558,69 +369,30 @@ Variants {
 
             // --- margins -------------------------------------------------------
             // The bar margins offset the whole surface from the anchored edges:
-            // the screen-edge side carries edgeGap, the other sides s(4). While
-            // the classic engine is active the values above are overridden:
-            //   • fill:        EVERY margin is 0 — reference's fill reaches all
-            //                  four screen edges (Bar.qml:265-270 margins 0 when
-            //                  isFill). WidthPercent is forced to 100 so the
-            //                  strip truly spans the whole screen.
-            //   • autohide:    the edge side is 0 too, so the 4px reveal sliver
-            //                  that ClassicBar leaves after the hide translate sits
-            //                  flush at the very screen edge;
-            //   • edge side:   s(4) in every other classic state (applyClassicVisuals
-            //                  overrides edgeGap to 4 — reference margins s(4));
-            //   • cross sides (left/right on top/bottom bars and vice versa)
-            //                  keep their s(4) — identical to reference.
-            // Everything restores itself on the way back to the bar engine
-            // because the expressions below fall through to the bar formula.
+            // the screen-edge side carries edgeGap, the other sides s(4).
             margins {
-                top: orientation === "vertical"
-                    ? (barWindow.classicMode && barWindow.classicFillStyle ? 0 : s(4))
-                    : (barWindow.classicMode
-                        ? (position === "top" ? (barWindow.classicEdgeFlush ? 0 : s(edgeGap))
-                            : (position === "bottom" && barWindow.classicFillStyle ? 0 : s(4)))
-                        : (position === "top" ? s(edgeGap) - barWindow.padTop : s(4)))
-                bottom: orientation === "vertical"
-                    ? (barWindow.classicMode && barWindow.classicFillStyle ? 0 : s(4))
-                    : (barWindow.classicMode
-                        ? (position === "bottom" ? (barWindow.classicEdgeFlush ? 0 : s(edgeGap))
-                            : (position === "top" && barWindow.classicFillStyle ? 0 : s(4)))
-                        : (position === "bottom" ? s(edgeGap) - barWindow.padBottom : s(4)))
-                left: orientation === "horizontal"
-                    ? (barWindow.classicMode && barWindow.classicFillStyle ? 0 : s(4))
-                    : (barWindow.classicMode
-                        ? (position === "left" ? (barWindow.classicEdgeFlush ? 0 : s(edgeGap))
-                            : (position === "right" && barWindow.classicFillStyle ? 0 : s(4)))
-                        : (position === "left" ? s(edgeGap) - barWindow.padLeft : s(4)))
-                right: orientation === "horizontal"
-                    ? (barWindow.classicMode && barWindow.classicFillStyle ? 0 : s(4))
-                    : (barWindow.classicMode
-                        ? (position === "right" ? (barWindow.classicEdgeFlush ? 0 : s(edgeGap))
-                            : (position === "left" && barWindow.classicFillStyle ? 0 : s(4)))
-                        : (position === "right" ? s(edgeGap) - barWindow.padRight : s(4)))
+                top: orientation === "vertical" ? s(4)
+                    : (position === "top" ? s(edgeGap) - barWindow.padTop : s(4))
+                bottom: orientation === "vertical" ? s(4)
+                    : (position === "bottom" ? s(edgeGap) - barWindow.padBottom : s(4))
+                left: orientation === "horizontal" ? s(4)
+                    : (position === "left" ? s(edgeGap) - barWindow.padLeft : s(4))
+                right: orientation === "horizontal" ? s(4)
+                    : (position === "right" ? s(edgeGap) - barWindow.padRight : s(4))
             }
             // A hidden autohide bar reserves no edge space at all; every other
             // state reserves the same band as the bar engine.
-            exclusiveZone: barWindow.classicMode && barWindow.classicConfig.autohide === true && !barWindow.classicAutohideRevealed
-                ? 0
+            // A disabled bar (bar.enabled false) reserves no edge space: the
+            // window is unmapped and exclusiveZone is 0 (belt & braces for the
+            // frames around a live toggle).
+            exclusiveZone: !barWindow.barEnabled ? 0
                 : (orientation === "horizontal" ? barHeight : barWidth)
             color: "transparent"
+            // bar.enabled master switch: off unmaps the window entirely (no
+            // reserve, no input, no UI); on maps it back with the same config.
+            visible: barWindow.barEnabled
             
-            // --- clickthrough mask (classic engine) --------------------------------
-            // The layer surface spans the whole bar band (or the whole screen
-            // width for widthPercent < 100), but only the actual strip band +
-            // its contents must be interactive. The mask tracks the ClassicBar
-            // content box ITEM (Region.item watches x/y/w/h, so the autohide
-            // slide keeps the clickable area glued to the visible strip — when
-            // hidden only the 4px tab sliver remains clickable and everything
-            // else passes through to the windows below). null in the bar
-            // engine keeps today's whole-band input behavior.
-            Region {
-                id: classicMask
-                Region {
-                    item: barWindow.classicAreaItem
-                }
-            }
+            // --- clickthrough mask ------------------------------------------------
             // With shadows on, the surface is padded so the shadow fits; the
             // padding must not swallow input, so the mask tracks the visual bar
             // band (barContent) instead of the whole padded surface.
@@ -630,8 +402,7 @@ Variants {
                     item: barContent
                 }
             }
-            mask: barWindow.classicMode && barWindow.classicAreaItem ? classicMask
-                : (barWindow.barShadow ? barBandMask : null)
+            mask: barWindow.barShadow ? barBandMask : null
 
             function applyPosition() {
                 barWindow.anchors.top = undefined;
@@ -666,17 +437,14 @@ Variants {
             property string activeWidget: ""
             // El panel Settings unificado (bar-editor, SUPER+SHIFT+S/D) sustituye
             // al antiguo popup "settings"; ambos ids cuentan como panel abierto.
-            // Solo se usa para diferir reloads y mantener la barra classic visible:
-            // el panel nuevo es CENTRADO, así que la barra NO se desplaza.
+            // Solo se usa para diferir reloads: el panel es CENTRADO, así que la
+            // barra NO se desplaza.
             property bool isSettingsOpen: activeWidget === "settings" || activeWidget === "bar-editor"
             onIsSettingsOpenChanged: {
                 if (!barWindow.isSettingsOpen && barWindow.pendingReload) {
                     barWindow.pendingReload = false;
                     Quickshell.reload(true);
                 }
-                // Never let the classic bar autohide while the settings panel is
-                // open (the popup sits on the same edge the mouse leaves to).
-                if (barWindow.isSettingsOpen) barWindow.classicAutohideRevealed = true;
             }
 
             Process {
@@ -750,21 +518,6 @@ Variants {
                             }
                             // uiScale + barConfig are now final: safe to build modules.
                             barWindow.configReady = true;
-                            // Dual engine: parse the engine switch + classicbar AFTER
-                            // the bar config so the classic overrides win when the
-                            // engine is "classic". classicConfig is only replaced when
-                            // its JSON really changed (avoids a re-render loop
-                            // with the compare-based barConfig choke point).
-                            let rawEngine = parsed.barEngine === "classic" ? "classic" : "bar";
-                            if (barWindow.barEngine !== rawEngine) barWindow.barEngine = rawEngine;
-                            let classicNext = BarLayout.getClassicbar(parsed);
-                            if (JSON.stringify(classicNext) !== JSON.stringify(barWindow.classicConfig)) {
-                                barWindow.classicConfig = classicNext;
-                            }
-                            // First boot: barEngine/classicConfig handlers above ran
-                            // before configReady was true, so run the visual
-                            // sync + ClassicBar mount explicitly now.
-                            barWindow.syncVisualEngine();
                         } catch (e) {}
                     }
                 }
@@ -1154,7 +907,7 @@ Variants {
                 interval: 1000; running: true; repeat: true; triggeredOnStart: true
                 onTriggered: {
                     let d = new Date();
-                    let fmt = barWindow.classicMode && barWindow.classicTimeFormat !== "" ? barWindow.classicTimeFormat : barWindow.timeFormat;
+                    let fmt = barWindow.timeFormat;
                     barWindow.timeStr = Qt.formatDateTime(d, fmt);
                     barWindow.fullDateStr = Qt.formatDateTime(d, barWindow.dateFormat);
                     if (barWindow.typeInIndex >= barWindow.fullDateStr.length) {
@@ -1178,10 +931,9 @@ Variants {
             // the whole bar with only the inner corners rounded, so the islands
             // float INSIDE it like a taskbar. Pill backgrounds then go transparent
             // (see ModulePill) and the accent islands stay as colored pills.
-            // Hidden while the classic engine renders (ClassicBar draws its own strip).
             // Strip shadow (barBg style): same "shadows" config as popups.
             RectangularShadow {
-                visible: barWindow.barShadow && barWindow.barBg && !barWindow.classicMode
+                visible: barWindow.barShadow && barWindow.barBg
                 anchors.fill: barBackground
                 radius: barBackground.radius
                 topLeftRadius: barBackground.topLeftRadius
@@ -1200,7 +952,7 @@ Variants {
                 anchors.bottomMargin: barWindow.padBottom
                 anchors.leftMargin: barWindow.padLeft
                 anchors.rightMargin: barWindow.padRight
-                visible: barWindow.barBg && !barWindow.classicMode
+                visible: barWindow.barBg && barWindow.barEnabled
                 radius: barWindow.pillRadius(barWindow.pillHeight)
                 topLeftRadius: orientation === "vertical" ? 0 : (position === "top" ? 0 : radius)
                 topRightRadius: orientation === "vertical" ? 0 : (position === "top" ? 0 : radius)
@@ -1225,12 +977,7 @@ Variants {
                 // function, so modules can't reactively rescale after creation).
                 visible: barWindow.configReady
                 Repeater {
-                    // Engine gate: the zone engine only mounts in bar mode. The
-                    // empty model destroys every Zone + module Loader while the
-                    // classic engine renders (same in-process remount idea as the
-                    // axis flip); flipping back recreates them against the still
-                    // synced barConfig.
-                    model: barWindow.classicMode ? [] : barWindow.zones
+                    model: barWindow.zones
                     delegate: Zone {
                         required property var modelData
                         required property int index
@@ -1241,23 +988,6 @@ Variants {
                     }
                 }
 
-                // Classic left/center/right engine (Phase D4-E1b). Mounted only
-                // in classic mode; the loaded ClassicBar is recreated on engine/axis
-                // changes through syncClassicLoader().
-                Loader {
-                    id: classicLoader
-                    anchors.fill: parent
-                    // Initial properties for the ClassicBar root (required props);
-                    // classicConfig is bound live so settings hot-reloads reach the
-                    // loaded bar without remounting it.
-                    function classicInitialProps() {
-                        return {
-                            "bar": barWindow,
-                            "colors": barWindow.colors,
-                            "classicConfig": Qt.binding(() => barWindow.classicConfig)
-                        };
-                    }
-                }
             }
         }
     }

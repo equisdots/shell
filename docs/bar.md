@@ -1,16 +1,17 @@
 # Bar System — Architecture & Customization
 
-The bar is the shell's position-agnostic bar window: `ui/bar/Bar.qml` hosts **two
-interchangeable engines** on any screen edge (`top` / `bottom` / `left` /
-`right`) and switches between them live through `settings.json → barEngine`:
+The bar is the shell's position-agnostic bar window: `ui/bar/Bar.qml`, a
+single zones engine on any screen edge (`top` / `bottom` / `left` / `right`).
+A **master switch** (`bar.enabled`) unmaps it entirely — no UI, no reserved
+edge, no input — and maps it back with the same layout when switched on (it is
+hot: the live shell reacts to the settings file; no reload).
 
-- **`bar`** (zones engine, default) — islands grouped into data-driven zones
-  (`start` / `center` / `end`) with module drag & drop and per-zone backgrounds.
-- **`classic`** (`ui/bar/ClassicBar.qml`) — left/center/right sections, autohide,
-  distinct pills and fill styles (classic bar geometry).
-
-Both engines share the palette, the 18 modules and the Bar Editor. Every key
-below lives under the top-level `bar` object unless stated otherwise.
+The core bar lives alone under the `bar` key of `settings.json`. On top of
+that, **complete bars can ship as plugins** (`provides.bar.provider`): a
+plugin bar is an always-on component mounted by `ui/PluginHosts.qml` with its
+own master switch and its own settings page — see §8. The two worlds are
+independent: the core bar's switch and each plugin bar's plugin switch decide
+what runs; nothing auto-replaces anything.
 
 ---
 
@@ -23,12 +24,12 @@ shell/
                              WindowRegistry.js, Theme, SysData, Cava, WidgetSync,
                              Compositor + compositors/, scripts/watchers/)
   ui/bar/
-    Bar.qml                  host PanelWindow: geometry, pollers, IPC, engines
+    Bar.qml                  the bar host PanelWindow: geometry, pollers,
+                             IPC, zones engine, master switch
     Zone.qml                 renders ONE zone as a Row (horizontal) / Column
-    ClassicBar.qml           classic engine renderer
     ModulePill.qml           shared island pill (all visual plumbing)
     Colors.qml               palette loader + semantic role derivation
-    BarLayout.js             pure-JS engine: zones, catalog, migration, classic
+    BarLayout.js             pure-JS engine: zones, catalog, migration, presets
     modules/*.qml            the 18 modules
     edit/                    editor controls (FieldCard, ToggleCard, steppers…)
     editor/                  editor pages + SearchOverlay + persist-hypr.sh
@@ -38,6 +39,8 @@ shell/
 The palettes themselves (**frozen shared path**) live at
 `~/.config/hypr/scripts/quickshell/dock/palettes/`, deployed from the
 `equisdots/palettes` repo (also read by `theme-sync` and `colors.lua`).
+Plugin bars live in their plugin's tree (`ui/plugins/<id>/`), like every
+other plugin UI face.
 
 ---
 
@@ -45,32 +48,33 @@ The palettes themselves (**frozen shared path**) live at
 
 ```
 settings.json
-   "barEngine": "bar" | "classic"
-   "bar": { position, palette, thickness, zones: [...] }
-   "classicbar": { position, style, modules: {left, center, right} }
+   "bar": {
+     "enabled": true | false,     // master switch (unmaps the bar windows)
+     "position", "palette", "thickness", "edgeGap",
+     "zones": [ ... ]
+   }
         |
         v
 Bar.qml (settingsReader, directory watcher)
-   barConfig = BarLayout.getBar(parsed)              // "bar" key
-   classicConfig = BarLayout.getClassicbar(parsed)   // "classicbar" key
+   barConfig = BarLayout.getBar(parsed)      // "bar" key
         |
         v
-zones engine:  Bar.qml -> Repeater -> Zone.qml -> module Loaders
-classic engine: Bar.qml -> ClassicBar.qml -> section items/groups
-        ^                                        |
+Bar.qml -> Repeater -> Zone.qml -> module Loaders
+        ^                        |
         |-- shared state: bar.* (pollers/watchers) + colors.* (palette)
 ```
 
-- **The zones config lives under `"bar"`** (pre-0.2 `"dock"`/`"topbar"` configs
-  are migrated once by `BarLayout.getBar()`, the single migration entry point).
+- **The config lives under `"bar"`** (pre-0.2 `"dock"`/`"topbar"` configs are
+  migrated once by `BarLayout.getBar()`, the single migration entry point).
   The host watches the `~/.config/hypr` **directory** (atomic tmp+`mv` writes
   kill file watches) with content-compare choke points, so live editing is
-  reliable while the shell runs.
+  reliable while the shell runs. The old `barEngine` / `classicbar` keys are
+  no longer read; leftover keys in user files are ignored, never rewritten.
 - **Data state** (workspaces, wifi, volume, battery, music, clock, sysmon…)
   is fetched by `Process` watchers declared in `Bar.qml` and exposed on the
   `bar` object injected into every module.
-- **Colors** always come from `ui/bar/Colors.qml` (palette system), never from
-  Matugen.
+- **Colors** always come from `ui/bar/Colors.qml` (palette system), never
+  from Matugen.
 
 ---
 
@@ -81,8 +85,8 @@ Everything the editor edits lives under one key (defaults from
 
 ```jsonc
 {
-  "barEngine": "bar",               // "bar" (zones) | "classic"
   "bar": {
+    "enabled": true,                // master switch (General page)
     "position": "top",              // "top" | "bottom" | "left" | "right"
     "palette": "x",                 // slug of dock/palettes/<slug>.json
     "thickness": 48,                // bar height (horizontal) or width (vertical)
@@ -129,6 +133,9 @@ Everything the editor edits lives under one key (defaults from
 
 Notes:
 
+- **`bar.enabled`** is the master switch: the editor's General page toggles
+  it; off unmaps every bar window (no reserve, no input) while the rest of
+  the config — zones, visuals, everything — is preserved for the way back.
 - `stylePreset` is **informative + an apply shortcut**: it only records which
   one-click preset ran last; it never overrides manual tweaks.
 - New islands (`weather`, `focus`) ship **disabled** and are re-added disabled
@@ -143,11 +150,10 @@ Notes:
 
 | UI page (`core/EditorNav.js`) | settings.json keys                | consumed by                  |
 | ----------------------------- | --------------------------------- | ---------------------------- |
-| Engine (`d_engine`)           | `barEngine`                       | `Bar.qml` (engine switch)    |
+| General (`d_general`)         | `bar.enabled` (+ overview)        | `Bar.qml` (master switch)    |
 | Position (`d_position`)       | `bar.position`                    | `Bar.qml` geometry           |
 | Style (`d_style`)             | `bar.pillBg/pillSolid/barBg/…`    | `Bar.qml` → modules          |
 | Zones (`d_zones`)             | `bar.zones`                       | `BarLayout.js` CRUD + `Zone.qml` |
-| Classic Bar (`d_classic`)     | `classicbar.*`                    | `ClassicBar.qml`             |
 | Modules (`d_modules`)         | `bar.modules.<id>.*`              | modules read `bar.moduleConfig` |
 | Workspaces (`d_workspaces`)   | `bar.workspacesMarker*`           | `WorkspacesModule.qml`       |
 | Palette (`d_palette`, Theme)  | `bar.palette`, `bar.border*`      | `Colors.qml`, `colors.lua`   |
@@ -168,6 +174,7 @@ share the exact same logic. Key functions:
 | `getModule(id)` / `MODULES` | module catalog (18 entries: id/label/icon/component) |
 | `zoneModel(zone)` | enabled module ids of a zone (for Repeaters) |
 | `cloneBar / setEnabled / toggleEnabled / isEnabled` | module enable/disable |
+| `setBarEnabled(bar, v)` | master switch (`bar.enabled`, written by the General page) |
 | `moduleMove(bar, id, delta)` | reorder, hops zones at edges |
 | `moduleMoveTo(bar, id, zoneId, index)` | move to a zone/position (enabled-index semantics) |
 | `applyStylePreset(bar, preset)` | one-click bar look (modular/solid/fill, §7) |
@@ -178,11 +185,6 @@ share the exact same logic. Key functions:
 | `setWorkspacesMarker / setWorkspacesMarkerText` | empty-workspace markers |
 | `moduleConfig / setModuleValue / setModuleIcon / setModuleColor / setModuleFill / setModuleAccent / setModuleSize / setModuleEffect / setModuleCursor / setModuleColorSlot / setGlobalIconColor` | per-module personalization (see bar-modules.md) |
 | `flatten(bar)` | flat list for the editor's module list |
-| `engines() / engineCapabilityList(e)` | engine catalog for the Engine page |
-| `classicTokenModules(id)` | classic layout tokens (`center`, `centerbox` → time+weather) |
-| `classicbarDefaults / normalizeClassicbar / getClassicbar` | classic engine config |
-| `barToClassicModules(bar)` | seed classicbar modules from the zone config |
-| `classicStyleFlags / isFillStyle / classicSectionNames` | classic style vocabulary |
 
 > **Gotcha:** arrays that cross the QML ↔ JS boundary through `property var`
 > become `QVariantList`, which breaks `Array.isArray`. All iteration uses the
@@ -205,14 +207,14 @@ Every zone can render an optional **container background** behind its islands
   `setZoneBgSolid(bar, zoneId, solid)`. Editor: Zones card → per-zone
   **Container bg** + role cycle + **Solid** toggle.
 
-Empty-workspace markers (global, both engines via `WorkspacesModule`):
+Empty-workspace markers (global, via `WorkspacesModule`):
 
 - `bar.workspacesMarker` — `"number"` (default) | `"dot"` | `"letter"`
   (A, B, C…) | `"custom"`.
 - `bar.workspacesMarkerText` — the character shown when marker is `"custom"`
   (up to 4 chars — any Unicode glyph).
 - Only EMPTY workspaces use the marker; occupied workspaces show app icons.
-  Editor: Workspaces card (visible in both engines).
+  Editor: Workspaces card.
 
 ## 6. Adding / removing / customizing modules
 
@@ -282,111 +284,47 @@ changes never rebuild anything.
 
 ---
 
-## 8. Dual engines (`bar` ⇄ `classic`)
+## 8. Plugin bars (`provides.bar.provider`)
 
-The host supports two interchangeable render engines, switched live (no reload)
-through `barEngine` (the zone config under `bar` is preserved and restored):
+A plugin can ship a **complete bar** — its own window(s), modules, design and
+placement. The manifest declares it next to any other contributions:
 
-```jsonc
-{
-  "barEngine": "classic",           // "bar" | "classic"
-  "classicbar": {
-    "position": "top",              // "top" | "bottom" | "left" | "right"
-    "style": "modular",             // "modular" | "solid" | "fill"
-    "widthPercent": 100,            // 40–100: strip length on the main axis
-    "distinctPills": false,         // solid/fill: every module/group gets its
-                                    // own slab on the strip (default false)
-    "thickness": 40,                // px 24–120 or null = inherit bar.thickness
-    "opacity": 100,                 // % 20–100 strip alpha (default 100)
-    "roundness": 0.6,               // island/strip/group radius knob (0..1)
-    "autohide": false,              // slide away + 4px edge tab
-    "autohideTimeout": 800,         // ms before hiding after the cursor leaves
-    "timeFormat": "HH:mm:ss",       // clock island format (classic engine)
-    "modules": {
-      "left":   ["help", "search", "settings", "media"],
-      "center": [["time", "date", "weather"]],
-      "right":  [["keyboard", "wifi", "bluetooth", "volume", "battery"], "tray", "update"]
-    }
+```json
+"provides": {
+  "bar": {
+    "provider": { "comp": "bar/MyBar.qml", "label": "My Bar", "icon": "" }
   }
 }
 ```
 
-- The classic config lives at the top level of `settings.json` next to `bar`;
-  the pure section is handled by `BarLayout.js` (`classicbarDefaults`,
-  `normalizeClassicbar`, `getClassicbar`, `classicTokenModules`,
-  `classicStyleFlags`, `isFillStyle`, `classicSectionNames`,
-  `barToClassicModules`).
-- **The `bar` zone config is never touched** while the classic engine is active
-  and is restored exactly when switching back (`barToClassicModules()` is only
-  used to seed a fresh classic config).
-- **Size language:** the strip takes `classicbar.thickness` when set (`null` =
-  the current `bar.thickness`); radii scale with `classicbar.roundness`; the
-  palette is shared (`bar.palette`).
-- No module changes: ClassicBar instantiates the **same
-  `ui/bar/modules/*.qml` islands** with the standard contract (`bar`, `colors`,
-  `zoneReady`, `slotIndex`, `effectiveBorderWidth/Color`, `unified`).
+How it runs:
 
-### Sections, tokens and groups
+- **Mount**: `ui/PluginHosts.qml` mounts the comp exactly like a host adapter
+  (relative load inside the shell tree, injected `host` SDK handle, optional
+  `surfaces` registration and `frameObstacle` publication). Managed plugins
+  only — the comp lives in the shell tree so it may import the core kit
+  (`qs.core`, `qs.ui.bar`, `qs.ui.bar.edit`); user plugins ship pages and
+  payloads instead (same rule as host adapters).
+- **Switch**: the plugin's master switch owns it (`plugins.<id>.enabled` or
+  the manifest's `toggle`, stored in the plugin's **own** settings file). Its
+  settings page is its menu; the Plugins group lists it like any other page.
+- **Placement**: the plugin owns it. The comp creates its `PanelWindow`s
+  directly (usually one per `Quickshell.screens`, with an `exclusiveZone` to
+  reserve the edge) or goes through the SDK surface manager for fancier
+  reservations; the core never positions plugin windows.
+- **Coexistence**: plugin bars and the core bar are independent switches.
+  If both target the same edge they simply stack; disable the core bar
+  (Bar group → General → *Bar enabled*) when a plugin bar should own the
+  screen edge. Nothing auto-replaces anything.
+- **Palette**: read `host.colors` (live palette) — never hardcode.
 
-`classicbar.modules` has three sections: **left**, **center**, **right** (main
-axis: start / center / end). Each entry is:
-
-- a **module id** (`"time"`) → one loose island;
-- a **layout token** (`"center"`, `"centerbox"`) → expands to the loose
-  `time` + `weather` islands (`classicTokenModules`);
-- an **array** of module ids → ONE group (a chrome rectangle hosting the
-  modules with `unified: true`).
-
-`normalizeClassicbar()` enforces: no module id twice per section; a group keeps
-≥ 2 valid members (1 flattens to a loose id, 0 disappears); tokens only loose;
-unknown ids discarded.
-
-### widthPercent / autohide
-
-- `widthPercent` sizes the strip on the main axis (centered); everything
-  outside the band is transparent **and click-through** (the window input mask
-  tracks the content box). Fill forces 100%.
-- `autohide: true` leaves a 4px edge tab; leaving the bar arms
-  `autohideTimeout`, the band slides out (250 ms) leaving only the tab; the
-  exclusive zone drops to 0 while hidden, so maximized windows gain the space.
-  The Bar Editor keeps the bar revealed.
-
-Switching engines, editing `classicbar`, or crossing the axis is **hot**: the
-host re-applies visuals in place and only recreates module loaders when the
-axis flips.
+POC fixture: `equisdots/plugins` → `plugins/hello-bar` (a minimal top band:
+clock + date, its own page, `provides.bar.provider`). It is the reference for
+the contract.
 
 ---
 
-## 9. Classic engine — deliberate design decisions
-
-The classic engine reproduces a proven classic bar geometry with the equisdots
-vocabulary (`bar.s()` scaling, `colors.*` roles, shared modules). Documented
-deliberate differences:
-
-- **Islands keep the bar capsule language** (full capsule ends, translucent
-  `surface0` fills, accent solid pills) instead of the classic `base`-colored
-  rounded rects — "classic bar geometry + equisdots islands".
-- **Vertical bars** keep the bar minimum cross size of `s(70)` because the
-  shared compact modules need the width; `classicbar.thickness` only widens a
-  vertical bar beyond that.
-- **Group chrome tones** use the unified-zone `colors.surface0` (modular) and
-  `colors.surface1` @ 0.55 (strip) instead of derived tones.
-- **Opacity** only fades the strip (solid/fill); modular island fills keep
-  their own translucency.
-- **Solid strip radius** derives from the roundness knob and the strip can take
-  a 1px border via the bar border keys.
-- Modules are equisdots-native (time+date separate islands, weather island,
-  tray, update island…), not combined legacy widgets.
-
----
-
-## 10. Editor pages & pending work
-
-The Bar group of the Bar Editor (`ui/bar/BarEditor.qml`, rail from
-`core/EditorNav.js`) already ships: Engine, Position, Style, Zones, Classic
-Bar, Modules and Workspaces pages (`ui/bar/editor/*.qml`).
-
-Pending ideas (not implemented):
+## 9. Pending ideas (not implemented)
 
 1. **Presets / import-export**: share a full bar config as JSON.
 2. **Per-monitor layouts** (`bar.byMonitor.<name>`): different position/zones

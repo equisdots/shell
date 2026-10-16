@@ -5,13 +5,12 @@ served by the core `Config` service and consumed live by the UI. This document
 is the reference for that surface; new options are documented here as they
 land. The current focus is the bar.
 
-## Bar engines
+## Bar
 
 | Key | Values | Meaning |
 |---|---|---|
-| `barEngine` | `"bar"` / `"classic"` | Zones engine / classic sections engine |
-| `bar` | object | Zones engine settings |
-| `classicbar` | object | Classic engine settings |
+| `bar.enabled` | `true` / `false` | Master switch: off unmaps the bar (no UI, no reserved edge) |
+| `bar` | object | The bar config (position, zones, modules, visuals) |
 
 Shared, bar-wide controls (see `bar/BarLayout.js` for defaults and presets):
 
@@ -23,9 +22,8 @@ Shared, bar-wide controls (see `bar/BarLayout.js` for defaults and presets):
   or a `#hex` string; empty = per-module defaults).
 - `roundness`, `thickness`, `edgeGap`, `position`, `palette`, `font`,
   `barOpacity`.
-- `timeFormat`: clock format for the zones engine (a `Qt.formatDateTime`
-  pattern, e.g. `HH:mm`, `HH:mm:ss`, `h:mm a`); the classic engine keeps its
-  own `classicbar.timeFormat`.
+- `timeFormat`: clock format for the clock island (a `Qt.formatDateTime`
+  pattern, e.g. `HH:mm`, `HH:mm:ss`, `h:mm a`).
 - Per zone: `unify` (single pill for the whole zone), `zoneBg` (optional
   container role), `borderWidth`, `borderColor`.
 

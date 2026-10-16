@@ -99,6 +99,34 @@ Item {
         return null;
     }
 
+    // ── plugin bars (manifest provides.bar.provider) ──────────────────────
+    // A complete bar shipped by a plugin: `{ comp, label?, icon? }` (comp
+    // relative to the plugin UI root). The plugin's own master switch owns it
+    // and its settings page is its menu; the shell mounts the comp through
+    // PluginHosts exactly like a host adapter (same handle injection, same
+    // surfaces/frameObstacle contracts). Managed plugins only — the comp
+    // lives in the shell tree so it can import the core kit.
+    function barProviderEntries() {
+        let out = [];
+        let list = plugins || [];
+        for (let i = 0; i < list.length; i++) {
+            let p = list[i] || {};
+            if (p.enabled !== true) continue;
+            if (p.compat && p.compat.ok === false) continue;
+            let b = (p.provides && typeof p.provides === "object") ? p.provides.bar : null;
+            let prov = (b && typeof b === "object") ? b.provider : null;
+            if (!prov || typeof prov !== "object" || !prov.comp) continue;
+            out.push({ id: String(p.id), comp: String(prov.comp).replace(/^\.\//, ""), entry: prov, plugin: p });
+        }
+        return out;
+    }
+
+    function barProviderComp(id) {
+        let list = barProviderEntries();
+        for (let i = 0; i < list.length; i++) if (list[i].id === id) return list[i].comp;
+        return "";
+    }
+
     // Component URL for a plugin bar module: root-relative for managed
     // plugins (resolved from the caller at ui/bar depth as "../plugins/..."),
     // absolute path for user plugins.

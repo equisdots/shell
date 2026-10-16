@@ -4,17 +4,20 @@ import "../core"
 import qs.core.sdk
 
 // ═══════════════════════════════════════════════════════════════════════════
-// PluginHosts — mounts the host adapters of installed plugins.
+// PluginHosts — mounts the always-on components of installed plugins:
+// host adapters (`host`) and complete plugin bars (provides.bar.provider).
 //
 // A managed plugin may declare a host entry in its manifest:
 //   "host": "<qml file, relative to the plugin UI root>"
-// The shell loads each enabled plugin's entry here. Host adapters live in the
+// or ship a complete bar:
+//   "provides": { "bar": { "provider": { "comp": "<qml file>" } } }
+// The shell loads each enabled plugin's entries here. Both kinds live in the
 // shell tree (deployed with the plugin UI) and follow the same contract as
 // the shell's own components: they may import the core kit through the
 // documented relative paths (`../../../../core`, `../../../bar`) and render
-// whatever they need (overlays, surfaces, watchers).
+// whatever they need (overlays, surfaces, watchers, reserved bar windows).
 //
-// A host may expose a `frameObstacle` property — a list of rects
+// A host/bar may expose a `frameObstacle` property — a list of rects
 // ({ screen?, edge, a, b, depth, avoidReserve? }) the screen frame should
 // hug. PluginHosts republishes them through FrameBus (a generic contract;
 // the shell never knows which plugin provides what).
@@ -32,12 +35,23 @@ Item {
         let list = PluginsCatalog.plugins || [];
         for (let i = 0; i < list.length; i++) {
             let p = list[i] || {};
-            let host = String(p.host || "").replace(/^\.\//, "");
             let compatOk = !(p.compat && p.compat.ok === false); // refuse incompatible
             // Managed plugins only (hosts live in the shell tree), loaded
             // relatively like every shell component.
-            if (host !== "" && p.enabled === true && compatOk && PluginsCatalog.isManaged(p))
+            if (p.enabled !== true || !compatOk || !PluginsCatalog.isManaged(p)) continue;
+            let host = String(p.host || "").replace(/^\.\//, "");
+            if (host !== "")
                 out.push({ id: String(p.id), url: "plugins/" + p.id + "/" + host, entry: p });
+            // Complete plugin bars (manifest provides.bar.provider): an
+            // always-on component exactly like a host adapter — same mount,
+            // same handle injection, same surfaces/frameObstacle contracts.
+            // The plugin's master switch owns it; its settings page is its
+            // menu. Managed-only for the same reason hosts are.
+            let bar = (p.provides && typeof p.provides === "object") ? p.provides.bar : null;
+            let prov = (bar && typeof bar === "object") ? bar.provider : null;
+            let barComp = (prov && typeof prov === "object") ? String(prov.comp || "").replace(/^\.\//, "") : "";
+            if (barComp !== "")
+                out.push({ id: String(p.id), url: "plugins/" + p.id + "/" + barComp, entry: p });
         }
         return out;
     }

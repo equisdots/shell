@@ -171,14 +171,13 @@ Item {
         case "s_monitors": return "Monitors";
         case "s_startup": return "Startup";
         case "d_launcher": return "Launcher";
-        case "d_engine": return "Engine";
+        case "d_general": return "General";
         case "d_position": return "Position";
         case "d_style": return "Style";
         case "d_appearance": return "Appearance";
         case "d_palette": return "Palette";
         case "d_zones": return "Zones";
         case "d_workspaces": return "Workspaces";
-        case "d_classic": return "Classic Bar";
         case "d_hyprland": return "Hyprland";
         case "d_idle": return "Idle";
         case "d_gpu": return "GPU";

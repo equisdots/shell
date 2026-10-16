@@ -23,8 +23,8 @@ Lock.qml                   alternate entry: PAM session lock (WlSessionLock,
 └── ui/                    everything visible
     ├── Main.qml           master window: widget stack + morph + IPC handler
     ├── Floating.qml       floating widget host
-    ├── bar/               Bar.qml (host), ClassicBar.qml, ModulePill, Zone,
-    │   │                  Colors.qml, BarLayout.js (engines API)
+    ├── bar/               Bar.qml (host + zones engine), ModulePill, Zone,
+    │   │                  Colors.qml, BarLayout.js (zones API)
     │   ├── modules/       18 bar modules
     │   ├── editor/        BarEditor pages (lazy Loaders in BarEditor.qml)
     │   ├── edit/          editor controls (FieldCard, ToggleCard, ...)
@@ -50,8 +50,8 @@ Lock.qml                   alternate entry: PAM session lock (WlSessionLock,
   `WindowRegistry.getLayout()` + `positionLayout()` → `StackView.replace`.
   Component URLs are resolved with `Qt.resolvedUrl("../" + comp)` from `ui/`.
 - **Settings**: `Config.rawSettings` is the single source; panel writes with
-  `Config.setSetting(key, value)` (top-level keys: `dock`, `classicbar`,
-  `barEngine`, `editor`, `widgets`, `notifications`, ...). `setSetting` mutates
+  `Config.setSetting(key, value)` (top-level keys: `bar`, `editor`,
+  `widgets`, `notifications`, ...). `setSetting` mutates
   in place: bindings that must react are refreshed imperatively.
 - **Widget positions**: `settings.widgets.<id>.position` overrides the registry
   layout (`default` = widget's own layout; 8 anchors with a 20px scaled margin).

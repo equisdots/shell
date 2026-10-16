@@ -82,14 +82,13 @@ function pageEntries() {
         // Guide (d_guide) — popup de la X embebido tal cual (sistema/paletas/about)
         { page: "d_guide", label: "About", desc: "System info, GitHub, palettes and repos", icon: "\uF05A", color: "mauve", y: 0 },
         // Páginas de barra (resumen; y = 0 → arriba). Iconos = navGroups.
-        { page: "d_engine",     label: "Engine",     desc: "Bar or ClassicBar bar",          icon: "󰮯", color: "mauve",    y: 0 },
+        { page: "d_general",    label: "General",    desc: "Bar on/off and overview",          icon: "󰮯", color: "mauve",    y: 0 },
         { page: "d_position",   label: "Position",   desc: "Bar position on screen",           icon: "󱂬", color: "blue",     y: 0 },
         { page: "d_style",      label: "Style",      desc: "Bar look and window borders",      icon: "󰏘", color: "green",    y: 0 },
         { page: "d_palette",    label: "Palette",    desc: "Shared color palette",             icon: "✦", color: "peach",    y: 0 },
         { page: "d_zones",      label: "Zones",      desc: "Bar zones and modules",           icon: "󰮯", color: "sapphire", y: 0 },
         { page: "d_modules",    label: "Modules",    desc: "Per-module icons, colors, fill and accent", icon: "󰍜", color: "blue",     y: 0 },
-        { page: "d_workspaces", label: "Workspaces", desc: "Empty workspace marker",           icon: "󰠰", color: "teal",     y: 0 },
-        { page: "d_classic",       label: "Classic Bar",   desc: "Classic bar sections and actions", icon: "󰹑", color: "mauve",    y: 0 }
+        { page: "d_workspaces", label: "Workspaces", desc: "Empty workspace marker",           icon: "󰠰", color: "teal",     y: 0 }
     ];
 }
 

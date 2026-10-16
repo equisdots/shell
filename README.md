@@ -10,12 +10,12 @@ Version: **0.1.0** · License: MIT
 The xlinux shell was ported as-is (behaviour preserved, naming updated) and
 restructured into `core/` + `ui/`; it is the shell running live at
 `~/.config/hypr/scripts/quickshell`. Renames applied: `dock` to `bar`, the
-legacy bar to `ClassicBar`; engine values `"bar"`/`"classic"`; config keys
-`"bar"`, `"classicbar"`, `"barEngine"` (contract kept).
+legacy bar to `ClassicBar` (since removed — the bar is a single zones engine
+under the config key `"bar"`; `bar.enabled` is its master switch).
 
 Running subsystems:
 
-- **Bar** — host + both engines (zones/classic) + 18 modules + editor.
+- **Bar** — host + zones engine + 18 modules + editor; complete bars can ship as plugins (`provides.bar.provider`).
 - **Popups** — applauncher, battery, calendar, guide, music, network,
   system-monitor, updater, volume.
 - **Shadows** — host-drawn popup/menu shadows plus bar island/strip
@@ -66,7 +66,7 @@ Known pending:
 | `core/` | Services and contracts (no visuals) |
 | `core/compositors/Hyprland.qml` | Hyprland backend of the compositor surface |
 | `core/scripts/watchers/` | Data-fetcher scripts the bar polls |
-| `ui/bar/` | Bar host, engines, modules, `Colors.qml`, `edit/` + `editor/`, `popups/` |
+| `ui/bar/` | Bar host, zones engine, modules, `Colors.qml`, `edit/` + `editor/`, `popups/` |
 | `ui/panels/` | Standalone widgets (davincix, clipboard, focustime, ...) |
 | `Lock.qml` (root) | PAM session lock (alternate entry point) |
 | `ui/notifications/`, `ui/widgets/` | Notification layer, floating widgets |
@@ -89,13 +89,13 @@ scripts/check.sh
 ## Docs
 
 - `docs/architecture.md` — layer map and contracts.
-- `docs/bar.md` — bar host, both engines, zones, styles, classic parity.
+- `docs/bar.md` — bar host, master switch, zones, styles, plugin bars.
 - `docs/bar-modules.md` — module contract, `ModulePill` API, compact mode,
   per-module personalization.
 - `docs/windows.md` — windows, widget popups, IPC and watchers.
 - the island/notch integration is documented in its plugin (equisdots/nyx → `docs/shell-integration.md`).
 - `docs/desktop-widgets.md` — floating widget subsystem and redactor.
 - `docs/themes.md` — palette system, live editing and theme-sync.
-- `docs/personalization.md` — configuration surface (bar engines, modules,
+- `docs/personalization.md` — configuration surface (bar, modules,
   per-subsystem options).
 - `docs/development.md` — local check scripts and development pitfalls.
