@@ -69,7 +69,7 @@ Item {
                     y: bar.s(Theme.gapSm)
                     width: pageFlick.width - bar.s(Theme.gapLg)
                     spacing: bar.s(Theme.gapLg)
-                    visible: bar.engine === "bar"
+                    visible: true
 
                     // ════ BAR ════
                     Text {

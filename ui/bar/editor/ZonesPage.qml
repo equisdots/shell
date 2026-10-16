@@ -79,7 +79,7 @@ Item {
                     y: bar.s(Theme.gapLg)
                     width: pageFlick.width - bar.s(Theme.gapLg) * 2
                     spacing: bar.s(Theme.gapLg)
-                    visible: bar.engine === "bar"
+                    visible: true
 
                     // Título de página (GP:1007-1014)
                     Text {
