@@ -8,10 +8,12 @@ import "../../bar"
 import "../../bar/edit"
 
 // ═══════════════════════════════════════════════════════════════════════════
-// PluginsPanel — the dedicated PLUGINS panel (SUPER+SHIFT+M). Material-You
-// restyle: page header with live counts, a filled search field and type filter
-// chips, and roomy list cards with a leading icon chip, description and per-
-// plugin actions.
+// PluginsPanel — the dedicated PLUGINS panel (SUPER+SHIFT+M).
+//
+// Same visual system as the config menu (BarEditor / settings tabs): a page
+// header + ONE section card (surfaceContainerLow / outlineVariant / radiusLg)
+// holding rows (surfaceContainer / radiusMd), all built from the shared MD3
+// tokens in core/Theme.qml. A search field (first row) filters the list.
 //
 // Autonomy: it never touches the core settings.json. Enabling/disabling writes
 // the plugin's OWN settings file (~/.config/hypr/plugins/<id>/settings.json);
@@ -31,8 +33,6 @@ Item {
     property string query: ""
     property string filterType: "all"     // all | shell | hypr | mixed | cli
 
-    // Kit context shim handed to plugin pages as `bar` (same contract the editor
-    // provides: bar.s(), bar.colors, bar.gotoPage()).
     Colors { id: themeColors }
     QtObject {
         id: barShim
@@ -72,12 +72,27 @@ Item {
         return null;
     }
 
-    // Optimistic enable state: the toggle must reflect the click IMMEDIATELY
-    // and be correct regardless of how long the async rescan takes (the scan
-    // re-reads the plugin's settings file, which the write may still be
-    // flushing → the old fixed-delay timer read a stale value and the toggle
-    // appeared to need several clicks). The override is dropped as soon as the
-    // catalog confirms the value.
+    function typeColor(t) {
+        if (t === "shell") return barShim.colors.mauve;
+        if (t === "hypr")  return barShim.colors.blue;
+        if (t === "mixed") return barShim.colors.green;
+        if (t === "cli")   return barShim.colors.yellow;
+        return barShim.colors.subtext0;
+    }
+    function openPanel(p) {
+        let ps = (p && p.provides ? p.provides.panels : null) || {};
+        let k = Object.keys(ps)[0];
+        if (k) Quickshell.execDetached(["bash", Quickshell.env("HOME") + "/.config/hypr/scripts/qs_manager.sh", "toggle", k]);
+    }
+    function hasPanel(p) {
+        let ps = (p && p.provides ? p.provides.panels : null) || {};
+        return Object.keys(ps).length > 0;
+    }
+
+    // ── optimistic enable state ───────────────────────────────────────────────
+    // The switch reflects the click IMMEDIATELY and is correct regardless of how
+    // long the async rescan takes; the override is dropped once the catalog
+    // confirms the value.
     property var _opt: ({})
     function effectiveEnabled(p) {
         if (!p || !p.id) return false;
@@ -97,20 +112,14 @@ Item {
         function onRevChanged() { root._reconcile(); }
     }
 
-    // Enable/disable writes the plugin's OWN settings file (never settings.json).
-    // The write is serialized and only THEN triggers the rescan, so the catalog
-    // never reads a half-written file.
     Process {
         id: writer
-        property string pendingCmd: ""
         property var pendingCb: null
         property string queuedCmd: ""
         property var queuedCb: null
         function exec(cmd, cb) {
             if (running) { queuedCmd = cmd; queuedCb = cb; return; }
-            pendingCmd = cmd; pendingCb = cb;
-            command = ["bash", "-c", cmd];
-            running = true;
+            pendingCb = cb; command = ["bash", "-c", cmd]; running = true;
         }
         onExited: {
             let f = pendingCb; pendingCb = null; if (f) f();
@@ -121,7 +130,6 @@ Item {
 
     function setEnabled(p, value) {
         if (!p || !p.id) return;
-        // Optimistic: reflect the click now.
         let o = Object.assign({}, _opt); o[p.id] = value === true; _opt = o;
         let path = String(p.toggle || ((p.scope || p.id) + ".enabled")).split(".");
         let file = String(p._base || "") + "/settings.json";
@@ -137,211 +145,186 @@ Item {
         });
     }
 
-    function typeColor(t) {
-        if (t === "shell") return barShim.colors.mauve;
-        if (t === "hypr")  return barShim.colors.blue;
-        if (t === "mixed") return barShim.colors.green;
-        if (t === "cli")   return barShim.colors.yellow;
-        return barShim.colors.subtext0;
-    }
-    function openPanel(p) {
-        let ps = (p && p.provides ? p.provides.panels : null) || {};
-        let k = Object.keys(ps)[0];
-        if (k) Quickshell.execDetached(["bash", Quickshell.env("HOME") + "/.config/hypr/scripts/qs_manager.sh", "toggle", k]);
-    }
-    function hasPanel(p) {
-        let ps = (p && p.provides ? p.provides.panels : null) || {};
-        return Object.keys(ps).length > 0;
-    }
-
     // ══ LIST ═══════════════════════════════════════════════════════════════
-    ColumnLayout {
+    Flickable {
+        id: listFlick
         anchors.fill: parent
-        anchors.margins: Theme.gapLg
-        spacing: Theme.gapMd
         visible: root.selected === ""
+        clip: true
+        contentWidth: width
+        contentHeight: listCol.implicitHeight + Theme.gapXl
+        boundsBehavior: Flickable.StopAtBounds
+        ScrollBar.vertical: ScrollBar { width: 4; policy: ScrollBar.AsNeeded }
 
-        // ── header ──────────────────────────────────────────────────────────
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: Theme.gapMd
+        ColumnLayout {
+            id: listCol
+            x: Theme.gapLg
+            y: Theme.gapLg
+            width: listFlick.width - Theme.gapLg * 2
+            spacing: Theme.gapXl
 
-            Rectangle {
-                Layout.alignment: Qt.AlignVCenter
-                width: 44; height: 44; radius: Theme.radiusMd
-                color: Qt.alpha(barShim.colors.mauve, 0.15)
-                Text {
-                    anchors.centerIn: parent; text: "󰏗"
-                    font.family: "Hack Nerd Font"; font.pixelSize: 20
-                    color: barShim.colors.mauve
-                }
-            }
+            // ── page header ─────────────────────────────────────────────────
             ColumnLayout {
-                spacing: 0
+                Layout.fillWidth: true
+                spacing: Theme.gapXs
                 Text {
+                    Layout.fillWidth: true
                     text: "Plugins"
                     font.family: "Hack Nerd Font"; font.weight: Font.Black; font.pixelSize: 24
-                    color: barShim.colors.text
+                    color: Theme.text
                 }
                 Text {
-                    text: root.plugins.length + " installed · " + root.enabledCount + " enabled"
+                    Layout.fillWidth: true
+                    text: root.plugins.length + " installed · " + root.enabledCount +
+                          " enabled. Enabling/disabling writes each plugin's own settings file; the core never writes plugin state."
                     font.family: "Hack Nerd Font"; font.pixelSize: 11
                     color: barShim.colors.subtext0
+                    wrapMode: Text.WordWrap
                 }
             }
-            Item { Layout.fillWidth: true }
-        }
 
-        // ── search field (MD3 filled) ───────────────────────────────────────
-        Rectangle {
-            Layout.fillWidth: true
-            implicitHeight: 44
-            radius: Theme.radiusFull
-            color: Theme.surfaceContainerHigh
-            border.width: 1
-            border.color: searchInput.activeFocus ? barShim.colors.mauve : "transparent"
+            // ── section card ────────────────────────────────────────────────
+            Rectangle {
+                Layout.fillWidth: true
+                radius: Theme.radiusLg
+                color: Theme.surfaceContainerLow
+                border.width: 1
+                border.color: Theme.outlineVariant
+                implicitHeight: inner.implicitHeight + Theme.gapLg * 2
 
-            RowLayout {
-                anchors.fill: parent
-                anchors.leftMargin: Theme.gapMd
-                anchors.rightMargin: Theme.gapSm
-                spacing: Theme.gapSm
-
-                Text {
-                    text: "󰍉"
-                    font.family: "Hack Nerd Font"; font.pixelSize: 16
-                    color: barShim.colors.subtext0
-                }
-                TextInput {
-                    id: searchInput
-                    Layout.fillWidth: true
-                    clip: true
-                    color: barShim.colors.text
-                    font.family: "Hack Nerd Font"; font.pixelSize: 13
-                    selectByMouse: true
-                    selectionColor: Qt.alpha(barShim.colors.mauve, 0.35)
-                    selectedTextColor: barShim.colors.text
-                    onTextChanged: root.query = text
+                ColumnLayout {
+                    id: inner
+                    anchors.fill: parent
+                    anchors.margins: Theme.gapLg
+                    spacing: Theme.gapMd
 
                     Text {
-                        anchors.verticalCenter: parent.verticalCenter
-                        visible: searchInput.text === ""
-                        text: "Search plugins…"
-                        font.family: "Hack Nerd Font"; font.pixelSize: 13
-                        color: Qt.alpha(barShim.colors.subtext0, 0.8)
+                        Layout.fillWidth: true
+                        text: "Installed"
+                        font.family: "Hack Nerd Font"; font.weight: Font.Medium; font.pixelSize: 12
+                        color: Theme.text
                     }
-                    Keys.onEscapePressed: { text = ""; root.query = ""; focus = false; }
-                }
-                Rectangle {
-                    Layout.alignment: Qt.AlignVCenter
-                    visible: searchInput.text !== ""
-                    width: 24; height: 24; radius: Theme.radiusFull
-                    color: clearMa.containsMouse ? Theme.stateLayer(barShim.colors.text, Theme.stateHover) : "transparent"
-                    Text { anchors.centerIn: parent; text: "󰅖"; font.family: "Hack Nerd Font"; font.pixelSize: 13; color: barShim.colors.subtext0 }
-                    MouseArea { id: clearMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: { searchInput.text = ""; root.query = ""; } }
-                }
-            }
-        }
 
-        // ── type filter chips ───────────────────────────────────────────────
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: Theme.gapSm
-
-            Repeater {
-                model: [["all", "All"]].concat(root.typeList.map(function (t) { return [t, t.charAt(0).toUpperCase() + t.slice(1)]; }))
-                delegate: Rectangle {
-                    required property var modelData
-                    readonly property bool on: root.filterType === modelData[0]
-                    readonly property color accent: modelData[0] === "all" ? barShim.colors.mauve : root.typeColor(modelData[0])
-                    radius: Theme.radiusFull
-                    color: on ? Theme.stateLayer(accent, Theme.statePress) : Theme.surfaceContainerHigh
-                    border.width: 1
-                    border.color: on ? accent : Theme.outlineVariant
-                    implicitWidth: chipText.implicitWidth + Theme.gapLg * 2
-                    implicitHeight: 30
-                    Text {
-                        id: chipText
-                        anchors.centerIn: parent
-                        text: modelData[1]
-                        font.family: "Hack Nerd Font"; font.pixelSize: 12
-                        font.weight: on ? Font.Bold : Font.Normal
-                        color: on ? barShim.colors.text : barShim.colors.subtext0
-                    }
-                    MouseArea {
-                        anchors.fill: parent; cursorShape: Qt.PointingHandCursor
-                        onClicked: root.filterType = modelData[0]
-                    }
-                }
-            }
-            Item { Layout.fillWidth: true }
-        }
-
-        // ── list ────────────────────────────────────────────────────────────
-        Flickable {
-            id: listFlick
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            clip: true
-            boundsBehavior: Flickable.StopAtBounds
-            contentHeight: listCol.height + Theme.gapLg
-            ScrollBar.vertical: ScrollBar { width: 4; policy: ScrollBar.AsNeeded }
-
-            Column {
-                id: listCol
-                width: listFlick.width - Theme.gapMd
-                spacing: Theme.gapSm
-
-                Repeater {
-                    model: root.filtered
-                    delegate: Rectangle {
-                        id: card
-                        required property var modelData
-                        width: listCol.width
-                        implicitHeight: 96
-                        radius: Theme.radiusLg
-                        color: cardHover.hovered ? Theme.surfaceContainerHigh : Theme.surfaceContainerLow
+                    // search field (MD3 filled row)
+                    Rectangle {
+                        Layout.fillWidth: true
+                        implicitHeight: 40
+                        radius: Theme.radiusMd
+                        color: Theme.surfaceContainer
                         border.width: 1
-                        border.color: cardHover.hovered ? Qt.alpha(root.typeColor(card.modelData.type), 0.7) : Theme.outlineVariant
-                        Behavior on color { ColorAnimation { duration: Theme.durShort } }
-
-                        HoverHandler { id: cardHover; cursorShape: Qt.PointingHandCursor }
+                        border.color: searchInput.activeFocus ? barShim.colors.mauve : Theme.outlineVariant
+                        Behavior on border.color { ColorAnimation { duration: Theme.durShort } }
 
                         RowLayout {
                             anchors.fill: parent
-                            anchors.margins: Theme.gapMd
-                            spacing: Theme.gapMd
-
-                            // leading type icon chip
+                            anchors.leftMargin: Theme.gapMd
+                            anchors.rightMargin: Theme.gapSm
+                            spacing: Theme.gapSm
+                            Text { text: "󰍉"; font.family: "Hack Nerd Font"; font.pixelSize: 15; color: barShim.colors.subtext0 }
+                            TextInput {
+                                id: searchInput
+                                Layout.fillWidth: true
+                                clip: true
+                                color: barShim.colors.text
+                                font.family: "Hack Nerd Font"; font.pixelSize: 12
+                                selectByMouse: true
+                                selectionColor: Qt.alpha(barShim.colors.mauve, 0.35)
+                                selectedTextColor: barShim.colors.text
+                                onTextChanged: root.query = text
+                                Text {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    visible: searchInput.text === ""
+                                    text: "Search plugins…"
+                                    font.family: "Hack Nerd Font"; font.pixelSize: 12
+                                    color: Qt.alpha(barShim.colors.subtext0, 0.8)
+                                }
+                                Keys.onEscapePressed: { text = ""; root.query = ""; focus = false; }
+                            }
                             Rectangle {
                                 Layout.alignment: Qt.AlignVCenter
-                                width: 42; height: 42; radius: Theme.radiusMd
-                                color: Qt.alpha(root.typeColor(card.modelData.type), 0.15)
-                                Text {
-                                    anchors.centerIn: parent; text: "󰏗"
-                                    font.family: "Hack Nerd Font"; font.pixelSize: 18
-                                    color: root.typeColor(card.modelData.type)
-                                }
+                                visible: searchInput.text !== ""
+                                width: 22; height: 22; radius: Theme.radiusFull
+                                color: clearMa.containsMouse ? Theme.stateLayer(barShim.colors.text, Theme.stateHover) : "transparent"
+                                Text { anchors.centerIn: parent; text: "󰅖"; font.family: "Hack Nerd Font"; font.pixelSize: 12; color: barShim.colors.subtext0 }
+                                MouseArea { id: clearMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: { searchInput.text = ""; root.query = ""; } }
                             }
+                        }
+                    }
 
-                            // middle: name / description / actions
+                    // type filter chips
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: Theme.gapSm
+                        Repeater {
+                            model: [["all", "All"]].concat(root.typeList.map(function (t) { return [t, t.charAt(0).toUpperCase() + t.slice(1)]; }))
+                            delegate: Rectangle {
+                                required property var modelData
+                                readonly property bool on: root.filterType === modelData[0]
+                                readonly property color accent: modelData[0] === "all" ? barShim.colors.mauve : root.typeColor(modelData[0])
+                                radius: Theme.radiusFull
+                                color: on ? Theme.stateLayer(accent, Theme.statePress) : Theme.surfaceContainer
+                                border.width: 1
+                                border.color: on ? accent : Theme.outlineVariant
+                                implicitWidth: chipText.implicitWidth + Theme.gapLg * 2
+                                implicitHeight: 26
+                                Text {
+                                    id: chipText; anchors.centerIn: parent
+                                    text: modelData[1]
+                                    font.family: "Hack Nerd Font"; font.pixelSize: 11
+                                    font.weight: on ? Font.Bold : Font.Normal
+                                    color: on ? barShim.colors.text : barShim.colors.subtext0
+                                }
+                                MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.filterType = modelData[0] }
+                            }
+                        }
+                        Item { Layout.fillWidth: true }
+                    }
+
+                    // rows
+                    Repeater {
+                        model: root.filtered
+                        delegate: Rectangle {
+                            id: card
+                            required property var modelData
+                            Layout.fillWidth: true
+                            implicitHeight: rowCol.implicitHeight + Theme.gapMd * 2
+                            radius: Theme.radiusMd
+                            color: cardHover.hovered ? Theme.surfaceContainerHigh : Theme.surfaceContainer
+                            border.width: 1
+                            border.color: cardHover.hovered ? Qt.alpha(root.typeColor(card.modelData.type), 0.6) : Theme.outlineVariant
+                            Behavior on color { ColorAnimation { duration: Theme.durShort } }
+                            Behavior on border.color { ColorAnimation { duration: Theme.durShort } }
+
+                            HoverHandler { id: cardHover }
+
                             ColumnLayout {
-                                Layout.fillWidth: true
-                                spacing: 2
+                                id: rowCol
+                                anchors.fill: parent
+                                anchors.margins: Theme.gapMd
+                                spacing: Theme.gapSm
 
                                 RowLayout {
+                                    Layout.fillWidth: true
                                     spacing: Theme.gapSm
                                     Text {
+                                        Layout.alignment: Qt.AlignVCenter
+                                        text: "󰏗"; font.family: "Hack Nerd Font"; font.pixelSize: 16
+                                        color: root.typeColor(card.modelData.type)
+                                    }
+                                    Text {
+                                        Layout.alignment: Qt.AlignVCenter
                                         text: card.modelData.name || card.modelData.id
-                                        font.family: "Hack Nerd Font"; font.weight: Font.Bold; font.pixelSize: 14
+                                        font.family: "Hack Nerd Font"; font.weight: Font.Bold; font.pixelSize: 13
                                         color: barShim.colors.text
                                     }
                                     Text {
+                                        Layout.alignment: Qt.AlignVCenter
                                         text: "v" + (card.modelData.version || "?")
                                         font.family: "Hack Nerd Font"; font.pixelSize: 10
                                         color: barShim.colors.subtext0
                                     }
                                     Rectangle {
+                                        Layout.alignment: Qt.AlignVCenter
                                         radius: Theme.radiusSm
                                         color: Qt.alpha(root.typeColor(card.modelData.type), 0.15)
                                         border.width: 1; border.color: root.typeColor(card.modelData.type)
@@ -355,11 +338,23 @@ Item {
                                         }
                                     }
                                     Item { Layout.fillWidth: true }
+                                    Text {
+                                        Layout.alignment: Qt.AlignVCenter
+                                        text: root.effectiveEnabled(card.modelData) ? "Enabled" : "Disabled"
+                                        font.family: "Hack Nerd Font"; font.weight: Font.Bold; font.pixelSize: 10
+                                        color: root.effectiveEnabled(card.modelData) ? barShim.colors.mauve : barShim.colors.subtext0
+                                    }
+                                    ToggleSwitch {
+                                        Layout.alignment: Qt.AlignVCenter
+                                        bar: barShim
+                                        checked: root.effectiveEnabled(card.modelData)
+                                        onToggled: root.setEnabled(card.modelData, !root.effectiveEnabled(card.modelData))
+                                    }
                                 }
 
                                 EditLabel {
                                     Layout.fillWidth: true
-                                    text: (card.modelData.description || "No description")
+                                    text: (card.modelData.description || "No description") + (card.modelData.author ? "  ·  " + card.modelData.author : "")
                                     font.pixelSize: 11; color: barShim.colors.subtext0
                                     elide: Text.ElideRight
                                 }
@@ -371,46 +366,28 @@ Item {
                                     Item { Layout.fillWidth: true }
                                 }
                             }
-
-                            // trailing: enable state + toggle
-                            ColumnLayout {
-                                Layout.alignment: Qt.AlignVCenter
-                                spacing: Theme.gapXs
-                                Text {
-                                    Layout.alignment: Qt.AlignHCenter
-                                    text: root.effectiveEnabled(card.modelData) ? "Enabled" : "Disabled"
-                                    font.family: "Hack Nerd Font"; font.weight: Font.Bold; font.pixelSize: 10
-                                    color: root.effectiveEnabled(card.modelData) ? barShim.colors.mauve : barShim.colors.subtext0
-                                }
-                                ToggleSwitch {
-                                    Layout.alignment: Qt.AlignHCenter
-                                    bar: barShim
-                                    checked: root.effectiveEnabled(card.modelData)
-                                    onToggled: root.setEnabled(card.modelData, !root.effectiveEnabled(card.modelData))
-                                }
-                            }
                         }
                     }
-                }
 
-                // empty state
-                Item {
-                    width: listCol.width
-                    height: 160
-                    visible: root.filtered.length === 0
-                    Column {
-                        anchors.centerIn: parent
-                        spacing: Theme.gapSm
-                        Text {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            text: "󰍉"; font.family: "Hack Nerd Font"; font.pixelSize: 34
-                            color: Qt.alpha(barShim.colors.subtext0, 0.6)
-                        }
-                        Text {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            text: (root.plugins.length === 0) ? "No plugins installed." : "No plugins match your search."
-                            font.family: "Hack Nerd Font"; font.pixelSize: 12
-                            color: barShim.colors.subtext0
+                    // empty state
+                    Item {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 120
+                        visible: root.filtered.length === 0
+                        Column {
+                            anchors.centerIn: parent
+                            spacing: Theme.gapSm
+                            Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                text: "󰍉"; font.family: "Hack Nerd Font"; font.pixelSize: 30
+                                color: Qt.alpha(barShim.colors.subtext0, 0.6)
+                            }
+                            Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                text: (root.plugins.length === 0) ? "No plugins installed." : "No plugins match your search."
+                                font.family: "Hack Nerd Font"; font.pixelSize: 12
+                                color: barShim.colors.subtext0
+                            }
                         }
                     }
                 }
@@ -422,7 +399,7 @@ Item {
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: Theme.gapLg
-        spacing: Theme.gapMd
+        spacing: Theme.gapLg
         visible: root.selected !== ""
 
         RowLayout {
@@ -432,16 +409,15 @@ Item {
             Rectangle {
                 Layout.alignment: Qt.AlignVCenter
                 width: 34; height: 34; radius: Theme.radiusFull
-                color: backMa.containsMouse ? Theme.surfaceContainerHigh : Theme.surfaceContainerLow
+                color: backMa.containsMouse ? Theme.surfaceContainerHigh : Theme.surfaceContainer
                 border.width: 1; border.color: Theme.outlineVariant
                 Text { anchors.centerIn: parent; text: "←"; font.family: "Hack Nerd Font"; font.pixelSize: 15; color: barShim.colors.text }
                 MouseArea { id: backMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: root.selected = "" }
             }
             Text {
-                id: pageName
                 text: { let p = root.pluginById(root.selected); return p ? (p.name || p.id) : ""; }
-                font.family: "Hack Nerd Font"; font.weight: Font.Black; font.pixelSize: 18
-                color: barShim.colors.text
+                font.family: "Hack Nerd Font"; font.weight: Font.Black; font.pixelSize: 20
+                color: Theme.text
             }
             Rectangle {
                 visible: { let p = root.pluginById(root.selected); return !!(p && p.type); }
@@ -459,8 +435,6 @@ Item {
             }
             Item { Layout.fillWidth: true }
         }
-
-        Rectangle { Layout.fillWidth: true; height: 1; color: Theme.outlineVariant }
 
         Loader {
             id: pageLoader
