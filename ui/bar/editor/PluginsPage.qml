@@ -67,12 +67,54 @@ Item {
         return root.bar.colors.subtext0;
     }
 
+    // Optimistic enable state (see PluginsPanel): the switch reflects the click
+    // now and stays correct while the async rescan catches up. Dropped once the
+    // catalog confirms the value.
+    property var _opt: ({})
+    function effectiveEnabled(p) {
+        if (!p || !p.id) return false;
+        return (_opt[p.id] !== undefined) ? (_opt[p.id] === true) : (p.enabled === true);
+    }
+    function pluginById(id) {
+        let l = root.plugins;
+        for (let i = 0; i < l.length; i++) if (l[i] && l[i].id === id) return l[i];
+        return null;
+    }
+    function _reconcile() {
+        let next = {}; let changed = false;
+        for (let id in _opt) {
+            let p = root.pluginById(id);
+            if (p && (p.enabled === true) === (_opt[id] === true)) { changed = true; continue; }
+            next[id] = _opt[id];
+        }
+        if (changed) _opt = next;
+    }
+    Connections {
+        target: PluginsCatalog
+        function onRevChanged() { root._reconcile(); }
+    }
+
     // Writes the plugin's effective toggle into the plugin's OWN settings file
-    // (its state never mixes into the core settings.json), then reloads the
-    // compositor for hypr-side plugins and rescans.
+    // (its state never mixes into the core settings.json), serialized, and only
+    // THEN relaxes/reloads so the catalog never reads a half-written file.
+    Process {
+        id: writer
+        property var pendingCb: null
+        property string queuedCmd: ""
+        property var queuedCb: null
+        function exec(cmd, cb) {
+            if (running) { queuedCmd = cmd; queuedCb = cb; return; }
+            pendingCb = cb; command = ["bash", "-c", cmd]; running = true;
+        }
+        onExited: {
+            let f = pendingCb; pendingCb = null; if (f) f();
+            if (queuedCmd !== "") { let c = queuedCmd, g = queuedCb; queuedCmd = ""; queuedCb = null; exec(c, g); }
+        }
+    }
     function setEnabled(p, value) {
         if (!p || !p.id) return;
-        let path = String(p.toggle || ("plugins." + p.id + ".enabled")).split(".");
+        let o = Object.assign({}, _opt); o[p.id] = value === true; _opt = o;
+        let path = String(p.toggle || ((p.scope || p.id) + ".enabled")).split(".");
         if (path.length < 1 || path[0] === "") return;
         let file = String(p._base || "") + "/settings.json";
         let pathJson = JSON.stringify(path);
@@ -81,9 +123,10 @@ Item {
                   "[ -s \"$f\" ] || echo '{}' > \"$f\"; " +
                   "tmp=$(mktemp \"$f\".tmp.XXXXXX) && " +
                   "jq --argjson p '" + pathJson + "' --argjson v " + v + " 'setpath($p; $v)' \"$f\" > \"$tmp\" && mv \"$tmp\" \"$f\"";
-        Quickshell.execDetached(["bash", "-c", cmd]);
-        if (p.type === "hypr" || p.type === "mixed") root.reloadCompositor();
-        refreshTimer.restart();
+        writer.exec(cmd, function () {
+            if (p.type === "hypr" || p.type === "mixed") root.reloadCompositor();
+            refreshTimer.restart();
+        });
     }
 
     // Whether the plugin's settings page is reachable: enabled + config menu
@@ -318,16 +361,16 @@ Item {
                                             Layout.alignment: Qt.AlignRight
                                             spacing: bar.s(Theme.gapSm)
                                             Text {
-                                                text: card.modelData.enabled ? "Enabled" : "Disabled"
+                                                text: root.effectiveEnabled(card.modelData) ? "Enabled" : "Disabled"
                                                 font.family: "Hack Nerd Font"
                                                 font.pixelSize: bar.s(11)
                                                 font.weight: Font.Bold
-                                                color: card.modelData.enabled ? bar.colors.mauve : bar.colors.subtext0
+                                                color: root.effectiveEnabled(card.modelData) ? bar.colors.mauve : bar.colors.subtext0
                                             }
                                             ToggleSwitch {
                                                 bar: root.bar
-                                                checked: card.modelData.enabled === true
-                                                onToggled: root.setEnabled(card.modelData, !card.modelData.enabled)
+                                                checked: root.effectiveEnabled(card.modelData)
+                                                onToggled: root.setEnabled(card.modelData, !root.effectiveEnabled(card.modelData))
                                             }
                                         }
                                         RowLayout {

@@ -72,10 +72,58 @@ Item {
         return null;
     }
 
+    // Optimistic enable state: the toggle must reflect the click IMMEDIATELY
+    // and be correct regardless of how long the async rescan takes (the scan
+    // re-reads the plugin's settings file, which the write may still be
+    // flushing → the old fixed-delay timer read a stale value and the toggle
+    // appeared to need several clicks). The override is dropped as soon as the
+    // catalog confirms the value.
+    property var _opt: ({})
+    function effectiveEnabled(p) {
+        if (!p || !p.id) return false;
+        return (_opt[p.id] !== undefined) ? (_opt[p.id] === true) : (p.enabled === true);
+    }
+    function _reconcile() {
+        let next = {}; let changed = false;
+        for (let id in _opt) {
+            let p = root.pluginById(id);
+            if (p && (p.enabled === true) === (_opt[id] === true)) { changed = true; continue; }
+            next[id] = _opt[id];
+        }
+        if (changed) _opt = next;
+    }
+    Connections {
+        target: PluginsCatalog
+        function onRevChanged() { root._reconcile(); }
+    }
+
     // Enable/disable writes the plugin's OWN settings file (never settings.json).
+    // The write is serialized and only THEN triggers the rescan, so the catalog
+    // never reads a half-written file.
+    Process {
+        id: writer
+        property string pendingCmd: ""
+        property var pendingCb: null
+        property string queuedCmd: ""
+        property var queuedCb: null
+        function exec(cmd, cb) {
+            if (running) { queuedCmd = cmd; queuedCb = cb; return; }
+            pendingCmd = cmd; pendingCb = cb;
+            command = ["bash", "-c", cmd];
+            running = true;
+        }
+        onExited: {
+            let f = pendingCb; pendingCb = null; if (f) f();
+            if (queuedCmd !== "") { let c = queuedCmd, g = queuedCb; queuedCmd = ""; queuedCb = null; exec(c, g); }
+        }
+    }
+    Process { id: hyprctlReload; command: ["hyprctl", "reload"] }
+
     function setEnabled(p, value) {
         if (!p || !p.id) return;
-        let path = String(p.toggle || (p.id + ".enabled")).split(".");
+        // Optimistic: reflect the click now.
+        let o = Object.assign({}, _opt); o[p.id] = value === true; _opt = o;
+        let path = String(p.toggle || ((p.scope || p.id) + ".enabled")).split(".");
         let file = String(p._base || "") + "/settings.json";
         let pathJson = JSON.stringify(path);
         let v = value ? "true" : "false";
@@ -83,12 +131,11 @@ Item {
                   "[ -s \"$f\" ] || echo '{}' > \"$f\"; " +
                   "tmp=$(mktemp \"$f\".tmp.XXXXXX) && " +
                   "jq --argjson p '" + pathJson + "' --argjson v " + v + " 'setpath($p; $v)' \"$f\" > \"$tmp\" && mv \"$tmp\" \"$f\"";
-        Quickshell.execDetached(["bash", "-c", cmd]);
-        if (p.type === "hypr" || p.type === "mixed") hyprctlReload.running = true;
-        rescanTimer.restart();
+        writer.exec(cmd, function () {
+            if (p.type === "hypr" || p.type === "mixed") hyprctlReload.running = true;
+            PluginsCatalog.refresh();
+        });
     }
-    Process { id: hyprctlReload; command: ["hyprctl", "reload"] }
-    Timer { id: rescanTimer; interval: 300; onTriggered: PluginsCatalog.refresh() }
 
     function typeColor(t) {
         if (t === "shell") return barShim.colors.mauve;
@@ -331,15 +378,15 @@ Item {
                                 spacing: Theme.gapXs
                                 Text {
                                     Layout.alignment: Qt.AlignHCenter
-                                    text: card.modelData.enabled ? "Enabled" : "Disabled"
+                                    text: root.effectiveEnabled(card.modelData) ? "Enabled" : "Disabled"
                                     font.family: "Hack Nerd Font"; font.weight: Font.Bold; font.pixelSize: 10
-                                    color: card.modelData.enabled ? barShim.colors.mauve : barShim.colors.subtext0
+                                    color: root.effectiveEnabled(card.modelData) ? barShim.colors.mauve : barShim.colors.subtext0
                                 }
                                 ToggleSwitch {
                                     Layout.alignment: Qt.AlignHCenter
                                     bar: barShim
-                                    checked: card.modelData.enabled === true
-                                    onToggled: root.setEnabled(card.modelData, !card.modelData.enabled)
+                                    checked: root.effectiveEnabled(card.modelData)
+                                    onToggled: root.setEnabled(card.modelData, !root.effectiveEnabled(card.modelData))
                                 }
                             }
                         }
