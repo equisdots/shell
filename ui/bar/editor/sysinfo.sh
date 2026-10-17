@@ -49,7 +49,7 @@ echo "scale=$(echo "$mon" | jq -r '.[0].scale' 2>/dev/null || echo 1)"
 
 # equisdots customization summary
 echo "palette=$(jq -r '.bar.palette // "x"' "$SETTINGS" 2>/dev/null || echo x)"
-echo "bar_engine=$(jq -r '.barEngine // "bar"' "$SETTINGS" 2>/dev/null || echo bar)"
+echo "bar_enabled=$(jq -r '.bar.enabled // true' "$SETTINGS" 2>/dev/null || echo true)"
 echo "gtk_theme=$(gsettings get org.gnome.desktop.interface gtk-theme 2>/dev/null | tr -d "'")"
 
 VER_FILE="$HOME/.local/state/equisdots-version"
