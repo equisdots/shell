@@ -578,7 +578,7 @@ Item {
     property string transition: "random"
     // Thumbnail corners: rounded vs square.
     property bool roundedThumbs: true
-    property int thumbRadius: roundedThumbs ? window.s(12) : 0
+    property int thumbRadius: roundedThumbs ? Theme.radiusMd : 0
 
     // ── View modes (persisted via Config → settings.json, key "davincixView")
     property string gridOrientation: "horizontal"

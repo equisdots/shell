@@ -125,6 +125,13 @@ Item {
         }
     }
 
+    GlassCard {
+        anchors.fill: parent
+        fill: Theme.widgetFill
+        hairline: Theme.widgetHairline
+        cornerRadius: Theme.radiusLg
+    }
+
     Canvas {
         id: waveCanvas
         anchors.fill: parent

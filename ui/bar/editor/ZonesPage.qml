@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import "../edit"
+import "../../../core"
 
 // ═══════════════════════════════════════════════════════════════════════════
 // ZonesPage — BarEditor tab (bar engine only): zone management + the zone
@@ -57,7 +58,7 @@ Item {
                 anchors.fill: parent
                 clip: true
                 boundsBehavior: Flickable.StopAtBounds
-                contentHeight: pageCol.height + bar.s(16)
+                contentHeight: pageCol.height + bar.s(Theme.gapLg) * 2
                 ScrollBar.vertical: ScrollBar {
                     id: vScroll
                     width: bar.s(4)
@@ -65,8 +66,8 @@ Item {
                     hoverEnabled: true
                     active: pageFlick.moving || vScroll.hovered
                     contentItem: Rectangle {
-                        radius: bar.s(2)
-                        color: bar.colors.surface2
+                        radius: bar.s(Theme.radiusXs)
+                        color: Theme.surfaceContainerHighest
                         opacity: vScroll.active ? 1.0 : 0.45
                     }
                     background: Item {}
@@ -74,11 +75,11 @@ Item {
 
                 Column {
                     id: pageCol
-                    x: bar.s(8)
-                    y: bar.s(8)
-                    width: pageFlick.width - bar.s(16)
-                    spacing: bar.s(12)
-                    visible: bar.engine === "bar"
+                    x: bar.s(Theme.gapLg)
+                    y: bar.s(Theme.gapLg)
+                    width: pageFlick.width - bar.s(Theme.gapLg) * 2
+                    spacing: bar.s(Theme.gapLg)
+                    visible: true
 
                     // Título de página (GP:1007-1014)
                     Text {
@@ -92,7 +93,7 @@ Item {
                     // Fila de acciones
                     Row {
                         width: parent.width
-                        spacing: bar.s(10)
+                        spacing: bar.s(Theme.gapMd)
                         EditorButton { bar: root.bar; label: "+ Add"; active: true; onActivated: root.addZone() }
                         EditorButton { bar: root.bar; label: "Center all"; onActivated: root.centerAll() }
                         EditorButton { bar: root.bar; label: "Default"; onActivated: root.resetBar() }
@@ -107,35 +108,26 @@ Item {
                         wrapMode: Text.WordWrap
                     }
 
-                    // ── Card hero con las tarjetas de zona (targets DnD) ──────────
-                    Rectangle {
+                    // ── Zone cards (targets DnD) ──────────────────────────────────
+                    // No surrounding hero card: each ZoneEditorCard is already a
+                    // section card, so the zones stack directly on the page with
+                    // the same rhythm as the other redesigned pages. Grid keeps
+                    // the responsive equal-width columns; the id `zonasCol` is the
+                    // DnD contract (BarEditor enumerates its children + auto-scroll).
+                    Grid {
+                        id: zonasCol
                         width: parent.width
-                        radius: bar.s(21)
-                        color: Qt.alpha(bar.colors.surface0, 0.4)
-                        border.width: 1
-                        border.color: bar.colors.surface1
-                        height: zonasCol.height + bar.s(30)
-
-                        // Grid responsive: tarjetas de igual ancho (min ~s(760)) y
-                        // columnas segun ancho del panel. El id zonasCol se mantiene
-                        // (contrato DnD: BarEditor enumera sus hijos y auto-scrollea).
-                        Grid {
-                            id: zonasCol
-                            x: bar.s(15)
-                            y: bar.s(15)
-                            width: parent.width - bar.s(30)
-                            spacing: bar.s(10)
-                            columns: Math.max(1, Math.floor((width + spacing) / (bar.s(760) + spacing)))
-                            Repeater {
-                                model: bar.bar.zones
-                                delegate: ZoneEditorCard {
-                                    required property var modelData
-                                    required property int index
-                                    width: (zonasCol.width - (zonasCol.columns - 1) * zonasCol.spacing) / zonasCol.columns
-                                    bar: root.bar
-                                    zoneData: modelData
-                                    zoneIndex: index
-                                }
+                        spacing: bar.s(Theme.gapLg)
+                        columns: Math.max(1, Math.floor((width + spacing) / (bar.s(760) + spacing)))
+                        Repeater {
+                            model: bar.bar.zones
+                            delegate: ZoneEditorCard {
+                                required property var modelData
+                                required property int index
+                                width: (zonasCol.width - (zonasCol.columns - 1) * zonasCol.spacing) / zonasCol.columns
+                                bar: root.bar
+                                zoneData: modelData
+                                zoneIndex: index
                             }
                         }
                     }

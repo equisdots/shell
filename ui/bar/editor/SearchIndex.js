@@ -2,7 +2,7 @@
 // SearchIndex.js — índice puro del buscador global del panel Settings.
 //
 // Migrado de settings/SettingsPopup.qml: el MISMO array de 12 cards (con
-// `page` en vez de `tab`, mapeo 0→s_general · 1→s_timex · 2→s_keyboard ·
+// `page` en vez de `tab`, mapeo 0→s_general · 1→s_keyboard ·
 // 4→s_startup), el matcher label+desc y el matcher de keybinds.
 // Añade pageEntries(): los ajustes de las páginas del editor (d_*) para que el
 // buscador también los alcance, con una `y` aproximada de scroll (px lógicos;
@@ -19,13 +19,6 @@ function cards() {
         { page: "s_general", boxIndex: 2, label: "Layout shortcut", desc: "Toggle combination", icon: "󰯍", color: "teal" },
         { page: "s_general", boxIndex: 3, label: "Wallpaper directory", desc: "Absolute source path", icon: "󰋩", color: "mauve" },
         { page: "s_general", boxIndex: 4, label: "Workspaces", desc: "Static count in topbar", icon: "󰽿", color: "red" },
-        { page: "s_timex", boxIndex: 0, label: "Provider", desc: "Open-Meteo / wttr.in / OpenWeatherMap", icon: "󰖐", color: "blue" },
-        { page: "s_timex", boxIndex: 1, label: "City", desc: "City name or lat,lon", icon: "󰍎", color: "blue" },
-        { page: "s_timex", boxIndex: 2, label: "API key", desc: "Only for keyed providers", icon: "󰌆", color: "blue" },
-        { page: "s_timex", boxIndex: 3, label: "Temperature Unit", desc: "Celsius / Fahrenheit", icon: "󰔄", color: "blue" },
-        { page: "s_timex", boxIndex: 4, label: "Timex data", desc: "Snapshot, age and refresh", icon: "󰙦", color: "blue" },
-        { page: "s_timex", boxIndex: 5, label: "Timex layout", desc: "Forecast row and clock position/size", icon: "󰒓", color: "blue" },
-        { page: "s_timex", boxIndex: 6, label: "Calendar & panel", desc: "Month grid and day panel options", icon: "󰃭", color: "blue" },
         { page: "s_general", boxIndex: 5, label: "App scale", desc: "Scale GTK / Electron apps", icon: "", color: "sapphire" },
         { page: "s_general", boxIndex: 6, label: "Current wallpaper", desc: "Preview and change the desktop background", icon: "󰋩", color: "peach" }
     ];
@@ -89,14 +82,13 @@ function pageEntries() {
         // Guide (d_guide) — popup de la X embebido tal cual (sistema/paletas/about)
         { page: "d_guide", label: "About", desc: "System info, GitHub, palettes and repos", icon: "\uF05A", color: "mauve", y: 0 },
         // Páginas de barra (resumen; y = 0 → arriba). Iconos = navGroups.
-        { page: "d_engine",     label: "Engine",     desc: "Bar or ClassicBar bar",          icon: "󰮯", color: "mauve",    y: 0 },
+        { page: "d_general",    label: "General",    desc: "Bar on/off and overview",          icon: "󰮯", color: "mauve",    y: 0 },
         { page: "d_position",   label: "Position",   desc: "Bar position on screen",           icon: "󱂬", color: "blue",     y: 0 },
         { page: "d_style",      label: "Style",      desc: "Bar look and window borders",      icon: "󰏘", color: "green",    y: 0 },
         { page: "d_palette",    label: "Palette",    desc: "Shared color palette",             icon: "✦", color: "peach",    y: 0 },
         { page: "d_zones",      label: "Zones",      desc: "Bar zones and modules",           icon: "󰮯", color: "sapphire", y: 0 },
         { page: "d_modules",    label: "Modules",    desc: "Per-module icons, colors, fill and accent", icon: "󰍜", color: "blue",     y: 0 },
-        { page: "d_workspaces", label: "Workspaces", desc: "Empty workspace marker",           icon: "󰠰", color: "teal",     y: 0 },
-        { page: "d_classic",       label: "Classic Bar",   desc: "Classic bar sections and actions", icon: "󰹑", color: "mauve",    y: 0 }
+        { page: "d_workspaces", label: "Workspaces", desc: "Empty workspace marker",           icon: "󰠰", color: "teal",     y: 0 }
     ];
 }
 

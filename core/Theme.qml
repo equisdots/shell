@@ -53,6 +53,91 @@ Item {
         );
     }
 
+    // Glass card surface for widgets (Theme.glassFill already carries the
+    // glass alpha when glass mode is on; falls back to opaque base otherwise).
+    readonly property color glassFill: root.base
+    readonly property color hairline: Qt.rgba(root.text.r, root.text.g, root.text.b, 0.10)
+    readonly property color hairlineStrong: Qt.rgba(root.text.r, root.text.g, root.text.b, 0.18)
+
+    // =========================================================================
+    // Material-You structure tokens.
+    //
+    // Colour stays the project's synced base16 palette (theme-sync untouched)
+    // and the font stays Hack Nerd Font — these tokens only add the MD3
+    // *structure*: shape, spacing, tonal elevation, outlines, state layers and
+    // motion, so every panel/widget shares one ordered dimension system.
+    // Scales read settings.json -> appearance.<scale> (default 1).
+    // =========================================================================
+    property var appearanceSettings: ({})
+    readonly property real shapeScale: appearanceSettings.shapeScale !== undefined ? Number(appearanceSettings.shapeScale) || 1 : 1
+    readonly property real densityScale: appearanceSettings.densityScale !== undefined ? Number(appearanceSettings.densityScale) || 1 : 1
+    readonly property real motionScale: appearanceSettings.motionScale !== undefined ? Number(appearanceSettings.motionScale) || 1 : 1
+
+    // Shape scale (corner radii, dp).
+    readonly property int radiusXs: Math.round(4 * root.shapeScale)
+    readonly property int radiusSm: Math.round(8 * root.shapeScale)
+    readonly property int radiusMd: Math.round(12 * root.shapeScale)
+    readonly property int radiusLg: Math.round(16 * root.shapeScale)
+    readonly property int radiusXl: Math.round(28 * root.shapeScale)
+    readonly property int radiusFull: 9999
+
+    // Spacing scale (4dp grid).
+    readonly property int gap2xs: Math.round(2 * root.densityScale)
+    readonly property int gapXs: Math.round(4 * root.densityScale)
+    readonly property int gapSm: Math.round(8 * root.densityScale)
+    readonly property int gapMd: Math.round(12 * root.densityScale)
+    readonly property int gapLg: Math.round(16 * root.densityScale)
+    readonly property int gapXl: Math.round(24 * root.densityScale)
+
+    // Motion (MD3 durations, scaled).
+    readonly property int durShort: Math.round(150 * root.motionScale)
+    readonly property int durMedium: Math.round(250 * root.motionScale)
+    readonly property int durLong: Math.round(400 * root.motionScale)
+
+    // Tonal surface containers (elevation by lightness). Alpha-aware: when
+    // glass is on the base keeps its alpha, so the backdrop still shows through.
+    function tone(amount) {
+        const b = root.base;
+        const t = root.text;
+        return Qt.rgba(
+            b.r + (t.r - b.r) * amount,
+            b.g + (t.g - b.g) * amount,
+            b.b + (t.b - b.b) * amount,
+            b.a
+        );
+    }
+    readonly property color surfaceContainerLowest: tone(0.00)
+    readonly property color surfaceContainerLow: tone(0.04)
+    readonly property color surfaceContainer: tone(0.07)
+    readonly property color surfaceContainerHigh: tone(0.11)
+    readonly property color surfaceContainerHighest: tone(0.15)
+
+    // Outlines (MD3) + state layers.
+    readonly property color outline: tone(0.32)
+    readonly property color outlineVariant: tone(0.16)
+    readonly property real stateHover: 0.08
+    readonly property real statePress: 0.12
+    function stateLayer(c, amount) {
+        return Qt.rgba(c.r, c.g, c.b, amount);
+    }
+
+    // Widget card style (settings.json -> widgets.style): "solid" (opaque tonal
+    // container) or "glass" (translucent fill + brighter hairline; the shared
+    // GlassCard sheen already sits on top). Toggled live from the widget
+    // redactor's "Glass" button.
+    property var widgetsSettings: ({})
+    readonly property string widgetStyle: (root.widgetsSettings.style === "glass") ? "glass" : "solid"
+    readonly property color widgetFill: {
+        if (root.widgetStyle === "glass") {
+            const b = root.base;
+            return Qt.rgba(b.r, b.g, b.b, 0.5);
+        }
+        return root.surfaceContainerHigh;
+    }
+    readonly property color widgetHairline: root.widgetStyle === "glass"
+        ? Qt.rgba(root.text.r, root.text.g, root.text.b, 0.18)
+        : root.outlineVariant
+
     property color base: "#1e1e2e"
     property color mantle: "#181825"
     property color crust: "#11111b"
@@ -239,6 +324,10 @@ Item {
         let bar = (parsed.bar && typeof parsed.bar === "object") ? parsed.bar : {};
         let prevGlass = JSON.stringify(root.glassSettings);
         root.glassSettings = (parsed.glass && typeof parsed.glass === "object") ? parsed.glass : {};
+        // MD3 structure scales (shape/density/motion).
+        root.appearanceSettings = (parsed.appearance && typeof parsed.appearance === "object") ? parsed.appearance : {};
+        // Widget card style (widgets.style).
+        root.widgetsSettings = (parsed.widgets && typeof parsed.widgets === "object") ? parsed.widgets : {};
         // Force a palette re-apply when glass changed (content guard would
         // otherwise skip an unchanged palette file).
         if (JSON.stringify(root.glassSettings) !== prevGlass) root.lastPaletteKey = "";
@@ -273,6 +362,14 @@ Item {
     }
 
     function refreshPalette() {
+        // Build the command HERE (imperatively) so it always matches the CURRENT
+        // paletteName. A `command:` binding re-evaluates one tick late — after
+        // the Process has already been launched — so it would read the PREVIOUS
+        // palette and leave the whole shell tinted with the old theme.
+        paletteReader.command = ["bash", "-c",
+            "cat '" + root.palettesDir + "/" + root.paletteName + ".json' 2>/dev/null"
+            + " || cat '" + root.palettesDir + "/community/" + root.paletteName + ".json' 2>/dev/null"
+            + " || cat '" + root.palettesDir + "/x.json' 2>/dev/null || true"];
         paletteReader.running = false;
         paletteReader.running = true;
     }
@@ -299,9 +396,12 @@ Item {
     }
 
     // --- palette file reader -----------------------------------------------------
+    // Tries the top-level file first, then the community/ dir, then the built-in
+    // `x` fallback — the SAME resolution order as ui/bar/Colors.qml, so Theme and
+    // the bar never disagree after switching to a community palette.
     Process {
         id: paletteReader
-        command: ["bash", "-c", "cat '" + root.palettesDir + "/" + root.paletteName + ".json' 2>/dev/null || cat '" + root.palettesDir + "/x.json' 2>/dev/null || true"]
+        // command is assigned imperatively by refreshPalette() (never a binding).
         running: false
         stdout: StdioCollector {
             onStreamFinished: root.applyPaletteText(this.text)
@@ -313,10 +413,17 @@ Item {
     // (tmp + mv) and FileView follows the path across renames — no shell
     // processes, reload-safe. applyPaletteText() re-reads and only re-applies
     // when the parsed content really differs. The watch retargets itself when
-    // paletteName changes through the FileView.path binding.
+    // paletteName changes through the FileView.path binding. Two watchers
+    // (top-level + community) mirror Colors.qml so community palettes stay live.
     FileView {
         id: paletteWatcher
         path: root.palettesDir + "/" + root.paletteName + ".json"
+        watchChanges: true
+        onFileChanged: root.refreshPalette()
+    }
+    FileView {
+        id: paletteWatcherCommunity
+        path: root.palettesDir + "/community/" + root.paletteName + ".json"
         watchChanges: true
         onFileChanged: root.refreshPalette()
     }
@@ -324,6 +431,7 @@ Item {
     onPaletteNameChanged: {
         root.refreshPalette();
         paletteWatcher.reload();
+        paletteWatcherCommunity.reload();
     }
 
     Component.onCompleted: root.refreshSettings()

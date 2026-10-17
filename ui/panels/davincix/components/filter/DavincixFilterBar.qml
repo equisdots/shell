@@ -7,6 +7,7 @@
 // owns the models and the search/apply orchestration.
 // ═══════════════════════════════════════════════════════════════════════════
 import QtQuick
+import "../../../../../core"
 
 Rectangle {
     id: filterBarBackground
@@ -26,16 +27,16 @@ Rectangle {
     z: 20
     height: ctx.s(56)
     width: filterRow.width + ctx.s(24)
-    radius: ctx.s(18)
+    radius: Theme.radiusLg
 
-    color: Qt.rgba(theme.mantle.r, theme.mantle.g, theme.mantle.b, 0.90)
-    border.color: theme.surface2
+    color: Theme.surfaceContainerHigh
+    border.color: Theme.outlineVariant
     border.width: 1
 
     Row {
         id: filterRow
         anchors.centerIn: parent
-        spacing: ctx.s(12)
+        spacing: Theme.gapMd
 
         // ── Status notification + spinner ──────────────────────────────────
         Rectangle {
@@ -45,12 +46,12 @@ Rectangle {
             property real targetWidth: ctx.showNotification ? Math.min(notifTextDrawer.implicitWidth + paddingLeft + ctx.s(20), ctx.s(300)) : 0
             width: targetWidth
             visible: width > 0.1
-            radius: ctx.s(13)
+            radius: Theme.radiusMd
             clip: true
             anchors.verticalCenter: parent.verticalCenter
 
-            color: ctx.showNotification ? theme.surface2 : "transparent"
-            border.color: ctx.showNotification ? theme.surface1 : "transparent"
+            color: ctx.showNotification ? Theme.surfaceContainerHighest : "transparent"
+            border.color: ctx.showNotification ? Theme.outlineVariant : "transparent"
             border.width: 1
 
             Behavior on width { NumberAnimation { duration: 600; easing.type: Easing.OutBack; easing.overshoot: 0.5 } }
@@ -123,7 +124,7 @@ Rectangle {
 
         // ── Quick controls: transition, corners, palette preview ───────────
         Row {
-            spacing: ctx.s(6)
+                    spacing: Theme.gapXs
             anchors.verticalCenter: parent.verticalCenter
 
             // Transition selector — click to cycle through xwww transitions.
@@ -131,16 +132,16 @@ Rectangle {
                 id: transBtn
                 width: transLabel.implicitWidth + ctx.s(30)
                 height: ctx.s(36)
-                radius: ctx.s(13)
+                radius: Theme.radiusMd
                 anchors.verticalCenter: parent.verticalCenter
-                color: transMouse.containsMouse ? theme.surface1 : theme.surface0
-                border.color: theme.surface1
+                color: transMouse.containsMouse ? Theme.surfaceContainerHigh : Theme.surfaceContainer
+                border.color: Theme.outlineVariant
                 border.width: 1
                 Behavior on color { ColorAnimation { duration: 150 } }
 
                 Row {
                     anchors.centerIn: parent
-                    spacing: ctx.s(6)
+            spacing: Theme.gapXs
                     Text { text: "󰜯"; font.family: "Hack Nerd Font"; font.pixelSize: ctx.s(13); color: theme.text; anchors.verticalCenter: parent.verticalCenter }
                     Text { id: transLabel; text: ctx.transition; font.family: "Hack Nerd Font"; font.pixelSize: ctx.s(11); color: theme.text; anchors.verticalCenter: parent.verticalCenter }
                 }
@@ -160,10 +161,10 @@ Rectangle {
             Rectangle {
                 width: ctx.s(36)
                 height: ctx.s(36)
-                radius: ctx.s(13)
+                radius: Theme.radiusMd
                 anchors.verticalCenter: parent.verticalCenter
-                color: cornersMouse.containsMouse ? theme.surface1 : theme.surface0
-                border.color: theme.surface1
+                color: cornersMouse.containsMouse ? Theme.surfaceContainerHigh : Theme.surfaceContainer
+                border.color: Theme.outlineVariant
                 border.width: 1
                 Behavior on color { ColorAnimation { duration: 150 } }
 
@@ -187,10 +188,10 @@ Rectangle {
             Rectangle {
                 width: ctx.s(36)
                 height: ctx.s(36)
-                radius: ctx.s(13)
+                radius: Theme.radiusMd
                 anchors.verticalCenter: parent.verticalCenter
-                color: orientMouse.containsMouse ? theme.surface1 : theme.surface0
-                border.color: theme.surface1
+                color: orientMouse.containsMouse ? Theme.surfaceContainerHigh : Theme.surfaceContainer
+                border.color: Theme.outlineVariant
                 border.width: 1
                 Behavior on color { ColorAnimation { duration: 150 } }
 
@@ -214,10 +215,10 @@ Rectangle {
             Rectangle {
                 width: ctx.s(36)
                 height: ctx.s(36)
-                radius: ctx.s(13)
+                radius: Theme.radiusMd
                 anchors.verticalCenter: parent.verticalCenter
-                color: shapeMouse.containsMouse ? theme.surface1 : theme.surface0
-                border.color: theme.surface1
+                color: shapeMouse.containsMouse ? Theme.surfaceContainerHigh : Theme.surfaceContainer
+                border.color: Theme.outlineVariant
                 border.width: 1
                 Behavior on color { ColorAnimation { duration: 150 } }
 
@@ -244,12 +245,12 @@ Rectangle {
             Rectangle {
                 width: ctx.s(36)
                 height: ctx.s(36)
-                radius: ctx.s(13)
+                radius: Theme.radiusMd
                 anchors.verticalCenter: parent.verticalCenter
                 color: ctx.slideshowOn
                     ? Qt.alpha(theme.mauve, 0.35)
-                    : (slideMouse.containsMouse ? theme.surface1 : theme.surface0)
-                border.color: ctx.slideshowOn ? theme.mauve : theme.surface1
+                    : (slideMouse.containsMouse ? Theme.surfaceContainerHigh : Theme.surfaceContainer)
+                border.color: ctx.slideshowOn ? theme.mauve : Theme.outlineVariant
                 border.width: ctx.slideshowOn ? ctx.s(2) : 1
                 Behavior on color { ColorAnimation { duration: 150 } }
 
@@ -273,17 +274,17 @@ Rectangle {
             Rectangle {
                 width: ctx.s(58)
                 height: ctx.s(36)
-                radius: ctx.s(13)
+                radius: Theme.radiusMd
                 anchors.verticalCenter: parent.verticalCenter
-                color: theme.surface0
-                border.color: theme.surface1
+                color: Theme.surfaceContainer
+                border.color: Theme.outlineVariant
                 border.width: 1
 
                 Row {
                     anchors.centerIn: parent
-                    spacing: ctx.s(5)
-                    Rectangle { width: ctx.s(13); height: ctx.s(13); radius: ctx.s(4); color: theme.base; border.color: theme.surface1; border.width: 1 }
-                    Rectangle { width: ctx.s(13); height: ctx.s(13); radius: ctx.s(4); color: theme.accent }
+                    spacing: Theme.gapXs
+                    Rectangle { width: ctx.s(13); height: ctx.s(13); radius: Theme.radiusXs; color: theme.base; border.color: Theme.outlineVariant; border.width: 1 }
+                    Rectangle { width: ctx.s(13); height: ctx.s(13); radius: Theme.radiusXs; color: theme.accent }
                 }
             }
         }
@@ -300,12 +301,12 @@ Rectangle {
 
                 Rectangle {
                     anchors.fill: parent
-                    radius: ctx.s(13)
+                    radius: Theme.radiusSm
                     color: modelData.hex === ""
-                        ? (ctx.currentFilter === modelData.name ? theme.surface2 : "transparent")
+                        ? (ctx.currentFilter === modelData.name ? Theme.surfaceContainerHighest : "transparent")
                         : modelData.hex
 
-                    border.color: ctx.currentFilter === modelData.name ? theme.text : theme.surface1
+                    border.color: ctx.currentFilter === modelData.name ? theme.text : Theme.outlineVariant
                     border.width: ctx.currentFilter === modelData.name ? ctx.s(2) : 1
                     scale: ctx.currentFilter === modelData.name ? 1.15 : (filterMouse.containsMouse ? 1.08 : 1.0)
 

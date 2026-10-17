@@ -69,7 +69,7 @@ Item {
                 anchors.fill: parent
                 clip: true
                 boundsBehavior: Flickable.StopAtBounds
-                contentHeight: pageCol.height + bar.s(16)
+                contentHeight: pageCol.height + bar.s(Theme.gapLg)
                 ScrollBar.vertical: ScrollBar {
                     id: vScroll
                     width: bar.s(4)
@@ -77,8 +77,8 @@ Item {
                     hoverEnabled: true
                     active: pageFlick.moving || vScroll.hovered
                     contentItem: Rectangle {
-                        radius: bar.s(2)
-                        color: bar.colors.surface2
+                        radius: bar.s(Theme.radiusXs)
+                        color: Theme.surfaceContainerHighest
                         opacity: vScroll.active ? 1.0 : 0.45
                     }
                     background: Item {}
@@ -86,10 +86,10 @@ Item {
 
                 Column {
                     id: pageCol
-                    x: bar.s(8)
-                    y: bar.s(8)
-                    width: pageFlick.width - bar.s(16)
-                    spacing: bar.s(12)
+                    x: bar.s(Theme.gapSm)
+                    y: bar.s(Theme.gapSm)
+                    width: pageFlick.width - bar.s(Theme.gapLg)
+                    spacing: bar.s(Theme.gapLg)
 
                     // Título de página (GP:1007-1014)
                     Text {
@@ -104,11 +104,11 @@ Item {
                     Rectangle {
                         id: nLayout
                         width: parent.width
-                        radius: bar.s(16)
-                        color: Qt.alpha(bar.colors.surface0, 0.4)
+                        radius: bar.s(Theme.radiusLg)
+                        color: Theme.surfaceContainerLow
                         border.width: 1
-                        border.color: bar.colors.surface1
-                        height: nCol.height + bar.s(24)
+                        border.color: Theme.outlineVariant
+                        height: nCol.height + bar.s(Theme.gapMd) * 2
                         property int nTick: 0
                         function nCfg() { return Notifications.normalize(Config.rawSettings.notifications); }
                         function nSet(key, val) {
@@ -121,9 +121,9 @@ Item {
                         }
                         Column {
                             id: nCol
-                            x: bar.s(14); y: bar.s(12)
-                            width: parent.width - bar.s(28)
-                            spacing: bar.s(9)
+                            x: bar.s(Theme.gapMd); y: bar.s(Theme.gapMd)
+                            width: parent.width - bar.s(Theme.gapMd) * 2
+                            spacing: bar.s(Theme.gapSm)
                             EditLabel { bar: bar; text: "Notifications layout"; font.pixelSize: bar.s(12); color: bar.colors.subtext0 }
                             Repeater {
                                 model: [
@@ -136,7 +136,7 @@ Item {
                                     id: nRow
                                     required property var modelData
                                     width: nCol.width
-                                    spacing: bar.s(8)
+                                    spacing: bar.s(Theme.gapSm)
                                     readonly property var val: (nLayout.nTick, nLayout.nCfg()[modelData.k])
                                     Text {
                                         width: nCol.width - bar.s(150)
@@ -151,9 +151,9 @@ Item {
                                         anchors.verticalCenter: parent.verticalCenter
                                         Rectangle {
                                             anchors.left: parent.left; anchors.verticalCenter: parent.verticalCenter
-                                            width: bar.s(20); height: bar.s(20); radius: bar.s(5)
-                                            color: Qt.alpha(bar.colors.surface1, 0.5)
-                                            border.width: 1; border.color: Qt.alpha(bar.colors.surface1, 0.9)
+                                            width: bar.s(20); height: bar.s(20); radius: bar.s(Theme.radiusXs)
+                                            color: Theme.surfaceContainer
+                                            border.width: 1; border.color: Theme.outlineVariant
                                             Text { anchors.centerIn: parent; text: "−"; color: bar.colors.text; font.pixelSize: bar.s(12); font.family: "Hack Nerd Font" }
                                             MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor
                                                 onClicked: nLayout.nSet(nRow.modelData.k, Math.max(0, (nRow.val || 0) - 1)) }
@@ -165,9 +165,9 @@ Item {
                                         }
                                         Rectangle {
                                             anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter
-                                            width: bar.s(20); height: bar.s(20); radius: bar.s(5)
-                                            color: Qt.alpha(bar.colors.surface1, 0.5)
-                                            border.width: 1; border.color: Qt.alpha(bar.colors.surface1, 0.9)
+                                            width: bar.s(20); height: bar.s(20); radius: bar.s(Theme.radiusXs)
+                                            color: Theme.surfaceContainer
+                                            border.width: 1; border.color: Theme.outlineVariant
                                             Text { anchors.centerIn: parent; text: "+"; color: bar.colors.text; font.pixelSize: bar.s(12); font.family: "Hack Nerd Font" }
                                             MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor
                                                 onClicked: nLayout.nSet(nRow.modelData.k, (nRow.val || 0) + 1) }
@@ -177,7 +177,7 @@ Item {
                             }
                             Row {
                                 width: nCol.width
-                                spacing: bar.s(8)
+                                spacing: bar.s(Theme.gapSm)
                                 Text {
                                     width: nCol.width - bar.s(66)
                                     anchors.verticalCenter: parent.verticalCenter
@@ -188,15 +188,15 @@ Item {
                                 }
                                 Rectangle {
                                     id: nShadowTog
-                                    width: bar.s(40); height: bar.s(20); radius: bar.s(10)
+                                    width: bar.s(40); height: bar.s(20); radius: bar.s(Theme.radiusFull)
                                     anchors.verticalCenter: parent.verticalCenter
                                     readonly property bool on: (nLayout.nTick, nLayout.nCfg().shadow === 1)
-                                    color: on ? bar.colors.mauve : Qt.alpha(bar.colors.surface1, 0.5)
+                                    color: on ? bar.colors.mauve : Theme.surfaceContainer
                                     border.width: 1
-                                    border.color: on ? bar.colors.mauve : Qt.alpha(bar.colors.surface1, 0.9)
+                                    border.color: on ? bar.colors.mauve : Theme.outlineVariant
                                     Rectangle {
-                                        width: bar.s(14); height: bar.s(14); radius: bar.s(7); y: bar.s(3)
-                                        x: nShadowTog.on ? parent.width - width - bar.s(3) : bar.s(3)
+                                        width: bar.s(14); height: bar.s(14); radius: bar.s(Theme.radiusFull); y: bar.s(Theme.gapXs)
+                                        x: nShadowTog.on ? parent.width - width - bar.s(Theme.gapXs) : bar.s(Theme.gapXs)
                                         color: nShadowTog.on ? bar.colors.crust : bar.colors.subtext0
                                         Behavior on x { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
                                     }
@@ -217,11 +217,11 @@ Item {
                                     delegate: Rectangle {
                                         id: nPosCell
                                         required property var modelData
-                                        width: bar.s(22); height: bar.s(22); radius: bar.s(6)
+                                        width: bar.s(22); height: bar.s(22); radius: bar.s(Theme.radiusSm)
                                         readonly property bool act: (nLayout.nTick, nLayout.nCfg().position === modelData)
-                                        color: act ? bar.colors.mauve : Qt.alpha(bar.colors.surface1, 0.5)
+                                        color: act ? bar.colors.mauve : Theme.surfaceContainer
                                         border.width: 1
-                                        border.color: act ? bar.colors.mauve : Qt.alpha(bar.colors.surface1, 0.9)
+                                        border.color: act ? bar.colors.mauve : Theme.outlineVariant
                                         x: (modelData % 3) * bar.s(28)
                                         y: Math.floor(modelData / 3) * bar.s(28)
                                         MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor

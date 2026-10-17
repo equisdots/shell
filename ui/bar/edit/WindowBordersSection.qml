@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import "../../../core"
 
 // ═══════════════════════════════════════════════════════════════════════════
 // WindowBordersSection — shared "Window borders" block for the BarEditor
@@ -51,7 +52,7 @@ Column {
     }
 
     width: parent ? parent.width : 400
-    spacing: section.bar ? section.bar.s(12) : 12
+    spacing: section.bar ? section.bar.s(Theme.gapMd) : Theme.gapMd
 
     Text {
         text: "Window borders"
@@ -74,8 +75,8 @@ Column {
     GridLayout {
         width: parent.width
         columns: 2
-        columnSpacing: section.bar ? section.bar.s(10) : 10
-        rowSpacing: section.bar ? section.bar.s(10) : 10
+        columnSpacing: section.bar ? section.bar.s(Theme.gapSm) : Theme.gapSm
+        rowSpacing: section.bar ? section.bar.s(Theme.gapSm) : Theme.gapSm
         visible: section.customMode
         OptionCard {
             Layout.fillWidth: true
@@ -168,7 +169,7 @@ Column {
     // Selected color preview (only when not following the palette)
     RowLayout {
         width: parent.width
-        spacing: section.bar ? section.bar.s(10) : 10
+        spacing: section.bar ? section.bar.s(Theme.gapSm) : Theme.gapSm
         visible: section.customMode
         EditLabel {
             bar: section.bar
@@ -181,11 +182,11 @@ Column {
             Layout.preferredWidth: section.bar ? section.bar.s(92) : 92
             Layout.preferredHeight: section.bar ? section.bar.s(30) : 30
             Layout.alignment: Qt.AlignVCenter
-            radius: section.bar ? section.bar.s(13) : 13
+            radius: section.bar ? section.bar.s(Theme.radiusMd) : Theme.radiusMd
             color: section.firstHex
             gradient: (section.gradientOn && /^#[0-9a-fA-F]{6}$/.test(section.secondHex)) ? previewGradient : null
             border.width: 1
-            border.color: section.bar ? section.bar.colors.surface1 : "transparent"
+            border.color: section.bar ? Theme.outlineVariant : "transparent"
             Gradient {
                 id: previewGradient
                 orientation: Gradient.Horizontal
@@ -213,8 +214,8 @@ Column {
         property string settingsKey: "borderActive"
         property string current: ""
         columns: 8
-        columnSpacing: swatchGrid.bar ? swatchGrid.bar.s(8) : 8
-        rowSpacing: swatchGrid.bar ? swatchGrid.bar.s(8) : 8
+        columnSpacing: swatchGrid.bar ? swatchGrid.bar.s(Theme.gapSm) : Theme.gapSm
+        rowSpacing: swatchGrid.bar ? swatchGrid.bar.s(Theme.gapSm) : Theme.gapSm
         Repeater {
             model: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
             delegate: Rectangle {
@@ -224,10 +225,10 @@ Column {
                 readonly property bool isSel: swatchGrid.current.toLowerCase() === hex
                 width: swatchGrid.bar ? swatchGrid.bar.s(24) : 24
                 height: width
-                radius: swatchGrid.bar ? swatchGrid.bar.s(8) : 8
+                radius: swatchGrid.bar ? swatchGrid.bar.s(Theme.radiusSm) : Theme.radiusSm
                 color: swatchGrid.bar ? swatchGrid.bar.colors["color" + modelData] : "transparent"
                 border.width: isSel ? 2 : 1
-                border.color: isSel ? swatchGrid.bar.colors.text : (swMa.containsMouse ? swatchGrid.bar.colors.mauve : swatchGrid.bar.colors.surface1)
+                border.color: isSel ? swatchGrid.bar.colors.text : (swMa.containsMouse ? swatchGrid.bar.colors.mauve : Theme.outlineVariant)
                 Behavior on border.color { ColorAnimation { duration: 150 } }
                 MouseArea {
                     id: swMa

@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import ".."
 import "../BarLayout.js" as BarLayout
+import "../../../core"
 
 // Per-zone editor card for the BarEditor. Height grows with content so the
 // module chips never overlap the rows below. Width is managed by the parent
@@ -40,10 +41,10 @@ Rectangle {
     // Zone id the editor passes to BarLayout.moduleMoveTo on drop.
     readonly property string cardZoneId: zoneData.id
 
-    height: contentCol.implicitHeight + bar.s(20)
-    radius: bar.s(21)
-    color: Qt.alpha(bar.colors.surface0, 0.4)
-    border.width: bar.s(1); border.color: bar.colors.surface1
+    height: contentCol.implicitHeight + bar.s(Theme.gapLg) * 2
+    radius: bar.s(Theme.radiusLg)
+    color: Theme.surfaceContainerLow
+    border.width: bar.s(1); border.color: Theme.outlineVariant
 
     // ---- DnD target state (owned by the editor while a chip drags) ----
     property bool dndActive: false
@@ -145,38 +146,33 @@ Rectangle {
     ColumnLayout {
         id: contentCol
         anchors.fill: parent
-        anchors.margins: bar.s(10)
-        spacing: bar.s(6)
+        anchors.margins: bar.s(Theme.gapLg)
+        spacing: bar.s(Theme.gapMd)
 
-        // header: id + align + unify + delete
+        // ── header: zone name + delete ─────────────────────────────────────────
         RowLayout {
             Layout.fillWidth: true
-            spacing: bar.s(8)
+            spacing: bar.s(Theme.gapSm)
 
             Text {
+                Layout.fillWidth: true
                 text: "◈ " + zoneData.id
                 font.family: "Hack Nerd Font"
-                font.pixelSize: bar.s(13)
+                font.pixelSize: bar.s(15)
                 font.weight: Font.Black
                 color: bar.colors.text
             }
-            EditPill { bar: zoneCard.bar; modelData: "start"; text: "Start"; active: zoneData.align === "start"; onActivated: patch(d => BarLayout.setZoneAlign(d, zoneData.id, "start")) }
-            EditPill { bar: zoneCard.bar; modelData: "center"; text: "Center"; active: zoneData.align === "center"; onActivated: patch(d => BarLayout.setZoneAlign(d, zoneData.id, "center")) }
-            EditPill { bar: zoneCard.bar; modelData: "end"; text: "End"; active: zoneData.align === "end"; onActivated: patch(d => BarLayout.setZoneAlign(d, zoneData.id, "end")) }
-            Item { Layout.fillWidth: true; height: 1 }
-            EditLabel { bar: zoneCard.bar; text: "Unify" }
-            ToggleSwitch { bar: zoneCard.bar; checked: zoneData.unify === true; onToggled: patch(d => BarLayout.setZoneUnify(d, zoneData.id, !zoneData.unify)) }
             Rectangle {
                 id: delBtn
-                width: bar.s(28); height: bar.s(28); radius: bar.s(14)
-                color: delMa.containsMouse ? Qt.alpha(bar.colors.red, 0.1) : "transparent"
+                width: bar.s(30); height: bar.s(30); radius: bar.s(Theme.radiusMd)
+                color: delMa.containsMouse ? Theme.stateLayer(bar.colors.red, Theme.stateHover) : "transparent"
                 border.width: 1
-                border.color: delMa.containsMouse ? bar.colors.red : bar.colors.surface1
+                border.color: delMa.containsMouse ? bar.colors.red : Theme.outlineVariant
                 Behavior on color { ColorAnimation { duration: 150 } }
                 Behavior on border.color { ColorAnimation { duration: 150 } }
                 Text {
                     anchors.centerIn: parent
-                    text: ""
+                    text: ""
                     font.family: "Hack Nerd Font"
                     font.pixelSize: bar.s(14)
                     color: delMa.containsMouse ? bar.colors.red : bar.colors.subtext0
@@ -192,64 +188,125 @@ Rectangle {
             }
         }
 
-        // optional translucent container behind the whole zone
+        Rectangle { Layout.fillWidth: true; height: bar.s(1); color: Theme.outlineVariant }
+
+        // ── Row: Align ─────────────────────────────────────────────────────────
         RowLayout {
             Layout.fillWidth: true
-            spacing: bar.s(8)
+            Layout.minimumHeight: bar.s(44)
+            spacing: bar.s(Theme.gapMd)
 
-            EditLabel { bar: zoneCard.bar; text: "Container bg" }
-            Item { Layout.fillWidth: true; height: 1 }
-            ToggleSwitch {
-                bar: zoneCard.bar
-                checked: zoneData.zoneBg !== ""
-                onToggled: {
-                    if (zoneData.zoneBg === "") patch(d => BarLayout.setZoneBg(d, zoneData.id, "surface0"));
-                    else patch(d => BarLayout.setZoneBg(d, zoneData.id, ""));
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: bar.s(Theme.gap2xs)
+                EditLabel { bar: zoneCard.bar; text: "Align"; font.pixelSize: bar.s(12); color: bar.colors.text }
+                EditLabel { bar: zoneCard.bar; text: "Where this zone sits on the bar"; font.pixelSize: bar.s(11); color: bar.colors.subtext0 }
+            }
+            RowLayout {
+                spacing: bar.s(Theme.gapXs)
+                EditPill { bar: zoneCard.bar; modelData: "start"; text: "Start"; active: zoneData.align === "start"; onActivated: patch(d => BarLayout.setZoneAlign(d, zoneData.id, "start")) }
+                EditPill { bar: zoneCard.bar; modelData: "center"; text: "Center"; active: zoneData.align === "center"; onActivated: patch(d => BarLayout.setZoneAlign(d, zoneData.id, "center")) }
+                EditPill { bar: zoneCard.bar; modelData: "end"; text: "End"; active: zoneData.align === "end"; onActivated: patch(d => BarLayout.setZoneAlign(d, zoneData.id, "end")) }
+            }
+        }
+
+        // ── Row: Unify ─────────────────────────────────────────────────────────
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.minimumHeight: bar.s(44)
+            spacing: bar.s(Theme.gapMd)
+
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: bar.s(Theme.gap2xs)
+                EditLabel { bar: zoneCard.bar; text: "Unify"; font.pixelSize: bar.s(12); color: bar.colors.text }
+                EditLabel { bar: zoneCard.bar; text: "Merge this zone's islands into one pill"; font.pixelSize: bar.s(11); color: bar.colors.subtext0 }
+            }
+            ToggleSwitch { bar: zoneCard.bar; checked: zoneData.unify === true; onToggled: patch(d => BarLayout.setZoneUnify(d, zoneData.id, !zoneData.unify)) }
+        }
+
+        // ── Row: Container background ──────────────────────────────────────────
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.minimumHeight: bar.s(44)
+            spacing: bar.s(Theme.gapMd)
+
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: bar.s(Theme.gap2xs)
+                EditLabel { bar: zoneCard.bar; text: "Container background"; font.pixelSize: bar.s(12); color: bar.colors.text }
+                EditLabel { bar: zoneCard.bar; text: "Translucent panel behind the whole zone"; font.pixelSize: bar.s(11); color: bar.colors.subtext0 }
+            }
+            RowLayout {
+                spacing: bar.s(Theme.gapSm)
+                ToggleSwitch {
+                    bar: zoneCard.bar
+                    checked: zoneData.zoneBg !== ""
+                    onToggled: {
+                        if (zoneData.zoneBg === "") patch(d => BarLayout.setZoneBg(d, zoneData.id, "surface0"));
+                        else patch(d => BarLayout.setZoneBg(d, zoneData.id, ""));
+                    }
+                }
+                ColorCycle {
+                    bar: zoneCard.bar
+                    role: zoneData.zoneBg || "surface0"
+                    visible: zoneData.zoneBg !== ""
+                    onCycled: (role) => patch(d => BarLayout.setZoneBg(d, zoneData.id, role))
+                }
+                EditLabel { bar: zoneCard.bar; text: "Solid"; visible: zoneData.zoneBg !== "" }
+                ToggleSwitch {
+                    bar: zoneCard.bar
+                    visible: zoneData.zoneBg !== ""
+                    checked: zoneData.zoneBgSolid === true
+                    onToggled: patch(d => BarLayout.setZoneBgSolid(d, zoneData.id, zoneData.zoneBgSolid !== true))
                 }
             }
-            ColorCycle {
-                bar: zoneCard.bar
-                role: zoneData.zoneBg || "surface0"
-                visible: zoneData.zoneBg !== ""
-                onCycled: (role) => patch(d => BarLayout.setZoneBg(d, zoneData.id, role))
-            }
-            EditLabel { bar: zoneCard.bar; text: "Solid"; visible: zoneData.zoneBg !== "" }
-            ToggleSwitch {
-                bar: zoneCard.bar
-                visible: zoneData.zoneBg !== ""
-                checked: zoneData.zoneBgSolid === true
-                onToggled: patch(d => BarLayout.setZoneBgSolid(d, zoneData.id, zoneData.zoneBgSolid !== true))
-            }
         }
 
-        // zone border
+        // ── Row: Border ────────────────────────────────────────────────────────
         RowLayout {
             Layout.fillWidth: true
-            spacing: bar.s(8)
+            Layout.minimumHeight: bar.s(44)
+            spacing: bar.s(Theme.gapMd)
 
-            EditLabel { bar: zoneCard.bar; text: "Zone border" }
-            Item { Layout.fillWidth: true; height: 1 }
-            Stepper {
-                bar: zoneCard.bar
-                label: Math.round(zoneData.borderWidth || 0) + "px"
-                onDec: patch(d => BarLayout.setZoneBorder(d, zoneData.id, Math.max(0, (zoneData.borderWidth || 0) - 1)))
-                onInc: patch(d => BarLayout.setZoneBorder(d, zoneData.id, Math.min(8, (zoneData.borderWidth || 0) + 1)))
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: bar.s(Theme.gap2xs)
+                EditLabel { bar: zoneCard.bar; text: "Border"; font.pixelSize: bar.s(12); color: bar.colors.text }
+                EditLabel { bar: zoneCard.bar; text: "Outline width and colour"; font.pixelSize: bar.s(11); color: bar.colors.subtext0 }
             }
-            ColorCycle {
-                bar: zoneCard.bar
-                role: zoneData.borderColor || "surface1"
-                onCycled: (role) => patch(d => BarLayout.setZoneBorder(d, zoneData.id, zoneData.borderWidth || 0, role))
+            RowLayout {
+                spacing: bar.s(Theme.gapSm)
+                Stepper {
+                    bar: zoneCard.bar
+                    label: Math.round(zoneData.borderWidth || 0) + "px"
+                    onDec: patch(d => BarLayout.setZoneBorder(d, zoneData.id, Math.max(0, (zoneData.borderWidth || 0) - 1)))
+                    onInc: patch(d => BarLayout.setZoneBorder(d, zoneData.id, Math.min(8, (zoneData.borderWidth || 0) + 1)))
+                }
+                ColorCycle {
+                    bar: zoneCard.bar
+                    role: zoneData.borderColor || "surface1"
+                    onCycled: (role) => patch(d => BarLayout.setZoneBorder(d, zoneData.id, zoneData.borderWidth || 0, role))
+                }
             }
         }
 
-        Rectangle { Layout.fillWidth: true; height: bar.s(1); color: Qt.alpha(bar.colors.surface1, 0.5) }
+        Rectangle { Layout.fillWidth: true; height: bar.s(1); color: Theme.outlineVariant }
+
+        // ── Modules ────────────────────────────────────────────────────────────
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: bar.s(Theme.gapSm)
+            EditLabel { bar: zoneCard.bar; text: "Modules"; font.pixelSize: bar.s(12); color: bar.colors.text; Layout.fillWidth: true }
+            EditLabel { bar: zoneCard.bar; text: "click to toggle · drag to move"; font.pixelSize: bar.s(11); color: bar.colors.subtext0 }
+        }
 
         // module chips (wrap; card grows). One chip per zoneData.modules entry
         // (disabled entries are dimmed). See the DnD contract in the header.
         Flow {
             id: chipsFlow
             Layout.fillWidth: true
-            spacing: bar.s(5)
+            spacing: bar.s(Theme.gapXs)
             Repeater {
                 model: zoneData.modules
                 delegate: Rectangle {
@@ -265,8 +322,8 @@ Rectangle {
 
                     width: chipRow.implicitWidth + bar.s(42)
                     height: bar.s(30)
-                    radius: bar.s(8)
-                    color: bar.colors.surface1
+                    radius: bar.s(Theme.radiusSm)
+                    color: Theme.surfaceContainer
                     // Dim the chip being dragged so the ghost reads clearly.
                     opacity: (modelData.enabled === false ? 0.4 : 1.0)
                              * ((bar.dndBusy && bar.dndModuleId === modelData.id) ? 0.35 : 1.0)
@@ -276,8 +333,8 @@ Rectangle {
                         id: chipRow
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.left: parent.left
-                        anchors.leftMargin: bar.s(6)
-                        spacing: bar.s(5)
+                        anchors.leftMargin: bar.s(Theme.gapXs)
+                        spacing: bar.s(Theme.gapXs)
                         Text { text: mod ? mod.icon : "?"; font.family: "Hack Nerd Font"; font.pixelSize: bar.s(12); color: bar.colors.text }
                         Text { text: mod ? mod.label : modelData.id; font.family: "Hack Nerd Font"; font.pixelSize: bar.s(11); color: bar.colors.text }
                     }
@@ -337,18 +394,18 @@ Rectangle {
                     }
                     Row {
                         anchors.right: parent.right
-                        anchors.rightMargin: bar.s(2)
+                        anchors.rightMargin: bar.s(Theme.gap2xs)
                         anchors.verticalCenter: parent.verticalCenter
-                        spacing: bar.s(2)
+                        spacing: bar.s(Theme.gap2xs)
                         Rectangle {
-                            width: bar.s(18); height: bar.s(18); radius: bar.s(4)
-                            color: bar.colors.surface1
+                            width: bar.s(18); height: bar.s(18); radius: bar.s(Theme.radiusXs)
+                            color: Theme.surfaceContainer
                             Text { anchors.centerIn: parent; text: "◀"; font.family: "Hack Nerd Font"; font.pixelSize: bar.s(10); color: bar.colors.text }
                             MouseArea { anchors.fill: parent; onClicked: patch(d => BarLayout.moduleMove(d, modelData.id, -1)) }
                         }
                         Rectangle {
-                            width: bar.s(18); height: bar.s(18); radius: bar.s(4)
-                            color: bar.colors.surface1
+                            width: bar.s(18); height: bar.s(18); radius: bar.s(Theme.radiusXs)
+                            color: Theme.surfaceContainer
                             Text { anchors.centerIn: parent; text: "▶"; font.family: "Hack Nerd Font"; font.pixelSize: bar.s(10); color: bar.colors.text }
                             MouseArea { anchors.fill: parent; onClicked: patch(d => BarLayout.moduleMove(d, modelData.id, 1)) }
                         }
@@ -364,7 +421,7 @@ Rectangle {
         id: dropHighlight
         anchors.fill: parent
         anchors.margins: bar.s(1)
-        radius: bar.s(20)
+        radius: bar.s(Theme.radiusLg)
         visible: zoneCard.dndActive
         color: "transparent"
         border.width: bar.s(2)

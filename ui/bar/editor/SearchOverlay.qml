@@ -171,13 +171,13 @@ Item {
         case "s_monitors": return "Monitors";
         case "s_startup": return "Startup";
         case "d_launcher": return "Launcher";
-        case "d_engine": return "Engine";
+        case "d_general": return "General";
         case "d_position": return "Position";
         case "d_style": return "Style";
+        case "d_appearance": return "Appearance";
         case "d_palette": return "Palette";
         case "d_zones": return "Zones";
         case "d_workspaces": return "Workspaces";
-        case "d_classic": return "Classic Bar";
         case "d_hyprland": return "Hyprland";
         case "d_idle": return "Idle";
         case "d_gpu": return "GPU";
@@ -198,9 +198,9 @@ Item {
         let viewH = resultsFlick.height;
         let top = resultsFlick.contentY;
         let y = it.y;
-        if (y < top + s(8)) resultsFlick.contentY = Math.max(0, y - s(8));
-        else if (y + it.height > top + viewH - s(8))
-            resultsFlick.contentY = y + it.height - viewH + s(8);
+        if (y < top + s(Theme.gapSm)) resultsFlick.contentY = Math.max(0, y - s(Theme.gapSm));
+        else if (y + it.height > top + viewH - s(Theme.gapSm))
+            resultsFlick.contentY = y + it.height - viewH + s(Theme.gapSm);
     }
 
     // Espera a que la página destino esté instanciada (Loader lazy) y aplica
@@ -251,19 +251,19 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
-        anchors.margins: s(14)
+        anchors.margins: s(Theme.gapLg)
         height: s(46)
-        radius: s(13)
-        color: Qt.alpha(themeColors.surface0, 0.4)
+        radius: s(Theme.radiusMd)
+        color: Theme.surfaceContainerLow
         border.width: 1
-        border.color: searchInput.activeFocus ? themeColors.sapphire : themeColors.surface1
+        border.color: searchInput.activeFocus ? themeColors.sapphire : Theme.outlineVariant
         Behavior on border.color { ColorAnimation { duration: 150 } }
 
         RowLayout {
             anchors.fill: parent
-            anchors.leftMargin: s(13)
-            anchors.rightMargin: s(8)
-            spacing: s(9)
+            anchors.leftMargin: s(Theme.gapMd)
+            anchors.rightMargin: s(Theme.gapSm)
+            spacing: s(Theme.gapSm)
 
             Text {
                 text: "󰍉"
@@ -293,9 +293,9 @@ Item {
             Rectangle {
                 width: s(24)
                 height: s(24)
-                radius: s(12)
+                radius: s(Theme.radiusFull)
                 visible: searchInput.text !== ""
-                color: clearMa.containsMouse ? Qt.alpha(themeColors.surface1, 0.9) : "transparent"
+                color: clearMa.containsMouse ? Theme.outlineVariant : "transparent"
                 Text {
                     anchors.centerIn: parent
                     text: "✕"
@@ -324,19 +324,19 @@ Item {
         anchors.right: parent.right
         anchors.top: searchBar.bottom
         anchors.bottom: parent.bottom
-        anchors.leftMargin: s(14)
-        anchors.rightMargin: s(14)
-        anchors.topMargin: s(10)
-        anchors.bottomMargin: s(14)
+        anchors.leftMargin: s(Theme.gapLg)
+        anchors.rightMargin: s(Theme.gapLg)
+        anchors.topMargin: s(Theme.gapMd)
+        anchors.bottomMargin: s(Theme.gapLg)
         contentWidth: width
-        contentHeight: resultsCol.implicitHeight + s(10)
+        contentHeight: resultsCol.implicitHeight + s(Theme.gapMd)
         clip: true
         boundsBehavior: Flickable.StopAtBounds
 
         ColumnLayout {
             id: resultsCol
             width: parent.width
-            spacing: s(8)
+            spacing: s(Theme.gapSm)
 
             // ── Estado vacío ──
             Item {
@@ -345,7 +345,7 @@ Item {
                 visible: root.query.trim() === ""
                 ColumnLayout {
                     anchors.centerIn: parent
-                    spacing: s(8)
+                    spacing: s(Theme.gapSm)
                     Text {
                         Layout.alignment: Qt.AlignHCenter
                         text: "󰍉"
@@ -379,8 +379,8 @@ Item {
             // ── Sección Settings (cards de tabs + páginas del editor) ──
             Text {
                 Layout.fillWidth: true
-                Layout.leftMargin: s(4)
-                Layout.topMargin: s(2)
+                Layout.leftMargin: s(Theme.gapXs)
+                Layout.topMargin: s(Theme.gap2xs)
                 visible: root.settingsCount > 0
                 text: "SETTINGS"
                 font.family: "Hack Nerd Font"
@@ -403,14 +403,14 @@ Item {
 
                     Layout.fillWidth: true
                     Layout.preferredHeight: s(52)
-                    radius: s(13)
+                    radius: s(Theme.radiusMd)
                     color: isHighlighted
                         ? Qt.alpha(themeColors.mauve, 0.12)
-                        : (rowMa.containsMouse ? Qt.alpha(rowAccent, 0.10) : Qt.alpha(themeColors.surface0, 0.35))
+                        : (rowMa.containsMouse ? Qt.alpha(rowAccent, 0.10) : Theme.surfaceContainerLow)
                     border.width: 1
                     border.color: isHighlighted
                         ? themeColors.mauve
-                        : (rowMa.containsMouse ? rowAccent : themeColors.surface1)
+                        : (rowMa.containsMouse ? rowAccent : Theme.outlineVariant)
                     Behavior on color { ColorAnimation { duration: 150 } }
                     Behavior on border.color { ColorAnimation { duration: 150 } }
 
@@ -418,12 +418,12 @@ Item {
 
                     RowLayout {
                         anchors.fill: parent
-                        anchors.margins: s(10)
-                        spacing: s(10)
+                        anchors.margins: s(Theme.gapMd)
+                        spacing: s(Theme.gapMd)
                         Rectangle {
                             width: s(30)
                             height: s(30)
-                            radius: s(15)
+                            radius: s(Theme.radiusFull)
                             color: Qt.alpha(setRow.rowAccent, 0.15)
                             border.color: Qt.alpha(setRow.rowAccent, 0.3)
                             border.width: 1
@@ -437,7 +437,7 @@ Item {
                         }
                         ColumnLayout {
                             Layout.fillWidth: true
-                            spacing: s(1)
+                            spacing: s(Theme.gap2xs)
                             Text {
                                 Layout.fillWidth: true
                                 text: setRow.entry.label
@@ -480,8 +480,8 @@ Item {
             // ── Sección Keybinds ──
             Text {
                 Layout.fillWidth: true
-                Layout.leftMargin: s(4)
-                Layout.topMargin: s(2)
+                Layout.leftMargin: s(Theme.gapXs)
+                Layout.topMargin: s(Theme.gap2xs)
                 visible: root.keybindResults.length > 0
                 text: "KEYBINDS"
                 font.family: "Hack Nerd Font"
@@ -502,14 +502,14 @@ Item {
 
                     Layout.fillWidth: true
                     Layout.preferredHeight: s(56)
-                    radius: s(13)
+                    radius: s(Theme.radiusMd)
                     color: isHighlighted
                         ? Qt.alpha(themeColors.peach, 0.12)
-                        : (kbMa.containsMouse ? Qt.alpha(themeColors.peach, 0.10) : Qt.alpha(themeColors.surface0, 0.35))
+                        : (kbMa.containsMouse ? Qt.alpha(themeColors.peach, 0.10) : Theme.surfaceContainerLow)
                     border.width: 1
                     border.color: isHighlighted
                         ? themeColors.peach
-                        : (kbMa.containsMouse ? themeColors.peach : themeColors.surface1)
+                        : (kbMa.containsMouse ? themeColors.peach : Theme.outlineVariant)
                     Behavior on color { ColorAnimation { duration: 150 } }
                     Behavior on border.color { ColorAnimation { duration: 150 } }
 
@@ -517,12 +517,12 @@ Item {
 
                     RowLayout {
                         anchors.fill: parent
-                        anchors.margins: s(10)
-                        spacing: s(10)
+                        anchors.margins: s(Theme.gapMd)
+                        spacing: s(Theme.gapMd)
                         Rectangle {
                             width: s(30)
                             height: s(30)
-                            radius: s(15)
+                            radius: s(Theme.radiusFull)
                             color: Qt.alpha(themeColors.peach, 0.15)
                             border.color: Qt.alpha(themeColors.peach, 0.3)
                             border.width: 1
@@ -536,15 +536,15 @@ Item {
                         }
                         ColumnLayout {
                             Layout.fillWidth: true
-                            spacing: s(3)
+                            spacing: s(Theme.gapXs)
                             RowLayout {
-                                spacing: s(4)
+                                spacing: s(Theme.gapXs)
                                 Rectangle {
                                     height: s(18)
-                                    width: modsT.implicitWidth + s(8)
-                                    radius: s(18)
-                                    color: themeColors.surface1
-                                    border.color: themeColors.surface2
+                                    width: modsT.implicitWidth + s(Theme.gapSm)
+                                    radius: s(Theme.radiusFull)
+                                    color: Theme.surfaceContainer
+                                    border.color: Theme.outlineVariant
                                     border.width: 1
                                     visible: kbRow.kbItem && kbRow.kbItem.mods !== ""
                                     Text {
@@ -566,10 +566,10 @@ Item {
                                 }
                                 Rectangle {
                                     height: s(18)
-                                    width: keyT.implicitWidth + s(8)
-                                    radius: s(18)
-                                    color: themeColors.surface1
-                                    border.color: themeColors.surface2
+                                    width: keyT.implicitWidth + s(Theme.gapSm)
+                                    radius: s(Theme.radiusFull)
+                                    color: Theme.surfaceContainer
+                                    border.color: Theme.outlineVariant
                                     border.width: 1
                                     visible: kbRow.kbItem && kbRow.kbItem.key !== ""
                                     Text {

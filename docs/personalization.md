@@ -5,13 +5,12 @@ served by the core `Config` service and consumed live by the UI. This document
 is the reference for that surface; new options are documented here as they
 land. The current focus is the bar.
 
-## Bar engines
+## Bar
 
 | Key | Values | Meaning |
 |---|---|---|
-| `barEngine` | `"bar"` / `"classic"` | Zones engine / classic sections engine |
-| `bar` | object | Zones engine settings |
-| `classicbar` | object | Classic engine settings |
+| `bar.enabled` | `true` / `false` | Master switch: off unmaps the bar (no UI, no reserved edge) |
+| `bar` | object | The bar config (position, zones, modules, visuals) |
 
 Shared, bar-wide controls (see `bar/BarLayout.js` for defaults and presets):
 
@@ -23,9 +22,8 @@ Shared, bar-wide controls (see `bar/BarLayout.js` for defaults and presets):
   or a `#hex` string; empty = per-module defaults).
 - `roundness`, `thickness`, `edgeGap`, `position`, `palette`, `font`,
   `barOpacity`.
-- `timeFormat`: clock format for the zones engine (a `Qt.formatDateTime`
-  pattern, e.g. `HH:mm`, `HH:mm:ss`, `h:mm a`); the classic engine keeps its
-  own `classicbar.timeFormat`.
+- `timeFormat`: clock format for the clock island (a `Qt.formatDateTime`
+  pattern, e.g. `HH:mm`, `HH:mm:ss`, `h:mm a`).
 - Per zone: `unify` (single pill for the whole zone), `zoneBg` (optional
   container role), `borderWidth`, `borderColor`.
 
@@ -158,14 +156,13 @@ override); the generic `colors` map is normalized by `moduleConfig`.
 Ported subsystems without a dedicated module expose their options through
 `core/Personalization.js`, one settings section per subsystem:
 
-`lock`, `battery`, `volume`, `music`, `network`, `calendar`, `updater`, `applauncher`, `system-monitor`, `clipboard`, `focustime`, `quicknotes`, `idle`, `file-search`, `rss-reader`, `scale`, `window-controls`, `widgets`, `timex`
+`lock`, `battery`, `volume`, `music`, `network`, `calendar`, `updater`, `applauncher`, `system-monitor`, `focustime`, `idle`, `scale`, `window-controls`, `widgets`
 
-The `timex` section drives the calendar popup's timex UI (Settings → Shell →
-Weather → *Timex layout*): `forecastEnabled`, `forecastPosition`
-(`below`/`above`), `forecastSize`, `forecastGap`, `forecastHours`,
-`forecastShowTime/Icon/Temp`, `forecastOrder` (CSV of `time,icon,temp`) and
-`clockScale`. The settings tab writes them inside the same `timex` object as
-`provider`/`city`/`unit`.
+The `timex`, `rss-reader`, `clipboard`, `quicknotes` and `file-search`
+subsystems moved to plugins: their options (including the calendar popup's
+layout keys) are plugin-owned now and edited by their own settings pages
+(`p_timex`, `p_rss-reader`, `p_clipboard`, `p_quicknotes`,
+`p_file-search` in the Plugins group).
 
 The `lock` section configures the lock screen (`Lock.qml`, the alternate
 entry point at the repo root launched by `lock.sh`):
@@ -225,10 +222,12 @@ ipc call topbar queueReload`. The three scales are distinct: UI Scale = shell
 only, App scale = global display scale (`scripts/scale-menu.sh`), monitor
 scale = Hyprland monitors.
 
-## Mascots / notch
+## Host overlays (Nyx)
 
 `settings.mascots` (`enabled`, `size`, `species`, `count`, `position`,
-`appearance`, `notch*`, `dock.*`, `watcher.*`) drives the Nyx island. `species`
-is a string (every mascot that kind, repeated `count` times) or an array (the
-lineup, one per id, in order). Species and notch cards are discovered from
-folders and edited from Theme → Mascots; see `docs/mascots.md`.
+`appearance`, `notch*`, `dock.*`, `watcher.*`) drives the Nyx plugin's island:
+the shell mounts its host adapter generically and never reads these keys
+itself. `species` is a string (every mascot that kind, repeated `count` times)
+or an array (the lineup, one per id, in order). Species and notch cards are
+discovered from provider plugins and the user folders and edited from
+Plugins → Nyx; see `equisdots/nyx` → `docs/shell-integration.md`.

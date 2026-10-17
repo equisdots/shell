@@ -11,7 +11,7 @@ The same modules are used by **both bar engines** (zones and classic).
 
 ## 1. The module contract (what Zone injects)
 
-When `Zone.qml` (or `ClassicBar.qml`) instantiates a module it always injects
+When `Zone.qml` instantiates a module it always injects
 these 7 properties:
 
 | property                  | type   | meaning |
@@ -122,10 +122,18 @@ Editor → Modules (their entries exist in `bar.zones` with `enabled: false` and
 are re-added disabled after updates, so existing bars never change on their
 own).
 
-- **weather**: shows `bar.weatherIcon` + `bar.weatherTemp` (data polled from
-  the timex engine through the `ui/bar/popups/calendar/weather.sh` shim; the
-  island fill follows the weather code color `bar.weatherHex`); click opens the
-  calendar popup.
+Some slots are implemented by plugins (`provides.bar.modules`; the core
+catalog keeps the slot id and skips it silently when no plugin supplies the
+implementation):
+
+- **weather** (timex plugin): shows the current glyph + temperature, polled by
+  the module itself from the timex engine (`--current-icon/temp/hex`); the
+  island fill follows the weather color; click opens the calendar popup.
+- **sysmon** (sysmon plugin): icon + cpu/ram from the core `SysData`
+  singleton; click opens the floating system monitor.
+- **recording** (screenshots plugin): the red pulsing pill while a recording
+  is active.
+
 - **focus**: shows the title of the currently focused window
   (`bar.focusTitle`, via the compositor adapter → Hyprland `activewindow -j`),
   with an app glyph derived from the window class. The island collapses on an

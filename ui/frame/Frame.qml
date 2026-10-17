@@ -12,11 +12,12 @@ import "../bar"
 // Frame — screen frame (settings.json "frame").
 //
 // A border that wraps all four screen edges, drawn on the Bottom layer (behind
-// the bar, the mascot islands and windows) and reserving space on every side
-// so windows never cross it (same model as the bar). Where the bar, the nyx
-// island or an edge-anchored widget (launcher/panels) meet the frame, the line
-// sinks and hugs them with rounded corners (muescas), and it morphs live while
-// the launcher/panels open and close.
+// the bar, host overlays and windows) and reserving space on every side so
+// windows never cross it (same model as the bar). Where the bar, a host
+// overlay (published by plugin host adapters through FrameBus) or an
+// edge-anchored widget (launcher/panels) meet the frame, the line sinks and
+// hugs them with rounded corners (muescas), and it morphs live while the
+// launcher/panels open and close.
 //
 // One drawing surface per screen + up to four transparent "strut" surfaces
 // that reserve the edge bands. Layer-shell cannot reserve all four sides from a
@@ -31,7 +32,6 @@ Item {
     // the editor panel and external edits apply live.
     property var frameRaw: ({})
     property var barCfg: ({})
-    property var mascotsCfg: ({})
     property real uiScale: 1.0
     readonly property var fcfg: FG.normalize(frameRaw)
 
@@ -41,7 +41,6 @@ Item {
             let p = JSON.parse(t);
             root.frameRaw = (p.frame && typeof p.frame === "object") ? p.frame : ({});
             root.barCfg = p.bar || ({});
-            root.mascotsCfg = p.mascots || ({});
             root.uiScale = (p.uiScale !== undefined) ? p.uiScale : 1.0;
         } catch (e) {}
     }
@@ -79,7 +78,6 @@ Item {
             // ---- config (shared, from the root watcher) ----
             readonly property var fcfg: root.fcfg
             readonly property var barCfg: root.barCfg
-            readonly property var mcfg: root.mascotsCfg
             property real uiScale: root.uiScale
 
             readonly property real sc: Registry.getScale(sw, sh, uiScale)
@@ -104,7 +102,7 @@ Item {
                 notchRadius: fcfg.notchRadius * sc,
                 notchBar: fcfg.notchBar,
                 notchWidget: fcfg.notchWidget,
-                notchMascot: fcfg.notchMascot,
+                notchHosts: fcfg.notchHosts,
                 widgetReach: fcfg.widgetReach * sc,
                 layer: fcfg.layer
             })
@@ -139,74 +137,27 @@ Item {
                     }
                 }
 
-                // Mascot island/notch: approximated from its settings.
-                if (g.notchMascot && mcfg && mcfg.enabled === true) {
-                    var mo = mascotObstacle(g, mcfg, sw, sh, sc);
-                    if (mo) out.push(mo);
+                // Host overlays: rects published by plugin host adapters
+                // (ui/PluginHosts.qml → FrameBus); per-screen when tagged.
+                if (g.notchHosts) {
+                    var ho = FrameBus.hostObstacles || [];
+                    for (var k = 0; k < ho.length; k++) {
+                        var o = ho[k];
+                        if (!o || !o.edge) continue;
+                        if (o.screen !== undefined && o.screen !== ""
+                            && modelData && String(o.screen) !== String(modelData.name)) continue;
+                        out.push(o);
+                    }
                 }
                 return out;
             }
 
             // The frame is a bezel: a clean outer contour at the screen edge
             // (inset) and a hugging inner contour (inset + thickness) that sinks
-            // around the bar/mascot/launcher. The band fills between them; the
-            // line is the inner contour.
+            // around the bar/host overlays/launcher. The band fills between
+            // them; the line is the inner contour.
             readonly property string framePath: FG.buildInnerPath(sw, sh, gcfg, obstacles)
             readonly property string bandPath: gcfg.fill ? FG.buildBandPath(sw, sh, gcfg, obstacles) : ""
-
-            // Mirror nyx/front/MascotsOverlay.qml geometry so the bay matches the
-            // real island/notch. `k` is the shell scale (overlay.s()).
-            function mascotObstacle(g, m, width, height, k) {
-                var pos = String(m.position || "top-center");
-                var notch = String(m.appearance || "island").toLowerCase() === "notch";
-                var count = Math.max(1, Math.min(3, Math.round(Number(m.count) || 1)));
-                var scale = Math.min(1.6, Math.max(0.6, Number(m.size) || 1));
-                var ns = Number(m.notchHeight) || 0;
-                var nw = Number(m.notchWidth) || 260;
-                var nOff = Number(m.notchOffset) || 0;
-                var barThick = Number(m.barThickness) || 48;
-                var barBottom = String(m.barPosition || "top") === "bottom";
-
-                var pillW = (48 * k * count + 32 * k) * scale;
-                var pillH = 46 * k * scale;
-                // nyx: notchH = max(pillH + s(6), s(notchHeight)) when set.
-                var notchH = notch
-                    ? (ns > 0 ? Math.max(pillH + 6 * k, ns * k) : Math.max(pillH + 10 * k, 38 * k))
-                    : pillH;
-                var notchW = notch
-                    ? Math.max(pillW + 20 * k, Math.min(width * 0.5, Math.max(80, nw) * k))
-                    : pillW;
-                var off = nOff * k;
-                var edgeMargin = (barBottom ? 14 : barThick + 14) * k;
-
-                function along(total, span) {
-                    if (pos.indexOf("left") !== -1 && pos.indexOf("center") === -1) return { a: 0, b: Math.round(span) };
-                    if (pos.indexOf("right") !== -1 && pos.indexOf("center") === -1) return { a: Math.round(total - span), b: Math.round(total) };
-                    return { a: Math.round((total - span) / 2), b: Math.round((total + span) / 2) };
-                }
-
-                if (pos.indexOf("top") !== -1) {
-                    var at = along(width, notchW);
-                    var topDepth = notch ? (off + notchH) : (edgeMargin + pillH + off);
-                    return { edge: "top", a: at.a, b: at.b, depth: topDepth };
-                }
-                if (pos.indexOf("bottom") !== -1) {
-                    var ab = along(width, notchW);
-                    var botDepth = notch ? (off + notchH) : (edgeMargin + pillH + off);
-                    return { edge: "bottom", a: ab.a, b: ab.b, depth: height - botDepth };
-                }
-                if (pos.indexOf("left") !== -1) {
-                    var al = along(height, notchH);
-                    var lDepth = notch ? (off + notchW) : (edgeMargin + pillW + off);
-                    return { edge: "left", a: al.a, b: al.b, depth: lDepth };
-                }
-                if (pos.indexOf("right") !== -1) {
-                    var ar = along(height, notchH);
-                    var rDepth = notch ? (off + notchW) : (edgeMargin + pillW + off);
-                    return { edge: "right", a: ar.a, b: ar.b, depth: width - rDepth };
-                }
-                return null;
-            }
 
             // ---- palette ----
             Colors { id: pal }
@@ -228,23 +179,23 @@ Item {
             readonly property color bandColor: withAlpha(roleColor(gcfg.fillColor), gcfg.fillAlpha)
 
             // ---- reservation ----
-            // Edge the mascot overlay occupies (from its position). The frame
-            // must never reserve this edge: the mascot is anchored to it, so a
-            // frame strut would push the notch/island off the edge (a gap). This
-            // holds for notch and island modes and regardless of notchReserve
-            // (which may be absent in settings.json; the overlay defaults it on).
-            readonly property string mascotEdge: {
-                var m = mcfg;
-                if (m && m.enabled === true) {
-                    var pos = String(m.position || "top-center");
-                    if (pos.indexOf("top") !== -1) return "top";
-                    if (pos.indexOf("bottom") !== -1) return "bottom";
-                    if (pos.indexOf("left") !== -1) return "left";
-                    if (pos.indexOf("right") !== -1) return "right";
+            // Edges occupied by persistent host overlays are never reserved
+            // (avoidReserve): an overlay is anchored to its edge, so a frame
+            // strut would push it off the screen edge (a gap).
+            readonly property var hostSkipEdges: {
+                var out = [];
+                var ho = FrameBus.hostObstacles || [];
+                for (var k = 0; k < ho.length; k++) {
+                    var o = ho[k];
+                    if (!o || !o.edge) continue;
+                    if (o.screen !== undefined && o.screen !== ""
+                        && modelData && String(o.screen) !== String(modelData.name)) continue;
+                    if (o.avoidReserve !== false) out.push(String(o.edge));
                 }
-                return "";
+                return out;
             }
-            readonly property var reserveEdges: FG.reserveEdges(gcfg, barCfg ? barCfg.position : "", mascotEdge)
+            readonly property var reserveEdges: FG.reserveEdges(
+                gcfg, [barCfg ? barCfg.position : ""].concat(hostSkipEdges))
             readonly property real reservePx: FG.reservePx(gcfg)
             function reserves(edge) {
                 return on && gcfg.reserve && reservePx > 0 && reserveEdges.indexOf(edge) !== -1;

@@ -10,12 +10,12 @@ Version: **0.1.0** · License: MIT
 The xlinux shell was ported as-is (behaviour preserved, naming updated) and
 restructured into `core/` + `ui/`; it is the shell running live at
 `~/.config/hypr/scripts/quickshell`. Renames applied: `dock` to `bar`, the
-legacy bar to `ClassicBar`; engine values `"bar"`/`"classic"`; config keys
-`"bar"`, `"classicbar"`, `"barEngine"` (contract kept).
+legacy bar to `ClassicBar` (since removed — the bar is a single zones engine
+under the config key `"bar"`; `bar.enabled` is its master switch).
 
 Running subsystems:
 
-- **Bar** — host + both engines (zones/classic) + 18 modules + editor.
+- **Bar** — host + zones engine + 18 modules + editor; complete bars can ship as plugins (`provides.bar.provider`).
 - **Popups** — applauncher, battery, calendar, guide, music, network,
   system-monitor, updater, volume.
 - **Shadows** — host-drawn popup/menu shadows plus bar island/strip
@@ -23,12 +23,19 @@ Running subsystems:
   `settings.json → shadows`, applies live).
 - **Glass** — translucent shell backgrounds + compositor backdrop blur
   (`settings.json → glass`, hyprland `layers.lua`; Theme → Glass page).
-- **Mascots** — click-through top island + chibi cursor-following mascots that
-  morph into a dock with the launcher (`ui/Mascots.qml`; Theme → Mascots page).
+- **Plugin hosts** — plugins may ship a host adapter (manifest `host` entry)
+  that the shell mounts generically (`ui/PluginHosts.qml`); hosts can also
+  publish `frameObstacle` rects for the screen frame. Nyx (equisdots/nyx) is
+  the first: a click-through island/notch that morphs into a dock, with its
+  own settings page under Plugins.
+- **Plugins** — installed-plugin registry and manager: folder discovery
+  (`~/.config/hypr/plugins` + `plugins-user`), enable/disable and a Configure
+  shortcut per plugin (`ui/bar/editor/PluginsPage.qml`; standard, samples and
+  contracts in equisdots/plugins → `docs/plugins.md`).
 - **Frame** — a bezel hugging all four screen edges, drawn on the Bottom layer
-  and reserving space so tiled windows never cross it; it hugs the bar, the nyx
-  notch and edge-anchored widgets (launcher/panels) with rounded corners and
-  morphs live with them (`ui/frame/Frame.qml`, `core/FrameGeometry.js`,
+  and reserving space so tiled windows never cross it; it hugs the bar, host
+  overlays and edge-anchored widgets (launcher/panels) with rounded corners
+  and morphs live with them (`ui/frame/Frame.qml`, `core/FrameGeometry.js`,
   `core/FrameBus.qml`; `settings.json → frame`; Theme → Frame page).
 - **Panels** — clipboard, davincix, file-search, focustime, idle,
   quickactions, quicknotes, rss-reader, scale, window-controls.
@@ -47,6 +54,9 @@ Known pending:
 - Some popup helpers (diary, schedule) have no script yet; schedule is
   optional (existence-guarded), diary is still a dead button.
 - The `install/` layer does not exist yet.
+- The plugin standard is POC-level (Nyx + the `hello` sample); the first
+  converted plugins (screenshots, idle-lock, monitors) will land in
+  equisdots/plugins.
 
 ## Layout
 
@@ -56,7 +66,7 @@ Known pending:
 | `core/` | Services and contracts (no visuals) |
 | `core/compositors/Hyprland.qml` | Hyprland backend of the compositor surface |
 | `core/scripts/watchers/` | Data-fetcher scripts the bar polls |
-| `ui/bar/` | Bar host, engines, modules, `Colors.qml`, `edit/` + `editor/`, `popups/` |
+| `ui/bar/` | Bar host, zones engine, modules, `Colors.qml`, `edit/` + `editor/`, `popups/` |
 | `ui/panels/` | Standalone widgets (davincix, clipboard, focustime, ...) |
 | `Lock.qml` (root) | PAM session lock (alternate entry point) |
 | `ui/notifications/`, `ui/widgets/` | Notification layer, floating widgets |
@@ -79,13 +89,13 @@ scripts/check.sh
 ## Docs
 
 - `docs/architecture.md` — layer map and contracts.
-- `docs/bar.md` — bar host, both engines, zones, styles, classic parity.
+- `docs/bar.md` — bar host, master switch, zones, styles, plugin bars.
 - `docs/bar-modules.md` — module contract, `ModulePill` API, compact mode,
   per-module personalization.
 - `docs/windows.md` — windows, widget popups, IPC and watchers.
-- `docs/mascots.md` — the Nyx notch: species/card discovery, folders, editor.
+- the island/notch integration is documented in its plugin (equisdots/nyx → `docs/shell-integration.md`).
 - `docs/desktop-widgets.md` — floating widget subsystem and redactor.
 - `docs/themes.md` — palette system, live editing and theme-sync.
-- `docs/personalization.md` — configuration surface (bar engines, modules,
+- `docs/personalization.md` — configuration surface (bar, modules,
   per-subsystem options).
 - `docs/development.md` — local check scripts and development pitfalls.

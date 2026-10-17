@@ -341,7 +341,7 @@ Item {
                 property real inset: (sw / 2) + root.s(0.5) 
                 property real w: width
                 property real h: height
-                property real r: root.s(14) - inset
+                property real r: root.s(Theme.radiusLg) - inset
                 
                 // Mathematical perimeter
                 property real straightLines: 2 * (w - 2 * inset - 2 * r) + 2 * (h - 2 * inset - 2 * r)
@@ -444,8 +444,8 @@ Item {
             id: innerBg
             anchors.fill: parent
             anchors.margins: root.s(3)
-            color: root.background
-            radius: root.s(13)
+            color: Theme.surfaceContainerLow
+            radius: root.s(Theme.radiusMd)
 
             // FIX: This forces the entire background to render as a single hardware texture,
             // preventing the UI from dragging and causing "shadow boxes" during the StackView transition!
@@ -458,7 +458,7 @@ Item {
             // LAYER 2: UI Content
             ColumnLayout {
                 anchors.fill: parent
-                anchors.margins: root.s(20)
+                anchors.margins: root.s(Theme.gapLg)
                 spacing: 0
 
                 // ==========================================
@@ -467,7 +467,7 @@ Item {
                 RowLayout {
                     Layout.fillWidth: true
                     Layout.preferredHeight: root.s(220)
-                    spacing: root.s(25)
+                    spacing: root.s(Theme.gapXl)
 
                     // Cover Art Wrapper
                     Item {
@@ -485,8 +485,8 @@ Item {
 
                         Rectangle {
                             anchors.fill: parent
-                            radius: root.s(143)
-                            color: root.surface1
+                            radius: Theme.radiusFull
+                            color: Theme.surfaceContainer
                             border.width: root.s(4)
                             border.color: root.musicData.status === "Playing" ? root.mauve : root.overlay0
                             Behavior on border.color { ColorAnimation { duration: 500 } }
@@ -546,7 +546,7 @@ Item {
 
                                 Rectangle {
                                     width: root.s(40); height: root.s(40)
-                                    radius: root.s(26); color: "#000000"
+                                    radius: Theme.radiusFull; color: "#000000"
                                     opacity: 0.8; anchors.centerIn: parent
                                 }
                             }
@@ -563,11 +563,11 @@ Item {
                     ColumnLayout {
                         Layout.fillWidth: true
                         Layout.alignment: Qt.AlignVCenter
-                        spacing: root.s(15)
+                        spacing: root.s(Theme.gapLg)
 
                         // TEXT INFO CHUNK
                         ColumnLayout {
-                            spacing: root.s(6)
+                            spacing: root.s(Theme.gapXs)
                             opacity: root.introText
                             transform: Translate { x: root.s(30) * (1 - root.introText) }
                             
@@ -652,16 +652,16 @@ Item {
                                 Layout.preferredHeight: root.s(20)
                             }
                             RowLayout {
-                                spacing: root.s(10)
+                                spacing: root.s(Theme.gapSm)
                                 Rectangle {
-                                    color: "#1AFFFFFF"
-                                    radius: root.s(10)
+                                    color: Theme.surfaceContainer
+                                    radius: root.s(Theme.radiusSm)
                                     Layout.preferredHeight: root.s(24)
-                                    Layout.preferredWidth: pillContent.width + root.s(20)
+                                    Layout.preferredWidth: pillContent.width + root.s(Theme.gapLg)
                                     RowLayout {
                                         id: pillContent
                                         anchors.centerIn: parent
-                                        spacing: root.s(6)
+                                        spacing: root.s(Theme.gapXs)
                                         Text { text: root.musicData.deviceIcon || "󰓃"; color: root.mauve; font.family: "Hack Nerd Font"; font.pixelSize: root.s(14) }
                                         Text { text: root.musicData.deviceName || "Speaker"; color: root.overlay2; font.family: "Hack Nerd Font"; font.pixelSize: root.s(12); font.bold: true }
                                     }
@@ -732,9 +732,9 @@ Item {
                                     // Shadows mimicking the EQ slider background
                                     Rectangle {
                                         anchors.fill: parent
-                                        radius: root.s(14)
+                                        radius: Theme.radiusFull
                                         // Dynamic tint: surface0 with 70% opacity for a softer dark look
-                                        color: Qt.rgba(root.surface0.r, root.surface0.g, root.surface0.b, 0.7)
+                                        color: Theme.surfaceContainer
 
                                         layer.enabled: true
                                         layer.effect: MultiEffect {
@@ -761,7 +761,7 @@ Item {
                                             id: sliderFillMask
                                             width: parent.width
                                             height: parent.height
-                                            radius: root.s(14)
+                                            radius: Theme.radiusFull
                                             visible: false
                                             layer.enabled: true 
                                         }
@@ -792,7 +792,7 @@ Item {
                                     implicitWidth: root.s(18) 
                                     implicitHeight: root.s(18)
                                     width: root.s(18); height: root.s(18)
-                                    radius: root.s(19); color: root.text
+                                    radius: Theme.radiusFull; color: root.text
                                     scale: progBar.pressed ? 1.3 : 1.0
                                     Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutBack } }
                                 }
@@ -809,7 +809,7 @@ Item {
                         // MEDIA CONTROLS CHUNK
                         RowLayout {
                             Layout.alignment: Qt.AlignHCenter
-                            spacing: root.s(30)
+                            spacing: root.s(Theme.gapXl)
                             opacity: root.introControls
                             transform: Translate { y: root.s(20) * (1 - root.introControls) }
 
@@ -893,10 +893,10 @@ Item {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: root.s(2)
-                    Layout.topMargin: root.s(20)
-                    Layout.bottomMargin: root.s(20)
-                    color: "#1AFFFFFF"
-                    radius: root.s(1)
+                    Layout.topMargin: root.s(Theme.gapLg)
+                    Layout.bottomMargin: root.s(Theme.gapLg)
+                    color: Theme.outlineVariant
+                    radius: Theme.radiusFull
 
                     opacity: root.introSeparator
                     transform: Translate { y: root.s(15) * (1 - root.introSeparator) }
@@ -907,7 +907,7 @@ Item {
                 // ==========================================
                 ColumnLayout {
                     Layout.fillWidth: true
-                    spacing: root.s(15)
+                    spacing: root.s(Theme.gapLg)
 
                     // Header Row
                     RowLayout {
@@ -920,10 +920,10 @@ Item {
                         // Redesigned Apply Button
                         Rectangle {
                             Layout.preferredHeight: root.s(28)
-                            Layout.preferredWidth: applyTxt.width + root.s(30)
-                            radius: root.s(13)
-                            color: root.eqData.pending ? root.mauve : root.surface1
-                            border.color: root.eqData.pending ? root.mauve : root.surface2
+                            Layout.preferredWidth: applyTxt.width + root.s(Theme.gapXl)
+                            radius: root.s(Theme.radiusMd)
+                            color: root.eqData.pending ? root.mauve : Theme.surfaceContainer
+                            border.color: root.eqData.pending ? root.mauve : Theme.outlineVariant
                             border.width: 1
                             
                             Behavior on color { ColorAnimation { duration: 300; easing.type: Easing.OutCubic } }
@@ -962,7 +962,7 @@ Item {
                                 }
                             }
                         }
-                        Text { text: root.eqData.preset || "Flat"; color: root.subtext0; font.family: "Hack Nerd Font"; font.pixelSize: root.s(14); font.bold: true; Layout.leftMargin: root.s(15) }
+                        Text { text: root.eqData.preset || "Flat"; color: root.subtext0; font.family: "Hack Nerd Font"; font.pixelSize: root.s(14); font.bold: true; Layout.leftMargin: root.s(Theme.gapLg) }
                     }
 
                     // Eq Sliders Container with Canvas Lightning Overlay
@@ -1085,10 +1085,10 @@ Item {
                                                 implicitWidth: root.s(10) 
                                                 implicitHeight: root.s(150)
                                                 width: root.s(10); height: eqSlider.availableHeight
-                                                radius: root.s(10); 
+                                                radius: Theme.radiusFull; 
                                                 
                                                 // Dynamic tint: surface0 with 70% opacity for a softer dark look
-                                                color: Qt.rgba(root.surface0.r, root.surface0.g, root.surface0.b, 0.7)
+                                                color: Theme.surfaceContainer
 
                                                 layer.enabled: true
                                                 layer.effect: MultiEffect {
@@ -1131,7 +1131,7 @@ Item {
                                                     Rectangle {
                                                         id: eqFillMask
                                                         anchors.fill: parent
-                                                        radius: root.s(10)
+                                                        radius: Theme.radiusFull
                                                         visible: false
                                                         layer.enabled: true 
                                                     }
@@ -1183,7 +1183,7 @@ Item {
                                                 implicitWidth: root.s(18)
                                                 implicitHeight: root.s(18)
                                                 width: root.s(18); height: root.s(18)
-                                                radius: root.s(19); color: root.text
+                                                radius: Theme.radiusFull; color: root.text
 
                                                 property var catColors: [root.mauve, root.pink, root.lavender, root.mauve, root.blue]
 
@@ -1347,14 +1347,14 @@ Item {
                     // Presets Grid
                     ColumnLayout {
                         Layout.fillWidth: true
-                        spacing: root.s(8)
+                        spacing: root.s(Theme.gapSm)
                         
                         opacity: root.introPresets
                         transform: Translate { y: root.s(20) * (1 - root.introPresets) }
 
                         RowLayout {
                             Layout.fillWidth: true
-                            spacing: root.s(10)
+                            spacing: root.s(Theme.gapSm)
                             Repeater {
                                 model: ["Flat", "Bass", "Treble", "Vocal"]
                                 delegate: PresetButton { name: modelData }
@@ -1362,7 +1362,7 @@ Item {
                         }
                         RowLayout {
                             Layout.fillWidth: true
-                            spacing: root.s(10)
+                            spacing: root.s(Theme.gapSm)
                             Repeater {
                                 model: ["Pop", "Rock", "Jazz", "Classic"]
                                 delegate: PresetButton { name: modelData }
@@ -1379,12 +1379,12 @@ Item {
         property string name: ""
         Layout.fillWidth: true
         Layout.preferredHeight: root.s(32)
-        radius: root.s(18)
+        radius: root.s(Theme.radiusMd)
         
         property bool isActivePreset: root.eqData && root.eqData.preset === name
         property bool isHovered: hoverMa.containsMouse
 
-        color: isActivePreset ? root.mauve : (isHovered ? root.surface1 : Qt.rgba(root.base.r, root.base.g, root.base.b, 0.75 * root.base.a))
+        color: isActivePreset ? root.mauve : (isHovered ? Theme.stateLayer(root.mauve, Theme.stateHover) : Theme.surfaceContainer)
         scale: isHovered && !isActivePreset ? 1.05 : 1.0
 
         Behavior on color { ColorAnimation { duration: 200 } }

@@ -373,7 +373,7 @@ Item {
         id: generalFlickable
         anchors.fill: parent
         contentWidth: width
-        contentHeight: settingsMainCol.implicitHeight + root.s(100)
+        contentHeight: settingsMainCol.implicitHeight + root.s(Theme.gapXl)
         boundsBehavior: Flickable.StopAtBounds
         clip: true
 
@@ -383,828 +383,983 @@ Item {
             z: -1
         }
 
-        // Two-column grid (Modules-page style): every option box is one card,
-        // they flow two per row. Layout.fillHeight keeps both cards of a row
-        // the same height. NOTE: the scales in this page are NOT the same —
-        // UI Scale affects only the shell, App scale applies the global
-        // display scale (scale-menu.sh), Monitor scale lives in Monitors.
-        GridLayout {
+        // Single, top-aligned column: page header + themed section cards.
+        // Every card sizes to its content (implicitHeight) — no fillHeight, so
+        // there are no stretched-card voids; all content is inset by gapLg and
+        // shares one 4dp grid. Each ROW keeps its original highlight index
+        // (box2..box7 / boxWall) so SearchOverlay's boxIndex jump still lands
+        // on the right control.
+        ColumnLayout {
             id: settingsMainCol
-            width: parent.width
-            columns: 2
-            columnSpacing: root.s(10)
-            rowSpacing: root.s(10)
+            x: root.s(Theme.gapLg)
+            y: root.s(Theme.gapLg)
+            width: parent.width - root.s(Theme.gapLg) * 2
+            spacing: root.s(Theme.gapXl)
 
-            // ── Box 0: UI Scale ──────────────────────────────────────
-            Rectangle {
-                id: box2
-                Layout.fillHeight: true
+            // ── Page header ──────────────────────────────────────────────
+            ColumnLayout {
                 Layout.fillWidth: true
-                Layout.preferredHeight: col2.implicitHeight + root.s(32)
-                radius: root.s(26)
+                spacing: root.s(Theme.gapXs)
 
-                property bool isActive: root.highlightedBox === 0
-                color: isActive ? root.sapphire : root.surface0
-                border.color: isActive ? root.sapphire : root.surface1
-                border.width: 1
-                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-
-                MouseArea { anchors.fill: parent; onClicked: root.highlightedBox = 0; z: -1 }
-
-                ColumnLayout {
-                    id: col2
-                    anchors.top: parent.top; anchors.left: parent.left; anchors.right: parent.right; anchors.margins: root.s(16)
-                    RowLayout {
-                        Layout.fillWidth: true; spacing: root.s(14)
-                        Item {
-                            Layout.preferredWidth: root.s(22); Layout.alignment: Qt.AlignVCenter
-                            Text {
-                                anchors.centerIn: parent; text: "󰁦"
-                                font.family: "Hack Nerd Font"; font.pixelSize: root.s(18)
-                                color: box2.isActive ? root.base : root.sapphire
-                                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                            }
-                        }
-                        ColumnLayout {
-                            Layout.fillWidth: true; Layout.alignment: Qt.AlignVCenter; spacing: root.s(3)
-                            Text {
-                                text: "UI Scale"; font.family: "Inter"; font.weight: Font.Medium; font.pixelSize: root.s(14)
-                                color: box2.isActive ? root.base : root.text; Layout.fillWidth: true
-                                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                            }
-                            Text {
-                                text: "Base size scalar"; font.family: "Inter"; font.pixelSize: root.s(11)
-                                color: box2.isActive ? Qt.alpha(root.base, 0.75) : Qt.alpha(root.subtext0, 0.7); Layout.fillWidth: true
-                                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                            }
-                        }
-                        RowLayout {
-                            Layout.alignment: Qt.AlignVCenter | Qt.AlignRight; spacing: root.s(10)
-                            Rectangle {
-                                width: root.s(28); height: root.s(28); radius: root.s(22)
-                                color: sMinusMa.pressed
-                                    ? Qt.alpha(root.base, 0.3)
-                                    : (sMinusMa.containsMouse
-                                        ? Qt.alpha(root.base, 0.2)
-                                        : Qt.alpha(root.base, 0.15))
-                                scale: sMinusMa.pressed ? 0.90 : (sMinusMa.containsMouse ? 1.08 : 1.0)
-                                Behavior on scale { NumberAnimation { duration: 200; easing.type: Easing.OutQuart } }
-                                Behavior on color { ColorAnimation { duration: 200 } }
-                                Text {
-                                    anchors.centerIn: parent; text: "-"
-                                    font.family: "Hack Nerd Font"; font.weight: Font.Medium; font.pixelSize: root.s(15)
-                                    color: box2.isActive ? root.base : root.sapphire
-                                    Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                                }
-                                MouseArea { id: sMinusMa; anchors.fill: parent; hoverEnabled: true; onClicked: Config.uiScale = Math.max(0.5, (Config.uiScale - 0.1).toFixed(1)) }
-                            }
-                            Text { 
-                                text: Config.uiScale.toFixed(1) + "x"
-                                font.family: "Hack Nerd Font"; font.weight: Font.Bold; font.pixelSize: root.s(13)
-                                color: box2.isActive ? root.base : root.sapphire
-                                Layout.minimumWidth: root.s(36); horizontalAlignment: Text.AlignHCenter
-                                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                            }
-                            Rectangle {
-                                width: root.s(28); height: root.s(28); radius: root.s(22)
-                                color: sPlusMa.pressed
-                                    ? Qt.alpha(root.base, 0.3)
-                                    : (sPlusMa.containsMouse ? Qt.alpha(root.base, 0.2) : Qt.alpha(root.base, 0.15))
-                                scale: sPlusMa.pressed ? 0.90 : (sPlusMa.containsMouse ? 1.08 : 1.0)
-                                Behavior on scale { NumberAnimation { duration: 200; easing.type: Easing.OutQuart } }
-                                Behavior on color { ColorAnimation { duration: 200 } }
-                                Text {
-                                    anchors.centerIn: parent; text: "+"
-                                    font.family: "Hack Nerd Font"; font.weight: Font.Medium; font.pixelSize: root.s(15)
-                                    color: box2.isActive ? root.base : root.sapphire
-                                    Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                                }
-                                MouseArea { id: sPlusMa; anchors.fill: parent; hoverEnabled: true; onClicked: Config.uiScale = Math.min(2.0, (Config.uiScale + 0.1).toFixed(1)) }
-                            }
-                        }
-                    }
+                Text {
+                    text: "General"
+                    font.family: "Hack Nerd Font"
+                    font.weight: Font.Black
+                    font.pixelSize: root.s(24)
+                    color: root.text
+                }
+                Text {
+                    Layout.fillWidth: true
+                    text: "Shell scale, keyboard layout switching and the desktop wallpaper source."
+                    font.family: "Hack Nerd Font"
+                    font.pixelSize: root.s(11)
+                    color: root.subtext0
+                    wrapMode: Text.WordWrap
                 }
             }
 
-            // ── Box 1: Keyboard layouts ──────────────────────────────
+            // ═══ Section: Interface ══════════════════════════════════════
             Rectangle {
-                id: box3
-                Layout.fillHeight: true
+                id: sectionInterface
                 Layout.fillWidth: true
-                Layout.preferredHeight: col3lang.implicitHeight + root.s(32)
-                radius: root.s(26)
-
-                property bool isActive: root.highlightedBox === 1
-                color: isActive ? root.green : root.surface0
-                border.color: isActive ? root.green : root.surface1
+                radius: root.s(Theme.radiusLg)
+                color: Theme.surfaceContainerLow
                 border.width: 1
-                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-
-                MouseArea { anchors.fill: parent; onClicked: root.highlightedBox = 1; z: -1 }
+                border.color: Theme.outlineVariant
+                implicitHeight: innerInterface.implicitHeight + root.s(Theme.gapLg) * 2
 
                 ColumnLayout {
-                    id: col3lang
-                    anchors.top: parent.top; anchors.left: parent.left; anchors.right: parent.right; anchors.margins: root.s(16)
-                    spacing: root.s(16)
-                    RowLayout {
-                        Layout.fillWidth: true; spacing: root.s(14)
-                        Item {
-                            Layout.preferredWidth: root.s(22); Layout.alignment: Qt.AlignTop; Layout.topMargin: root.s(2)
-                            Text {
-                                anchors.top: parent.top; anchors.horizontalCenter: parent.horizontalCenter
-                                text: "󰌌"; font.family: "Hack Nerd Font"; font.pixelSize: root.s(18)
-                                color: box3.isActive ? root.base : root.green
-                                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                            }
-                        }
-                        ColumnLayout {
-                            Layout.fillWidth: true; Layout.alignment: Qt.AlignTop; spacing: root.s(3)
-                            Text {
-                                text: "Keyboard layouts"; font.family: "Inter"; font.weight: Font.Medium; font.pixelSize: root.s(14)
-                                color: box3.isActive ? root.base : root.text; Layout.fillWidth: true
-                                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                            }
-                            Text {
-                                text: "Matches hyprland.conf. Click ✖ to remove."; font.family: "Inter"; font.pixelSize: root.s(11)
-                                color: box3.isActive ? Qt.alpha(root.base, 0.75) : Qt.alpha(root.subtext0, 0.7); Layout.fillWidth: true
-                                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                            }
-                            Flow {
-                                Layout.fillWidth: true; spacing: root.s(6); Layout.topMargin: root.s(8)
-                                Repeater {
-                                    model: Config.language ? Config.language.split(",").filter(x => x.trim() !== "") : []
-                                    Rectangle {
-                                        width: langChipLayout.implicitWidth + root.s(20); height: root.s(26); radius: root.s(24)
-                                        color: box3.isActive ? Qt.alpha(root.base, 0.2) : root.surface1
-                                        border.color: chipMa.containsMouse ? root.red : (box3.isActive ? Qt.alpha(root.base, 0.4) : "transparent")
-                                        border.width: chipMa.containsMouse ? 1 : 0
-                                        scale: chipMa.containsMouse ? 1.05 : 1.0
-                                        Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutBack } }
-                                        Behavior on border.color { ColorAnimation { duration: 150 } }
-                                        RowLayout {
-                                            id: langChipLayout; anchors.centerIn: parent; spacing: root.s(6)
-                                            Text {
-                                                text: modelData; font.family: "Hack Nerd Font"; font.weight: Font.Medium; font.pixelSize: root.s(11)
-                                                color: chipMa.containsMouse ? root.red : (box3.isActive ? root.base : root.text)
-                                                Behavior on color { ColorAnimation { duration: 150 } }
-                                            }
-                                            Text {
-                                                text: "✖"; font.family: "Hack Nerd Font"; font.pixelSize: root.s(11)
-                                                color: chipMa.containsMouse ? root.red : (box3.isActive ? Qt.alpha(root.base, 0.6) : root.subtext0)
-                                                Behavior on color { ColorAnimation { duration: 150 } }
-                                            }
-                                        }
-                                        MouseArea {
-                                            id: chipMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
-                                            onClicked: {
-                                                let arr = Config.language.split(",").filter(x => x.trim() !== "");
-                                                arr.splice(index, 1);
-                                                Config.language = arr.join(",");
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    Rectangle {
-                        Layout.fillWidth: true; Layout.preferredHeight: root.s(34); Layout.topMargin: root.s(8)
-                        radius: root.s(15)
-                        color: box3.isActive ? Qt.alpha(root.base, 0.15) : root.surface0
-                        border.color: langInput.activeFocus
-                            ? (box3.isActive ? root.base : root.green)
-                            : (box3.isActive ? Qt.alpha(root.base, 0.3) : root.surface2)
-                        border.width: 1
-                        Behavior on border.color { ColorAnimation { duration: 200 } }
-                        Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                        TextInput {
-                            id: langInput
-                            anchors.fill: parent; anchors.margins: root.s(9)
-                            verticalAlignment: TextInput.AlignVCenter
-                            font.family: "Hack Nerd Font"; font.pixelSize: root.s(11)
-                            color: box3.isActive ? root.base : root.text; clip: true; selectByMouse: true
-                            Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                            Keys.onPressed: (event) => {
-                                if (event.key === Qt.Key_Tab || event.key === Qt.Key_Down) {
-                                    if (langSearchModel.count > 0) { langListView.incrementCurrentIndex(); event.accepted = true; }
-                                } else if (event.key === Qt.Key_Backtab || event.key === Qt.Key_Up) {
-                                    if (langSearchModel.count > 0) { langListView.decrementCurrentIndex(); event.accepted = true; }
-                                }
-                            }
-                            Keys.onReturnPressed: (event) => langInputAccept(event)
-                            Keys.onEnterPressed: (event) => langInputAccept(event)
-                            function langInputAccept(event) {
-                                if (langSearchModel.count > 0 && langListView.currentIndex >= 0) {
-                                    let item = langSearchModel.get(langListView.currentIndex);
-                                    let arr = Config.language ? Config.language.split(",").filter(x => x.trim() !== "") : [];
-                                    if (!arr.includes(item.code)) { arr.push(item.code); Config.language = arr.join(","); }
-                                }
-                                text = ""; focus = false; event.accepted = true;
-                            }
-                            onActiveFocusChanged: { if (activeFocus) root.updateLangSearch(text); }
-                            onTextChanged: { root.updateLangSearch(text); }
-                            Text {
-                                text: "Search to add..."
-                                color: box3.isActive ? Qt.alpha(root.base, 0.5) : Qt.alpha(root.subtext0, 0.7)
-                                visible: !parent.text && !parent.activeFocus; font: parent.font; anchors.verticalCenter: parent.verticalCenter
-                                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                            }
-                        }
-                    }
-                    Rectangle {
+                    id: innerInterface
+                    anchors.fill: parent
+                    anchors.margins: root.s(Theme.gapLg)
+                    spacing: root.s(Theme.gapMd)
+
+                    Text {
                         Layout.fillWidth: true
-                        Layout.preferredHeight: langInput.activeFocus && langSearchModel.count > 0 ? Math.min(root.s(160), langSearchModel.count * root.s(30) + root.s(8)) : 0
-                        radius: root.s(15)
-                        color: box3.isActive ? Qt.alpha(root.base, 0.15) : root.surface0
-                        border.color: box3.isActive ? Qt.alpha(root.base, 0.3) : root.surface1
-                        border.width: 1
-                        clip: true
-                        Behavior on Layout.preferredHeight { NumberAnimation { duration: 250; easing.type: Easing.OutExpo } }
-                        Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                        ListView {
-                            id: langListView
-                            anchors.fill: parent; anchors.topMargin: root.s(4); anchors.bottomMargin: root.s(4)
-                            model: langSearchModel; interactive: true
-                            opacity: parent.Layout.preferredHeight > root.s(10) ? 1.0 : 0.0
-                            Behavior on opacity { NumberAnimation { duration: 200 } }
-                            ScrollBar.vertical: ScrollBar { active: true; policy: ScrollBar.AsNeeded }
-                            delegate: Rectangle {
-                                width: parent.width - root.s(8); height: root.s(30)
-                                anchors.horizontalCenter: parent.horizontalCenter; radius: root.s(18)
-                                property bool isHovered: sMa.containsMouse
-                                color: isHovered
-                                    ? Qt.alpha(box3.isActive ? root.base : root.green, 0.2)
-                                    : (ListView.isCurrentItem ? Qt.alpha(box3.isActive ? root.base : root.green, 0.1) : "transparent")
-                                Behavior on color { ColorAnimation { duration: 150 } }
-                                RowLayout {
-                                    anchors.fill: parent; anchors.leftMargin: root.s(8); anchors.rightMargin: root.s(8); spacing: root.s(8)
-                                    Text { text: model.code; font.family: "Hack Nerd Font"; font.weight: Font.Bold; font.pixelSize: root.s(11); color: box3.isActive ? root.base : root.text; Behavior on color { ColorAnimation { duration: 150 } } }
-                                    Text { text: model.name; font.family: "Inter"; font.pixelSize: root.s(11); color: box3.isActive ? Qt.alpha(root.base, 0.7) : Qt.alpha(root.subtext0, 0.7); elide: Text.ElideRight; Layout.fillWidth: true; Behavior on color { ColorAnimation { duration: 150 } } }
-                                }
-                                MouseArea {
-                                    id: sMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
-                                    onClicked: {
-                                        let arr = Config.language ? Config.language.split(",").filter(x => x.trim() !== "") : [];
-                                        if (!arr.includes(model.code)) { arr.push(model.code); Config.language = arr.join(","); }
-                                        langInput.text = ""; langInput.focus = false;
-                                    }
-                                }
-                            }
-                        }
+                        text: "Interface"
+                        font.family: "Hack Nerd Font"
+                        font.weight: Font.DemiBold
+                        font.pixelSize: root.s(13)
+                        color: root.text
                     }
-                }                       
-            }
 
-            // ── Box 2: Layout shortcut ───────────────────────────────
-            Rectangle {
-                id: box4
-                Layout.fillHeight: true
-                Layout.fillWidth: true
-                Layout.preferredHeight: col4layout.implicitHeight + root.s(32)
-                radius: root.s(26)
+                    // ── UI Scale (highlight 0) ──────────────────────────
+                    Rectangle {
+                        id: box2
+                        Layout.fillWidth: true
+                        Layout.minimumHeight: root.s(44)
+                        radius: root.s(Theme.radiusMd)
+                        implicitHeight: col2.implicitHeight + root.s(Theme.gapSm) * 2
+                        property bool isActive: root.highlightedBox === 0
+                        color: box2.isActive
+                            ? Theme.stateLayer(root.sapphire, 0.14)
+                            : (uiScaleHover.hovered ? Theme.stateLayer(root.sapphire, Theme.stateHover) : "transparent")
+                        border.width: box2.isActive ? 1 : 0
+                        border.color: root.sapphire
+                        Behavior on color { ColorAnimation { duration: Theme.durMedium; easing.type: Easing.OutExpo } }
 
-                property bool isActive: root.highlightedBox === 2
-                color: isActive ? root.teal : root.surface0
-                border.color: isActive ? root.teal : root.surface1
-                border.width: 1
-                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
+                        HoverHandler { id: uiScaleHover }
+                        MouseArea { anchors.fill: parent; z: -1; onClicked: root.highlightedBox = 0 }
 
-                MouseArea { anchors.fill: parent; onClicked: root.highlightedBox = 2; z: -1 }
+                        RowLayout {
+                            id: col2
+                            anchors.fill: parent
+                            anchors.topMargin: root.s(Theme.gapSm)
+                            anchors.bottomMargin: root.s(Theme.gapSm)
+                            spacing: root.s(Theme.gapMd)
 
-                ColumnLayout {
-                    id: col4layout
-                    anchors.top: parent.top; anchors.left: parent.left; anchors.right: parent.right; anchors.margins: root.s(16)
-                    spacing: root.s(16)
-                    RowLayout {
-                        Layout.fillWidth: true; spacing: root.s(14)
-                        Item {
-                            Layout.preferredWidth: root.s(22); Layout.alignment: Qt.AlignTop; Layout.topMargin: root.s(2)
-                            Text {
-                                anchors.top: parent.top; anchors.horizontalCenter: parent.horizontalCenter
-                                text: "󰯍"; font.family: "Hack Nerd Font"; font.pixelSize: root.s(18)
-                                color: box4.isActive ? root.base : root.teal
-                                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                            }
-                        }
-                        ColumnLayout {
-                            Layout.fillWidth: true; Layout.alignment: Qt.AlignTop; spacing: root.s(3)
-                            Text {
-                                text: "Layout shortcut"; font.family: "Inter"; font.weight: Font.Medium; font.pixelSize: root.s(14)
-                                color: box4.isActive ? root.base : root.text; Layout.fillWidth: true
-                                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                            }
-                            Text {
-                                text: "Toggle combination"; font.family: "Inter"; font.pixelSize: root.s(11)
-                                color: box4.isActive ? Qt.alpha(root.base, 0.75) : Qt.alpha(root.subtext0, 0.7); Layout.fillWidth: true
-                                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                            }
-                            Rectangle {
-                                Layout.fillWidth: true; Layout.preferredHeight: root.s(34); Layout.topMargin: root.s(8)
-                                radius: root.s(15)
-                                color: box4.isActive ? Qt.alpha(root.base, 0.15) : root.surface0
-                                border.color: root.isLayoutDropdownOpen
-                                    ? (box4.isActive ? root.base : root.teal)
-                                    : (box4.isActive ? Qt.alpha(root.base, 0.3) : root.surface2)
-                                border.width: 1
-                                Behavior on border.color { ColorAnimation { duration: 200 } }
-                                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                                RowLayout {
-                                    anchors.fill: parent; anchors.margins: root.s(9)
-                                    Text {
-                                        text: root.getKbToggleLabel(Config.kbOptions)
-                                        font.family: "Hack Nerd Font"; font.pixelSize: root.s(11)
-                                        color: box4.isActive ? root.base : root.text; Layout.fillWidth: true
-                                        Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                                    }
-                                    Text {
-                                        text: root.isLayoutDropdownOpen ? "▴" : "▾"; font.pixelSize: root.s(12)
-                                        color: box4.isActive ? Qt.alpha(root.base, 0.7) : root.subtext0
-                                        Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                                    }
-                                }
-                                MouseArea {
-                                    anchors.fill: parent; cursorShape: Qt.PointingHandCursor
-                                    onClicked: {
-                                        root.isLayoutDropdownOpen = !root.isLayoutDropdownOpen;
-                                        if (root.isLayoutDropdownOpen) {
-                                            let idx = root.kbToggleModelArr.findIndex(x => x.val === Config.kbOptions);
-                                            layoutListView.currentIndex = Math.max(0, idx);
-                                        }
-                                        root.forceActiveFocus();
-                                    }
-                                }
-                            }
-                            Rectangle {
+                            ColumnLayout {
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: root.isLayoutDropdownOpen ? root.kbToggleModelArr.length * root.s(30) + root.s(8) : 0
-                                radius: root.s(15)
-                                color: box4.isActive ? Qt.alpha(root.base, 0.15) : root.surface0
-                                border.color: box4.isActive ? Qt.alpha(root.base, 0.3) : root.surface1
-                                border.width: 1
-                                clip: true
-                                Behavior on Layout.preferredHeight { NumberAnimation { duration: 250; easing.type: Easing.OutExpo } }
-                                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                                ListView {
-                                    id: layoutListView
-                                    anchors.fill: parent; anchors.topMargin: root.s(4); anchors.bottomMargin: root.s(4)
-                                    model: root.kbToggleModelArr; interactive: false
-                                    opacity: parent.Layout.preferredHeight > root.s(10) ? 1.0 : 0.0
-                                    Behavior on opacity { NumberAnimation { duration: 200 } }
-                                    delegate: Rectangle {
-                                        width: parent.width - root.s(8); height: root.s(30)
-                                        anchors.horizontalCenter: parent.horizontalCenter; radius: root.s(18)
-                                        property bool isHovered: toggleMa.containsMouse
-                                        color: isHovered
-                                            ? Qt.alpha(box4.isActive ? root.base : root.teal, 0.2)
-                                            : (ListView.isCurrentItem ? Qt.alpha(box4.isActive ? root.base : root.teal, 0.1) : "transparent")
-                                        Behavior on color { ColorAnimation { duration: 150 } }
-                                        RowLayout {
-                                            anchors.fill: parent; anchors.leftMargin: root.s(8); anchors.rightMargin: root.s(8)
-                                            Text {
-                                                text: modelData.label; font.family: "Hack Nerd Font"; font.pixelSize: root.s(11)
-                                                color: Config.kbOptions === modelData.val
-                                                    ? (box4.isActive ? root.base : root.teal)
-                                                    : (box4.isActive ? Qt.alpha(root.base, 0.8) : root.text)
-                                                Layout.fillWidth: true
-                                                Behavior on color { ColorAnimation { duration: 150 } }
-                                            }
-                                        }
-                                        MouseArea { id: toggleMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: { Config.kbOptions = modelData.val; root.isLayoutDropdownOpen = false; } }
-                                    }
+                                Layout.alignment: Qt.AlignVCenter
+                                spacing: root.s(Theme.gap2xs)
+                                Text {
+                                    Layout.fillWidth: true
+                                    text: "UI Scale"
+                                    font.family: "Hack Nerd Font"; font.weight: Font.Medium; font.pixelSize: root.s(12)
+                                    color: root.text
                                 }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // ── Box 3: Wallpaper directory ───────────────────────────
-            Rectangle {
-                id: box5
-                Layout.fillHeight: true
-                Layout.fillWidth: true
-                Layout.preferredHeight: col5wp.implicitHeight + root.s(32)
-                radius: root.s(26)
-
-                property bool isActive: root.highlightedBox === 3
-                color: isActive ? root.mauve : root.surface0
-                border.color: isActive ? root.mauve : root.surface1
-                border.width: 1
-                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-
-                MouseArea { anchors.fill: parent; onClicked: root.highlightedBox = 3; z: -1 }
-
-                ColumnLayout {
-                    id: col5wp
-                    anchors.top: parent.top; anchors.left: parent.left; anchors.right: parent.right; anchors.margins: root.s(16)
-                    RowLayout {
-                        Layout.fillWidth: true; spacing: root.s(14)
-                        Item {
-                            Layout.preferredWidth: root.s(22); Layout.alignment: Qt.AlignTop; Layout.topMargin: root.s(2)
-                            Text {
-                                anchors.top: parent.top; anchors.horizontalCenter: parent.horizontalCenter
-                                text: "󰋩"; font.family: "Hack Nerd Font"; font.pixelSize: root.s(18)
-                                color: box5.isActive ? root.base : root.mauve
-                                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                            }
-                        }
-                        ColumnLayout {
-                            Layout.fillWidth: true; Layout.alignment: Qt.AlignTop; spacing: root.s(3)
-                            Text {
-                                text: "Wallpaper directory"; font.family: "Inter"; font.weight: Font.Medium; font.pixelSize: root.s(14)
-                                color: box5.isActive ? root.base : root.text; Layout.fillWidth: true
-                                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                            }
-                            Text {
-                                text: "Absolute source path"; font.family: "Inter"; font.pixelSize: root.s(11)
-                                color: box5.isActive ? Qt.alpha(root.base, 0.75) : Qt.alpha(root.subtext0, 0.7); Layout.fillWidth: true
-                                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                            }
-                            Rectangle {
-                                Layout.fillWidth: true; Layout.preferredHeight: root.s(34); Layout.topMargin: root.s(8)
-                                radius: root.s(15)
-                                color: box5.isActive ? Qt.alpha(root.base, 0.15) : root.surface0
-                                border.color: wpDirInput.activeFocus
-                                    ? (box5.isActive ? root.base : root.mauve)
-                                    : (box5.isActive ? Qt.alpha(root.base, 0.3) : root.surface2)
-                                border.width: 1
-                                Behavior on border.color { ColorAnimation { duration: 200 } }
-                                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                                TextInput {
-                                    id: wpDirInput
-                                    anchors.fill: parent; anchors.margins: root.s(9)
-                                    verticalAlignment: TextInput.AlignVCenter
-                                    text: Config.wallpaperDir
+                                Text {
+                                    Layout.fillWidth: true
+                                    text: "Base size scalar for the shell"
                                     font.family: "Hack Nerd Font"; font.pixelSize: root.s(11)
-                                    color: box5.isActive ? root.base : root.text; clip: true; selectByMouse: true
-                                    Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                                    Keys.onPressed: (event) => {
-                                        if (event.key === Qt.Key_Tab || event.key === Qt.Key_Down) {
-                                            if (pathSuggestModel.count > 0) { wpSuggestListView.incrementCurrentIndex(); event.accepted = true; }
-                                        } else if (event.key === Qt.Key_Backtab || event.key === Qt.Key_Up) {
-                                            if (pathSuggestModel.count > 0) { wpSuggestListView.decrementCurrentIndex(); event.accepted = true; }
+                                    color: root.subtext0
+                                    wrapMode: Text.WordWrap
+                                }
+                            }
+
+                            RowLayout {
+                                Layout.alignment: Qt.AlignVCenter
+                                spacing: root.s(Theme.gapSm)
+                                Rectangle {
+                                    width: root.s(32); height: root.s(32)
+                                    radius: root.s(Theme.radiusFull)
+                                    color: sMinusMa.pressed
+                                        ? Theme.stateLayer(root.sapphire, Theme.statePress)
+                                        : (sMinusMa.containsMouse ? Theme.stateLayer(root.sapphire, Theme.stateHover) : Theme.surfaceContainerHighest)
+                                    border.width: 1
+                                    border.color: (sMinusMa.containsMouse || sMinusMa.pressed) ? root.sapphire : Theme.outlineVariant
+                                    scale: sMinusMa.pressed ? 0.94 : 1.0
+                                    Behavior on scale { NumberAnimation { duration: Theme.durShort; easing.type: Easing.OutQuart } }
+                                    Behavior on color { ColorAnimation { duration: Theme.durShort } }
+                                    Behavior on border.color { ColorAnimation { duration: Theme.durShort } }
+                                    Text {
+                                        anchors.centerIn: parent; text: "−"
+                                        font.family: "Hack Nerd Font"; font.weight: Font.Medium; font.pixelSize: root.s(15)
+                                        color: root.sapphire
+                                    }
+                                    MouseArea {
+                                        id: sMinusMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                                        onClicked: Config.uiScale = Math.max(0.5, (Config.uiScale - 0.1).toFixed(1))
+                                    }
+                                }
+                                Text {
+                                    text: Config.uiScale.toFixed(1) + "x"
+                                    font.family: "Hack Nerd Font"; font.weight: Font.Bold; font.pixelSize: root.s(13)
+                                    color: root.sapphire
+                                    Layout.minimumWidth: root.s(36)
+                                    horizontalAlignment: Text.AlignHCenter
+                                    Layout.alignment: Qt.AlignVCenter
+                                }
+                                Rectangle {
+                                    width: root.s(32); height: root.s(32)
+                                    radius: root.s(Theme.radiusFull)
+                                    color: sPlusMa.pressed
+                                        ? Theme.stateLayer(root.sapphire, Theme.statePress)
+                                        : (sPlusMa.containsMouse ? Theme.stateLayer(root.sapphire, Theme.stateHover) : Theme.surfaceContainerHighest)
+                                    border.width: 1
+                                    border.color: (sPlusMa.containsMouse || sPlusMa.pressed) ? root.sapphire : Theme.outlineVariant
+                                    scale: sPlusMa.pressed ? 0.94 : 1.0
+                                    Behavior on scale { NumberAnimation { duration: Theme.durShort; easing.type: Easing.OutQuart } }
+                                    Behavior on color { ColorAnimation { duration: Theme.durShort } }
+                                    Behavior on border.color { ColorAnimation { duration: Theme.durShort } }
+                                    Text {
+                                        anchors.centerIn: parent; text: "+"
+                                        font.family: "Hack Nerd Font"; font.weight: Font.Medium; font.pixelSize: root.s(15)
+                                        color: root.sapphire
+                                    }
+                                    MouseArea {
+                                        id: sPlusMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                                        onClicked: Config.uiScale = Math.min(2.0, (Config.uiScale + 0.1).toFixed(1))
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // ── Workspaces (highlight 4) ────────────────────────
+                    Rectangle {
+                        id: box6
+                        Layout.fillWidth: true
+                        Layout.minimumHeight: root.s(44)
+                        radius: root.s(Theme.radiusMd)
+                        implicitHeight: col6ws.implicitHeight + root.s(Theme.gapSm) * 2
+                        property bool isActive: root.highlightedBox === 4
+                        color: box6.isActive
+                            ? Theme.stateLayer(root.red, 0.14)
+                            : (wsHover.hovered ? Theme.stateLayer(root.red, Theme.stateHover) : "transparent")
+                        border.width: box6.isActive ? 1 : 0
+                        border.color: root.red
+                        Behavior on color { ColorAnimation { duration: Theme.durMedium; easing.type: Easing.OutExpo } }
+
+                        HoverHandler { id: wsHover }
+                        MouseArea { anchors.fill: parent; z: -1; onClicked: root.highlightedBox = 4 }
+
+                        RowLayout {
+                            id: col6ws
+                            anchors.fill: parent
+                            anchors.topMargin: root.s(Theme.gapSm)
+                            anchors.bottomMargin: root.s(Theme.gapSm)
+                            spacing: root.s(Theme.gapMd)
+
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                Layout.alignment: Qt.AlignVCenter
+                                spacing: root.s(Theme.gap2xs)
+                                Text {
+                                    Layout.fillWidth: true
+                                    text: "Workspaces"
+                                    font.family: "Hack Nerd Font"; font.weight: Font.Bold; font.pixelSize: root.s(12)
+                                    color: root.text
+                                }
+                                Text {
+                                    Layout.fillWidth: true
+                                    text: "Static count shown in the bar"
+                                    font.family: "Hack Nerd Font"; font.pixelSize: root.s(11)
+                                    color: root.subtext0
+                                    wrapMode: Text.WordWrap
+                                }
+                            }
+
+                            RowLayout {
+                                Layout.alignment: Qt.AlignVCenter
+                                spacing: root.s(Theme.gapSm)
+                                Rectangle {
+                                    width: root.s(32); height: root.s(32)
+                                    radius: root.s(Theme.radiusFull)
+                                    color: wsMinusMa.pressed
+                                        ? Theme.stateLayer(root.red, Theme.statePress)
+                                        : (wsMinusMa.containsMouse ? Theme.stateLayer(root.red, Theme.stateHover) : Theme.surfaceContainerHighest)
+                                    border.width: 1
+                                    border.color: (wsMinusMa.containsMouse || wsMinusMa.pressed) ? root.red : Theme.outlineVariant
+                                    scale: wsMinusMa.pressed ? 0.94 : 1.0
+                                    Behavior on scale { NumberAnimation { duration: Theme.durShort; easing.type: Easing.OutQuart } }
+                                    Behavior on color { ColorAnimation { duration: Theme.durShort } }
+                                    Behavior on border.color { ColorAnimation { duration: Theme.durShort } }
+                                    Text {
+                                        anchors.centerIn: parent; text: "−"
+                                        font.family: "Hack Nerd Font"; font.weight: Font.Bold; font.pixelSize: root.s(15)
+                                        color: root.red
+                                    }
+                                    MouseArea {
+                                        id: wsMinusMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                                        onClicked: Config.workspaceCount = Math.max(2, Config.workspaceCount - 1)
+                                    }
+                                }
+                                Text {
+                                    text: Config.workspaceCount.toString()
+                                    font.family: "Hack Nerd Font"; font.weight: Font.Black; font.pixelSize: root.s(14)
+                                    color: root.red
+                                    Layout.minimumWidth: root.s(36)
+                                    horizontalAlignment: Text.AlignHCenter
+                                    Layout.alignment: Qt.AlignVCenter
+                                }
+                                Rectangle {
+                                    width: root.s(32); height: root.s(32)
+                                    radius: root.s(Theme.radiusFull)
+                                    color: wsPlusMa.pressed
+                                        ? Theme.stateLayer(root.red, Theme.statePress)
+                                        : (wsPlusMa.containsMouse ? Theme.stateLayer(root.red, Theme.stateHover) : Theme.surfaceContainerHighest)
+                                    border.width: 1
+                                    border.color: (wsPlusMa.containsMouse || wsPlusMa.pressed) ? root.red : Theme.outlineVariant
+                                    scale: wsPlusMa.pressed ? 0.94 : 1.0
+                                    Behavior on scale { NumberAnimation { duration: Theme.durShort; easing.type: Easing.OutQuart } }
+                                    Behavior on color { ColorAnimation { duration: Theme.durShort } }
+                                    Behavior on border.color { ColorAnimation { duration: Theme.durShort } }
+                                    Text {
+                                        anchors.centerIn: parent; text: "+"
+                                        font.family: "Hack Nerd Font"; font.weight: Font.Bold; font.pixelSize: root.s(15)
+                                        color: root.red
+                                    }
+                                    MouseArea {
+                                        id: wsPlusMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                                        onClicked: Config.workspaceCount = Math.min(10, Config.workspaceCount + 1)
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // ── App scale (highlight 5) ─────────────────────────
+                    Rectangle {
+                        id: box7
+                        Layout.fillWidth: true
+                        Layout.minimumHeight: root.s(44)
+                        radius: root.s(Theme.radiusMd)
+                        implicitHeight: appScaleRow.implicitHeight + root.s(Theme.gapSm) * 2
+                        property bool isActive: root.highlightedBox === 5
+                        color: box7.isActive
+                            ? Theme.stateLayer(root.sapphire, 0.14)
+                            : (appScaleHover.hovered ? Theme.stateLayer(root.sapphire, Theme.stateHover) : "transparent")
+                        border.width: box7.isActive ? 1 : 0
+                        border.color: root.sapphire
+                        Behavior on color { ColorAnimation { duration: Theme.durMedium; easing.type: Easing.OutExpo } }
+
+                        HoverHandler { id: appScaleHover }
+                        MouseArea { anchors.fill: parent; z: -1; onClicked: root.highlightedBox = 5 }
+
+                        RowLayout {
+                            id: appScaleRow
+                            anchors.fill: parent
+                            anchors.topMargin: root.s(Theme.gapSm)
+                            anchors.bottomMargin: root.s(Theme.gapSm)
+                            spacing: root.s(Theme.gapMd)
+
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                Layout.alignment: Qt.AlignVCenter
+                                spacing: root.s(Theme.gap2xs)
+                                Text {
+                                    Layout.fillWidth: true
+                                    text: "App scale"
+                                    font.family: "Hack Nerd Font"; font.weight: Font.Medium; font.pixelSize: root.s(12)
+                                    color: root.text
+                                }
+                                Text {
+                                    Layout.fillWidth: true
+                                    text: "GTK / Electron apps — restart them to apply"
+                                    font.family: "Hack Nerd Font"; font.pixelSize: root.s(11)
+                                    color: root.subtext0
+                                    wrapMode: Text.WordWrap
+                                }
+                            }
+
+                            RowLayout {
+                                Layout.alignment: Qt.AlignVCenter
+                                spacing: root.s(Theme.gapSm)
+                                Rectangle {
+                                    width: root.s(32); height: root.s(32)
+                                    radius: root.s(Theme.radiusFull)
+                                    color: asMinusMa.pressed
+                                        ? Theme.stateLayer(root.sapphire, Theme.statePress)
+                                        : (asMinusMa.containsMouse ? Theme.stateLayer(root.sapphire, Theme.stateHover) : Theme.surfaceContainerHighest)
+                                    border.width: 1
+                                    border.color: (asMinusMa.containsMouse || asMinusMa.pressed) ? root.sapphire : Theme.outlineVariant
+                                    scale: asMinusMa.pressed ? 0.94 : 1.0
+                                    Behavior on scale { NumberAnimation { duration: Theme.durShort; easing.type: Easing.OutQuart } }
+                                    Behavior on color { ColorAnimation { duration: Theme.durShort } }
+                                    Behavior on border.color { ColorAnimation { duration: Theme.durShort } }
+                                    Text {
+                                        anchors.centerIn: parent; text: "−"
+                                        font.family: "Hack Nerd Font"; font.weight: Font.Bold; font.pixelSize: root.s(15)
+                                        color: root.sapphire
+                                    }
+                                    MouseArea {
+                                        id: asMinusMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                                        onClicked: root.appScaleStep(-1)
+                                    }
+                                }
+                                Text {
+                                    text: Config.appScale.toFixed(2) + "x"
+                                    font.family: "Hack Nerd Font"; font.weight: Font.Black; font.pixelSize: root.s(14)
+                                    color: root.sapphire
+                                    Layout.minimumWidth: root.s(46)
+                                    horizontalAlignment: Text.AlignHCenter
+                                    Layout.alignment: Qt.AlignVCenter
+                                }
+                                Rectangle {
+                                    width: root.s(32); height: root.s(32)
+                                    radius: root.s(Theme.radiusFull)
+                                    color: asPlusMa.pressed
+                                        ? Theme.stateLayer(root.sapphire, Theme.statePress)
+                                        : (asPlusMa.containsMouse ? Theme.stateLayer(root.sapphire, Theme.stateHover) : Theme.surfaceContainerHighest)
+                                    border.width: 1
+                                    border.color: (asPlusMa.containsMouse || asPlusMa.pressed) ? root.sapphire : Theme.outlineVariant
+                                    scale: asPlusMa.pressed ? 0.94 : 1.0
+                                    Behavior on scale { NumberAnimation { duration: Theme.durShort; easing.type: Easing.OutQuart } }
+                                    Behavior on color { ColorAnimation { duration: Theme.durShort } }
+                                    Behavior on border.color { ColorAnimation { duration: Theme.durShort } }
+                                    Text {
+                                        anchors.centerIn: parent; text: "+"
+                                        font.family: "Hack Nerd Font"; font.weight: Font.Bold; font.pixelSize: root.s(15)
+                                        color: root.sapphire
+                                    }
+                                    MouseArea {
+                                        id: asPlusMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                                        onClicked: root.appScaleStep(1)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // ═══ Section: Keyboard ═══════════════════════════════════════
+            Rectangle {
+                id: sectionKeyboard
+                Layout.fillWidth: true
+                radius: root.s(Theme.radiusLg)
+                color: Theme.surfaceContainerLow
+                border.width: 1
+                border.color: Theme.outlineVariant
+                implicitHeight: innerKeyboard.implicitHeight + root.s(Theme.gapLg) * 2
+
+                ColumnLayout {
+                    id: innerKeyboard
+                    anchors.fill: parent
+                    anchors.margins: root.s(Theme.gapLg)
+                    spacing: root.s(Theme.gapMd)
+
+                    Text {
+                        Layout.fillWidth: true
+                        text: "Keyboard"
+                        font.family: "Hack Nerd Font"
+                        font.weight: Font.DemiBold
+                        font.pixelSize: root.s(13)
+                        color: root.text
+                    }
+
+                    // ── Keyboard layouts (highlight 1) ──────────────────
+                    Rectangle {
+                        id: box3
+                        Layout.fillWidth: true
+                        Layout.minimumHeight: root.s(44)
+                        radius: root.s(Theme.radiusMd)
+                        implicitHeight: col3lang.implicitHeight + root.s(Theme.gapSm) * 2
+                        property bool isActive: root.highlightedBox === 1
+                        color: box3.isActive
+                            ? Theme.stateLayer(root.green, 0.14)
+                            : (kbHover.hovered ? Theme.stateLayer(root.green, Theme.stateHover) : "transparent")
+                        border.width: box3.isActive ? 1 : 0
+                        border.color: root.green
+                        Behavior on color { ColorAnimation { duration: Theme.durMedium; easing.type: Easing.OutExpo } }
+
+                        HoverHandler { id: kbHover }
+                        MouseArea { anchors.fill: parent; z: -1; onClicked: root.highlightedBox = 1 }
+
+                        RowLayout {
+                            id: col3lang
+                            anchors.fill: parent
+                            anchors.topMargin: root.s(Theme.gapSm)
+                            anchors.bottomMargin: root.s(Theme.gapSm)
+                            spacing: root.s(Theme.gapMd)
+
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                Layout.alignment: Qt.AlignTop
+                                spacing: root.s(Theme.gap2xs)
+                                Text {
+                                    Layout.fillWidth: true
+                                    text: "Keyboard layouts"
+                                    font.family: "Hack Nerd Font"; font.weight: Font.Medium; font.pixelSize: root.s(12)
+                                    color: root.text
+                                }
+                                Text {
+                                    Layout.fillWidth: true
+                                    text: "Matches hyprland.conf. Click ✖ to remove."
+                                    font.family: "Hack Nerd Font"; font.pixelSize: root.s(11)
+                                    color: root.subtext0
+                                    wrapMode: Text.WordWrap
+                                }
+                            }
+
+                            ColumnLayout {
+                                Layout.preferredWidth: root.s(260)
+                                Layout.alignment: Qt.AlignTop
+                                spacing: root.s(Theme.gapSm)
+
+                                Flow {
+                                    Layout.fillWidth: true
+                                    spacing: root.s(Theme.gapXs)
+                                    Repeater {
+                                        model: Config.language ? Config.language.split(",").filter(x => x.trim() !== "") : []
+                                        Rectangle {
+                                            width: langChipLayout.implicitWidth + root.s(20); height: root.s(26)
+                                            radius: root.s(Theme.radiusFull)
+                                            color: chipMa.containsMouse ? Theme.stateLayer(root.red, Theme.stateHover) : Theme.surfaceContainerHigh
+                                            border.color: chipMa.containsMouse ? root.red : "transparent"
+                                            border.width: 1
+                                            scale: chipMa.containsMouse ? 1.05 : 1.0
+                                            Behavior on scale { NumberAnimation { duration: Theme.durShort; easing.type: Easing.OutBack } }
+                                            Behavior on color { ColorAnimation { duration: Theme.durShort } }
+                                            Behavior on border.color { ColorAnimation { duration: Theme.durShort } }
+                                            RowLayout {
+                                                id: langChipLayout; anchors.centerIn: parent; spacing: root.s(Theme.gapXs)
+                                                Text {
+                                                    text: modelData; font.family: "Hack Nerd Font"; font.weight: Font.Medium; font.pixelSize: root.s(11)
+                                                    color: chipMa.containsMouse ? root.red : root.text
+                                                    Behavior on color { ColorAnimation { duration: Theme.durShort } }
+                                                }
+                                                Text {
+                                                    text: "✖"; font.family: "Hack Nerd Font"; font.pixelSize: root.s(11)
+                                                    color: chipMa.containsMouse ? root.red : root.subtext0
+                                                    Behavior on color { ColorAnimation { duration: Theme.durShort } }
+                                                }
+                                            }
+                                            MouseArea {
+                                                id: chipMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                                                onClicked: {
+                                                    let arr = Config.language.split(",").filter(x => x.trim() !== "");
+                                                    arr.splice(index, 1);
+                                                    Config.language = arr.join(",");
+                                                }
+                                            }
                                         }
                                     }
-                                    Keys.onReturnPressed: (event) => wpDirInputAccept(event)
-                                    Keys.onEnterPressed: (event) => wpDirInputAccept(event)
-                                    function wpDirInputAccept(event) {
-                                        if (pathSuggestModel.count > 0 && wpSuggestListView.currentIndex >= 0) {
-                                            let item = pathSuggestModel.get(wpSuggestListView.currentIndex);
-                                            if (item) { text = item.path; Config.wallpaperDir = text; }
+                                }
+
+                                Rectangle {
+                                    Layout.fillWidth: true; Layout.preferredHeight: root.s(34)
+                                    radius: root.s(Theme.radiusSm)
+                                    color: Theme.surfaceContainer
+                                    border.color: langInput.activeFocus ? root.green : Theme.outlineVariant
+                                    border.width: 1
+                                    Behavior on border.color { ColorAnimation { duration: Theme.durShort } }
+                                    TextInput {
+                                        id: langInput
+                                        anchors.fill: parent
+                                        anchors.leftMargin: root.s(10); anchors.rightMargin: root.s(10)
+                                        verticalAlignment: TextInput.AlignVCenter
+                                        font.family: "Hack Nerd Font"; font.pixelSize: root.s(11)
+                                        color: root.text; clip: true; selectByMouse: true
+                                        Keys.onPressed: (event) => {
+                                            if (event.key === Qt.Key_Tab || event.key === Qt.Key_Down) {
+                                                if (langSearchModel.count > 0) { langListView.incrementCurrentIndex(); event.accepted = true; }
+                                            } else if (event.key === Qt.Key_Backtab || event.key === Qt.Key_Up) {
+                                                if (langSearchModel.count > 0) { langListView.decrementCurrentIndex(); event.accepted = true; }
+                                            }
                                         }
-                                        pathSuggestModel.clear(); focus = false; event.accepted = true;
+                                        Keys.onReturnPressed: (event) => langInputAccept(event)
+                                        Keys.onEnterPressed: (event) => langInputAccept(event)
+                                        function langInputAccept(event) {
+                                            if (langSearchModel.count > 0 && langListView.currentIndex >= 0) {
+                                                let item = langSearchModel.get(langListView.currentIndex);
+                                                let arr = Config.language ? Config.language.split(",").filter(x => x.trim() !== "") : [];
+                                                if (!arr.includes(item.code)) { arr.push(item.code); Config.language = arr.join(","); }
+                                            }
+                                            text = ""; focus = false; event.accepted = true;
+                                        }
+                                        onActiveFocusChanged: { if (activeFocus) root.updateLangSearch(text); }
+                                        onTextChanged: { root.updateLangSearch(text); }
+                                        Text {
+                                            text: "Search to add..."
+                                            color: Qt.alpha(root.subtext0, 0.7)
+                                            visible: !parent.text && !parent.activeFocus; font: parent.font; anchors.verticalCenter: parent.verticalCenter
+                                        }
                                     }
-                                    onActiveFocusChanged: {
-                                        if (activeFocus) { pathSuggestProc.query = text; pathSuggestProc.running = false; pathSuggestProc.running = true; }
+                                }
+
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: langInput.activeFocus && langSearchModel.count > 0 ? Math.min(root.s(160), langSearchModel.count * root.s(30) + root.s(8)) : 0
+                                    radius: root.s(Theme.radiusSm)
+                                    color: Theme.surfaceContainer
+                                    border.color: Theme.outlineVariant
+                                    border.width: 1
+                                    clip: true
+                                    Behavior on Layout.preferredHeight { NumberAnimation { duration: Theme.durMedium; easing.type: Easing.OutExpo } }
+                                    ListView {
+                                        id: langListView
+                                        anchors.fill: parent; anchors.topMargin: root.s(4); anchors.bottomMargin: root.s(4)
+                                        model: langSearchModel; interactive: true
+                                        opacity: parent.Layout.preferredHeight > root.s(10) ? 1.0 : 0.0
+                                        Behavior on opacity { NumberAnimation { duration: Theme.durShort } }
+                                        ScrollBar.vertical: ScrollBar { active: true; policy: ScrollBar.AsNeeded }
+                                        delegate: Rectangle {
+                                            width: parent.width - root.s(8); height: root.s(30)
+                                            anchors.horizontalCenter: parent.horizontalCenter; radius: root.s(Theme.radiusSm)
+                                            property bool isHovered: sMa.containsMouse
+                                            color: isHovered
+                                                ? Theme.stateLayer(root.green, Theme.stateHover)
+                                                : (ListView.isCurrentItem ? Theme.stateLayer(root.green, 0.10) : "transparent")
+                                            Behavior on color { ColorAnimation { duration: Theme.durShort } }
+                                            RowLayout {
+                                                anchors.fill: parent; anchors.leftMargin: root.s(8); anchors.rightMargin: root.s(8); spacing: root.s(8)
+                                                Text { text: model.code; font.family: "Hack Nerd Font"; font.weight: Font.Bold; font.pixelSize: root.s(11); color: root.text; Behavior on color { ColorAnimation { duration: Theme.durShort } } }
+                                                Text { text: model.name; font.family: "Hack Nerd Font"; font.pixelSize: root.s(11); color: Qt.alpha(root.subtext0, 0.7); elide: Text.ElideRight; Layout.fillWidth: true; Behavior on color { ColorAnimation { duration: Theme.durShort } } }
+                                            }
+                                            MouseArea {
+                                                id: sMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                                                onClicked: {
+                                                    let arr = Config.language ? Config.language.split(",").filter(x => x.trim() !== "") : [];
+                                                    if (!arr.includes(model.code)) { arr.push(model.code); Config.language = arr.join(","); }
+                                                    langInput.text = ""; langInput.focus = false;
+                                                }
+                                            }
+                                        }
                                     }
-                                    onTextChanged: {
-                                        Config.wallpaperDir = text;
-                                        if (activeFocus) { pathSuggestProc.query = text; pathSuggestProc.running = false; pathSuggestProc.running = true; }
+                                }
+                            }
+                        }
+                    }
+
+                    // ── Layout shortcut (highlight 2) ───────────────────
+                    Rectangle {
+                        id: box4
+                        Layout.fillWidth: true
+                        Layout.minimumHeight: root.s(44)
+                        radius: root.s(Theme.radiusMd)
+                        implicitHeight: col4layout.implicitHeight + root.s(Theme.gapSm) * 2
+                        property bool isActive: root.highlightedBox === 2
+                        color: box4.isActive
+                            ? Theme.stateLayer(root.teal, 0.14)
+                            : (layoutHover.hovered ? Theme.stateLayer(root.teal, Theme.stateHover) : "transparent")
+                        border.width: box4.isActive ? 1 : 0
+                        border.color: root.teal
+                        Behavior on color { ColorAnimation { duration: Theme.durMedium; easing.type: Easing.OutExpo } }
+
+                        HoverHandler { id: layoutHover }
+                        MouseArea { anchors.fill: parent; z: -1; onClicked: root.highlightedBox = 2 }
+
+                        RowLayout {
+                            id: col4layout
+                            anchors.fill: parent
+                            anchors.topMargin: root.s(Theme.gapSm)
+                            anchors.bottomMargin: root.s(Theme.gapSm)
+                            spacing: root.s(Theme.gapMd)
+
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                Layout.alignment: Qt.AlignTop
+                                spacing: root.s(Theme.gap2xs)
+                                Text {
+                                    Layout.fillWidth: true
+                                    text: "Layout shortcut"
+                                    font.family: "Hack Nerd Font"; font.weight: Font.Medium; font.pixelSize: root.s(12)
+                                    color: root.text
+                                }
+                                Text {
+                                    Layout.fillWidth: true
+                                    text: "Toggle combination"
+                                    font.family: "Hack Nerd Font"; font.pixelSize: root.s(11)
+                                    color: root.subtext0
+                                    wrapMode: Text.WordWrap
+                                }
+                            }
+
+                            ColumnLayout {
+                                Layout.preferredWidth: root.s(260)
+                                Layout.alignment: Qt.AlignTop
+                                spacing: root.s(Theme.gapXs)
+
+                                Rectangle {
+                                    Layout.fillWidth: true; Layout.preferredHeight: root.s(34)
+                                    radius: root.s(Theme.radiusSm)
+                                    color: Theme.surfaceContainer
+                                    border.color: root.isLayoutDropdownOpen ? root.teal : Theme.outlineVariant
+                                    border.width: 1
+                                    Behavior on border.color { ColorAnimation { duration: Theme.durShort } }
+                                    RowLayout {
+                                        anchors.fill: parent; anchors.leftMargin: root.s(10); anchors.rightMargin: root.s(10)
+                                        Text {
+                                            text: root.getKbToggleLabel(Config.kbOptions)
+                                            font.family: "Hack Nerd Font"; font.pixelSize: root.s(11)
+                                            color: root.text; Layout.fillWidth: true
+                                        }
+                                        Text {
+                                            text: root.isLayoutDropdownOpen ? "▴" : "▾"; font.pixelSize: root.s(12)
+                                            color: root.subtext0
+                                        }
+                                    }
+                                    MouseArea {
+                                        anchors.fill: parent; cursorShape: Qt.PointingHandCursor
+                                        onClicked: {
+                                            root.isLayoutDropdownOpen = !root.isLayoutDropdownOpen;
+                                            if (root.isLayoutDropdownOpen) {
+                                                let idx = root.kbToggleModelArr.findIndex(x => x.val === Config.kbOptions);
+                                                layoutListView.currentIndex = Math.max(0, idx);
+                                            }
+                                            root.forceActiveFocus();
+                                        }
+                                    }
+                                }
+
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: root.isLayoutDropdownOpen ? root.kbToggleModelArr.length * root.s(30) + root.s(8) : 0
+                                    radius: root.s(Theme.radiusSm)
+                                    color: Theme.surfaceContainer
+                                    border.color: Theme.outlineVariant
+                                    border.width: 1
+                                    clip: true
+                                    Behavior on Layout.preferredHeight { NumberAnimation { duration: Theme.durMedium; easing.type: Easing.OutExpo } }
+                                    ListView {
+                                        id: layoutListView
+                                        anchors.fill: parent; anchors.topMargin: root.s(4); anchors.bottomMargin: root.s(4)
+                                        model: root.kbToggleModelArr; interactive: false
+                                        displayMarginBeginning: 0
+                                        displayMarginEnd: 0
+                                        opacity: parent.Layout.preferredHeight > root.s(10) ? 1.0 : 0.0
+                                        Behavior on opacity { NumberAnimation { duration: Theme.durShort } }
+                                        delegate: Rectangle {
+                                            width: parent.width - root.s(8); height: root.s(30)
+                                            anchors.horizontalCenter: parent.horizontalCenter; radius: root.s(Theme.radiusSm)
+                                            property bool isHovered: toggleMa.containsMouse
+                                            color: isHovered
+                                                ? Theme.stateLayer(root.teal, Theme.stateHover)
+                                                : (ListView.isCurrentItem ? Theme.stateLayer(root.teal, 0.10) : "transparent")
+                                            Behavior on color { ColorAnimation { duration: Theme.durShort } }
+                                            RowLayout {
+                                                anchors.fill: parent; anchors.leftMargin: root.s(8); anchors.rightMargin: root.s(8)
+                                                Text {
+                                                    text: modelData.label; font.family: "Hack Nerd Font"; font.pixelSize: root.s(11)
+                                                    color: Config.kbOptions === modelData.val ? root.teal : root.text
+                                                    Layout.fillWidth: true
+                                                }
+                                            }
+                                            MouseArea { id: toggleMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: { Config.kbOptions = modelData.val; root.isLayoutDropdownOpen = false; } }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // ═══ Section: Wallpaper ══════════════════════════════════════
+            Rectangle {
+                id: sectionWallpaper
+                Layout.fillWidth: true
+                radius: root.s(Theme.radiusLg)
+                color: Theme.surfaceContainerLow
+                border.width: 1
+                border.color: Theme.outlineVariant
+                implicitHeight: innerWallpaper.implicitHeight + root.s(Theme.gapLg) * 2
+
+                ColumnLayout {
+                    id: innerWallpaper
+                    anchors.fill: parent
+                    anchors.margins: root.s(Theme.gapLg)
+                    spacing: root.s(Theme.gapMd)
+
+                    Text {
+                        Layout.fillWidth: true
+                        text: "Wallpaper"
+                        font.family: "Hack Nerd Font"
+                        font.weight: Font.DemiBold
+                        font.pixelSize: root.s(13)
+                        color: root.text
+                    }
+
+                    // ── Wallpaper directory (highlight 3) ───────────────
+                    Rectangle {
+                        id: box5
+                        Layout.fillWidth: true
+                        Layout.minimumHeight: root.s(44)
+                        radius: root.s(Theme.radiusMd)
+                        implicitHeight: col5wp.implicitHeight + root.s(Theme.gapSm) * 2
+                        property bool isActive: root.highlightedBox === 3
+                        color: box5.isActive
+                            ? Theme.stateLayer(root.mauve, 0.14)
+                            : (wpDirHover.hovered ? Theme.stateLayer(root.mauve, Theme.stateHover) : "transparent")
+                        border.width: box5.isActive ? 1 : 0
+                        border.color: root.mauve
+                        Behavior on color { ColorAnimation { duration: Theme.durMedium; easing.type: Easing.OutExpo } }
+
+                        HoverHandler { id: wpDirHover }
+                        MouseArea { anchors.fill: parent; z: -1; onClicked: root.highlightedBox = 3 }
+
+                        RowLayout {
+                            id: col5wp
+                            anchors.fill: parent
+                            anchors.topMargin: root.s(Theme.gapSm)
+                            anchors.bottomMargin: root.s(Theme.gapSm)
+                            spacing: root.s(Theme.gapMd)
+
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                Layout.alignment: Qt.AlignTop
+                                spacing: root.s(Theme.gap2xs)
+                                Text {
+                                    Layout.fillWidth: true
+                                    text: "Wallpaper directory"
+                                    font.family: "Hack Nerd Font"; font.weight: Font.Medium; font.pixelSize: root.s(12)
+                                    color: root.text
+                                }
+                                Text {
+                                    Layout.fillWidth: true
+                                    text: "Absolute source path"
+                                    font.family: "Hack Nerd Font"; font.pixelSize: root.s(11)
+                                    color: root.subtext0
+                                    wrapMode: Text.WordWrap
+                                }
+                            }
+
+                            ColumnLayout {
+                                Layout.preferredWidth: root.s(260)
+                                Layout.alignment: Qt.AlignTop
+                                spacing: root.s(Theme.gapXs)
+
+                                Rectangle {
+                                    Layout.fillWidth: true; Layout.preferredHeight: root.s(34)
+                                    radius: root.s(Theme.radiusSm)
+                                    color: Theme.surfaceContainer
+                                    border.color: wpDirInput.activeFocus ? root.mauve : Theme.outlineVariant
+                                    border.width: 1
+                                    Behavior on border.color { ColorAnimation { duration: Theme.durShort } }
+                                    TextInput {
+                                        id: wpDirInput
+                                        anchors.fill: parent
+                                        anchors.leftMargin: root.s(10); anchors.rightMargin: root.s(10)
+                                        verticalAlignment: TextInput.AlignVCenter
+                                        text: Config.wallpaperDir
+                                        font.family: "Hack Nerd Font"; font.pixelSize: root.s(11)
+                                        color: root.text; clip: true; selectByMouse: true
+                                        Keys.onPressed: (event) => {
+                                            if (event.key === Qt.Key_Tab || event.key === Qt.Key_Down) {
+                                                if (pathSuggestModel.count > 0) { wpSuggestListView.incrementCurrentIndex(); event.accepted = true; }
+                                            } else if (event.key === Qt.Key_Backtab || event.key === Qt.Key_Up) {
+                                                if (pathSuggestModel.count > 0) { wpSuggestListView.decrementCurrentIndex(); event.accepted = true; }
+                                            }
+                                        }
+                                        Keys.onReturnPressed: (event) => wpDirInputAccept(event)
+                                        Keys.onEnterPressed: (event) => wpDirInputAccept(event)
+                                        function wpDirInputAccept(event) {
+                                            if (pathSuggestModel.count > 0 && wpSuggestListView.currentIndex >= 0) {
+                                                let item = pathSuggestModel.get(wpSuggestListView.currentIndex);
+                                                if (item) { text = item.path; Config.wallpaperDir = text; }
+                                            }
+                                            pathSuggestModel.clear(); focus = false; event.accepted = true;
+                                        }
+                                        onActiveFocusChanged: {
+                                            if (activeFocus) { pathSuggestProc.query = text; pathSuggestProc.running = false; pathSuggestProc.running = true; }
+                                        }
+                                        onTextChanged: {
+                                            Config.wallpaperDir = text;
+                                            if (activeFocus) { pathSuggestProc.query = text; pathSuggestProc.running = false; pathSuggestProc.running = true; }
+                                        }
+                                        Text {
+                                            text: "Enter directory..."
+                                            color: Qt.alpha(root.subtext0, 0.7)
+                                            visible: !parent.text && !parent.activeFocus; font: parent.font; anchors.verticalCenter: parent.verticalCenter
+                                        }
+                                    }
+                                }
+
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: wpDirInput.activeFocus && pathSuggestModel.count > 0 ? pathSuggestModel.count * root.s(28) + root.s(8) : 0
+                                    radius: root.s(Theme.radiusSm)
+                                    color: Theme.surfaceContainer
+                                    border.color: Theme.outlineVariant
+                                    border.width: 1
+                                    clip: true
+                                    Behavior on Layout.preferredHeight { NumberAnimation { duration: Theme.durMedium; easing.type: Easing.OutExpo } }
+                                    ListView {
+                                        id: wpSuggestListView
+                                        anchors.fill: parent; anchors.topMargin: root.s(4); anchors.bottomMargin: root.s(4)
+                                        model: pathSuggestModel; interactive: false
+                                        displayMarginBeginning: 0
+                                        displayMarginEnd: 0
+                                        opacity: parent.Layout.preferredHeight > root.s(10) ? 1.0 : 0.0
+                                        Behavior on opacity { NumberAnimation { duration: Theme.durShort } }
+                                        delegate: Rectangle {
+                                            width: parent.width - root.s(8); height: root.s(28)
+                                            anchors.horizontalCenter: parent.horizontalCenter; radius: root.s(Theme.radiusSm)
+                                            property bool isHovered: suggestMa.containsMouse
+                                            color: isHovered
+                                                ? Theme.stateLayer(root.mauve, Theme.stateHover)
+                                                : (ListView.isCurrentItem ? Theme.stateLayer(root.mauve, 0.10) : "transparent")
+                                            Behavior on color { ColorAnimation { duration: Theme.durShort } }
+                                            Text {
+                                                anchors.verticalCenter: parent.verticalCenter; x: root.s(8)
+                                                text: model.path; font.family: "Hack Nerd Font"; font.pixelSize: root.s(10)
+                                                color: root.text
+                                                elide: Text.ElideMiddle; width: parent.width - root.s(16)
+                                            }
+                                            MouseArea { id: suggestMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: { wpDirInput.text = model.path; pathSuggestModel.clear(); wpDirInput.focus = false; } }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // ── Current wallpaper (highlight 6) ─────────────────
+                    Rectangle {
+                        id: boxWall
+                        Layout.fillWidth: true
+                        Layout.minimumHeight: root.s(44)
+                        radius: root.s(Theme.radiusMd)
+                        implicitHeight: colWall.implicitHeight + root.s(Theme.gapSm) * 2
+                        property bool isActive: root.highlightedBox === 6
+                        color: boxWall.isActive
+                            ? Theme.stateLayer(root.peach, 0.14)
+                            : (wallHover.hovered ? Theme.stateLayer(root.peach, Theme.stateHover) : "transparent")
+                        border.width: boxWall.isActive ? 1 : 0
+                        border.color: root.peach
+                        Behavior on color { ColorAnimation { duration: Theme.durMedium; easing.type: Easing.OutExpo } }
+
+                        HoverHandler { id: wallHover }
+                        MouseArea { anchors.fill: parent; z: -1; onClicked: root.highlightedBox = 6 }
+
+                        ColumnLayout {
+                            id: colWall
+                            anchors.fill: parent
+                            anchors.topMargin: root.s(Theme.gapSm)
+                            anchors.bottomMargin: root.s(Theme.gapSm)
+                            spacing: root.s(Theme.gapMd)
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: root.s(Theme.gapMd)
+
+                                ColumnLayout {
+                                    Layout.fillWidth: true
+                                    Layout.alignment: Qt.AlignVCenter
+                                    spacing: root.s(Theme.gap2xs)
+                                    Text {
+                                        Layout.fillWidth: true
+                                        text: "Wallpaper"
+                                        font.family: "Hack Nerd Font"; font.weight: Font.Medium; font.pixelSize: root.s(12)
+                                        color: root.text
                                     }
                                     Text {
-                                        text: "Enter directory..."; color: box5.isActive ? Qt.alpha(root.base, 0.5) : root.subtext0
-                                        visible: !parent.text && !parent.activeFocus; font: parent.font; anchors.verticalCenter: parent.verticalCenter
+                                        Layout.fillWidth: true
+                                        text: "Current desktop background"
+                                        font.family: "Hack Nerd Font"; font.pixelSize: root.s(11)
+                                        color: root.subtext0
+                                        wrapMode: Text.WordWrap
+                                    }
+                                }
+
+                                // Botón de cambio: mismo toggle que SUPER+W (abre davincix)
+                                Rectangle {
+                                    Layout.alignment: Qt.AlignVCenter
+                                    width: root.s(34); height: root.s(34); radius: root.s(Theme.radiusFull)
+                                    color: wpChangeMa.pressed
+                                        ? Theme.stateLayer(root.peach, Theme.statePress)
+                                        : (wpChangeMa.containsMouse ? Theme.stateLayer(root.peach, Theme.stateHover) : Theme.surfaceContainerHighest)
+                                    border.color: wpChangeMa.containsMouse ? root.peach : Theme.outlineVariant
+                                    border.width: 1
+                                    scale: wpChangeMa.pressed ? 0.94 : 1.0
+                                    Behavior on scale { NumberAnimation { duration: Theme.durShort; easing.type: Easing.OutQuart } }
+                                    Behavior on color { ColorAnimation { duration: Theme.durShort } }
+                                    Behavior on border.color { ColorAnimation { duration: Theme.durShort } }
+                                    Text {
+                                        anchors.centerIn: parent; text: "󰏫"
+                                        font.family: "Hack Nerd Font"; font.pixelSize: root.s(16)
+                                        color: root.peach
+                                    }
+                                    MouseArea {
+                                        id: wpChangeMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                                        onClicked: { root.highlightedBox = 6; root.openWallpaperPicker(); }
                                     }
                                 }
                             }
+
+                            // Preview: inset frame (radiusMd) with a rounded alpha
+                            // mask so the Image follows the corner radius.
                             Rectangle {
+                                id: wpPreviewFrame
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: wpDirInput.activeFocus && pathSuggestModel.count > 0 ? pathSuggestModel.count * root.s(28) + root.s(8) : 0
-                                radius: root.s(15)
-                                color: box5.isActive ? Qt.alpha(root.base, 0.15) : root.surface0
-                                border.color: box5.isActive ? Qt.alpha(root.base, 0.3) : root.surface1
+                                Layout.preferredHeight: root.s(360)
+                                radius: root.s(Theme.radiusMd)
+                                color: Theme.surfaceContainer
+                                border.color: Theme.outlineVariant
                                 border.width: 1
-                                clip: true
-                                Behavior on Layout.preferredHeight { NumberAnimation { duration: 250; easing.type: Easing.OutExpo } }
-                                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                                ListView {
-                                    id: wpSuggestListView
-                                    anchors.fill: parent; anchors.topMargin: root.s(4); anchors.bottomMargin: root.s(4)
-                                    model: pathSuggestModel; interactive: false
-                                    opacity: parent.Layout.preferredHeight > root.s(10) ? 1.0 : 0.0
-                                    Behavior on opacity { NumberAnimation { duration: 200 } }
-                                    delegate: Rectangle {
-                                        width: parent.width - root.s(8); height: root.s(28)
-                                        anchors.horizontalCenter: parent.horizontalCenter; radius: root.s(18)
-                                        property bool isHovered: suggestMa.containsMouse
-                                        color: isHovered
-                                            ? Qt.alpha(box5.isActive ? root.base : root.mauve, 0.2)
-                                            : (ListView.isCurrentItem ? Qt.alpha(box5.isActive ? root.base : root.mauve, 0.1) : "transparent")
-                                        Behavior on color { ColorAnimation { duration: 150 } }
-                                        Text {
-                                            anchors.verticalCenter: parent.verticalCenter; x: root.s(8)
-                                            text: model.path; font.family: "Hack Nerd Font"; font.pixelSize: root.s(10)
-                                            color: box5.isActive ? root.base : root.text
-                                            elide: Text.ElideMiddle; width: parent.width - root.s(16)
-                                            Behavior on color { ColorAnimation { duration: 150 } }
-                                        }
-                                        MouseArea { id: suggestMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: { wpDirInput.text = model.path; pathSuggestModel.clear(); wpDirInput.focus = false; } }
+
+                                Item {
+                                    id: wpPreviewLayer
+                                    anchors.fill: parent
+                                    anchors.margins: 1
+                                    layer.enabled: true
+                                    layer.effect: MultiEffect {
+                                        maskEnabled: true
+                                        maskSource: wpPreviewMask
+                                    }
+
+                                    Image {
+                                        id: wpPreviewImage
+                                        anchors.fill: parent
+                                        source: "file://" + root.currentWallpaperPath + "?v=" + root.wpCacheBust
+                                        fillMode: Image.PreserveAspectCrop
+                                        asynchronous: true
+                                        cache: false
+                                        visible: status === Image.Ready
                                     }
                                 }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // ── Box 4: Workspaces ────────────────────────────────────
-            Rectangle {
-                id: box6
-                Layout.fillHeight: true
-                Layout.fillWidth: true
-                Layout.preferredHeight: col6ws.implicitHeight + root.s(32)
-                radius: root.s(26)
-
-                property bool isActive: root.highlightedBox === 4
-                color: isActive ? root.red : root.surface0
-                border.color: isActive ? root.red : root.surface1
-                border.width: 1
-                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-
-                MouseArea { anchors.fill: parent; onClicked: root.highlightedBox = 4; z: -1 }
-
-                ColumnLayout {
-                    id: col6ws
-                    anchors.top: parent.top; anchors.left: parent.left; anchors.right: parent.right; anchors.margins: root.s(16)
-                    RowLayout {
-                        Layout.fillWidth: true; spacing: root.s(14)
-                        Item {
-                            Layout.preferredWidth: root.s(22); Layout.alignment: Qt.AlignVCenter
-                            Text {
-                                anchors.centerIn: parent; text: "󰽿"; font.family: "Hack Nerd Font"; font.pixelSize: root.s(18)
-                                color: box6.isActive ? root.base : root.red
-                                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                            }
-                        }
-                        ColumnLayout {
-                            Layout.fillWidth: true; Layout.alignment: Qt.AlignVCenter; spacing: root.s(3)
-                            Text {
-                                text: "Workspaces"; font.family: "Inter"; font.weight: Font.Bold; font.pixelSize: root.s(14)
-                                color: box6.isActive ? root.base : root.text; Layout.fillWidth: true
-                                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                            }
-                            Text {
-                                text: "Static count in topbar"; font.family: "Inter"; font.pixelSize: root.s(11)
-                                color: box6.isActive ? Qt.alpha(root.base, 0.75) : Qt.alpha(root.subtext0, 0.7); Layout.fillWidth: true
-                                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                            }
-                        }
-                        RowLayout {
-                            Layout.alignment: Qt.AlignVCenter | Qt.AlignRight; spacing: root.s(10)
-                            Rectangle {
-                                width: root.s(28); height: root.s(28); radius: root.s(22)
-                                color: wsMinusMa.pressed ? Qt.alpha(root.base, 0.3) : (wsMinusMa.containsMouse ? Qt.alpha(root.base, 0.2) : Qt.alpha(root.base, 0.15))
-                                scale: wsMinusMa.pressed ? 0.90 : (wsMinusMa.containsMouse ? 1.08 : 1.0)
-                                Behavior on scale { NumberAnimation { duration: 200; easing.type: Easing.OutQuart } }
-                                Behavior on color { ColorAnimation { duration: 200 } }
-                                Text {
-                                    anchors.centerIn: parent; text: "-"
-                                    font.family: "Hack Nerd Font"; font.weight: Font.Bold; font.pixelSize: root.s(15)
-                                    color: box6.isActive ? root.base : root.red
-                                    Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
+                                Rectangle {
+                                    id: wpPreviewMask
+                                    anchors.fill: parent
+                                    anchors.margins: 1
+                                    radius: Math.max(0, wpPreviewFrame.radius - 1)
+                                    visible: false
+                                    layer.enabled: true
                                 }
-                                MouseArea { id: wsMinusMa; anchors.fill: parent; hoverEnabled: true; onClicked: Config.workspaceCount = Math.max(2, Config.workspaceCount - 1) }
-                            }
-                            Text { 
-                                text: Config.workspaceCount.toString()
-                                font.family: "Hack Nerd Font"; font.weight: Font.Black; font.pixelSize: root.s(14)
-                                color: box6.isActive ? root.base : root.red
-                                Layout.minimumWidth: root.s(36); horizontalAlignment: Text.AlignHCenter
-                                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                            }
-                            Rectangle {
-                                width: root.s(28); height: root.s(28); radius: root.s(22)
-                                color: wsPlusMa.pressed ? Qt.alpha(root.base, 0.3) : (wsPlusMa.containsMouse ? Qt.alpha(root.base, 0.2) : Qt.alpha(root.base, 0.15))
-                                scale: wsPlusMa.pressed ? 0.90 : (wsPlusMa.containsMouse ? 1.08 : 1.0)
-                                Behavior on scale { NumberAnimation { duration: 200; easing.type: Easing.OutQuart } }
-                                Behavior on color { ColorAnimation { duration: 200 } }
                                 Text {
-                                    anchors.centerIn: parent; text: "+"
-                                    font.family: "Hack Nerd Font"; font.weight: Font.Bold; font.pixelSize: root.s(15)
-                                    color: box6.isActive ? root.base : root.red
-                                    Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
+                                    anchors.centerIn: parent
+                                    text: "No wallpaper set"
+                                    visible: wpPreviewImage.status === Image.Error || wpPreviewImage.status === Image.Null
+                                    font.family: "Hack Nerd Font"; font.pixelSize: root.s(11)
+                                    color: Qt.alpha(root.subtext0, 0.6)
                                 }
-                                MouseArea { id: wsPlusMa; anchors.fill: parent; hoverEnabled: true; onClicked: Config.workspaceCount = Math.min(10, Config.workspaceCount + 1) }
                             }
                         }
                     }
                 }
             }
-
-            // -- Box 5: App scale ------------------------------------
-            Rectangle {
-                id: box7
-                Layout.fillHeight: true
-                property bool isActive: root.highlightedBox === 5
-                Layout.fillWidth: true
-                Layout.preferredHeight: appScaleRow.implicitHeight + root.s(28)
-                radius: root.s(26)
-                color: isActive ? root.sapphire : root.surface0
-                border.color: isActive ? root.sapphire : root.surface1
-                border.width: 1
-                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-
-                MouseArea { anchors.fill: parent; onClicked: root.highlightedBox = 5; z: -1 }
-
-                RowLayout {
-                    id: appScaleRow
-                    anchors.top: parent.top
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.margins: root.s(16)
-                    spacing: root.s(14)
-                    Item {
-                        Layout.preferredWidth: root.s(22)
-                        Layout.alignment: Qt.AlignVCenter
-                        Text {
-                            anchors.centerIn: parent
-                            text: ""
-                            font.family: "Hack Nerd Font"; font.pixelSize: root.s(18)
-                            color: box7.isActive ? root.base : root.sapphire
-                            Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                        }
-                    }
-                    ColumnLayout {
-                        Layout.fillWidth: true
-                        Layout.alignment: Qt.AlignVCenter
-                        spacing: root.s(3)
-                        Text {
-                            text: "App scale"
-                            font.family: "Inter"; font.weight: Font.Medium; font.pixelSize: root.s(14)
-                            color: box7.isActive ? root.base : root.text
-                            Layout.fillWidth: true
-                            Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                        }
-                        Text {
-                            text: "GTK / Electron apps. Restart them to apply."
-                            font.family: "Inter"; font.pixelSize: root.s(11)
-                            color: box7.isActive ? Qt.alpha(root.base, 0.75) : Qt.alpha(root.subtext0, 0.7)
-                            Layout.fillWidth: true
-                            Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                        }
-                    }
-                    RowLayout {
-                        Layout.alignment: Qt.AlignVCenter | Qt.AlignRight; spacing: root.s(10)
-                        Rectangle {
-                            width: root.s(28); height: root.s(28); radius: root.s(22)
-                            color: asMinusMa.pressed ? Qt.alpha(root.base, 0.3) : (asMinusMa.containsMouse ? Qt.alpha(root.base, 0.2) : Qt.alpha(root.base, 0.15))
-                            scale: asMinusMa.pressed ? 0.90 : (asMinusMa.containsMouse ? 1.08 : 1.0)
-                            Behavior on scale { NumberAnimation { duration: 200; easing.type: Easing.OutQuart } }
-                            Behavior on color { ColorAnimation { duration: 200 } }
-                            Text {
-                                anchors.centerIn: parent; text: "-"
-                                font.family: "Hack Nerd Font"; font.weight: Font.Bold; font.pixelSize: root.s(15)
-                                color: box7.isActive ? root.base : root.sapphire
-                                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                            }
-                            MouseArea { id: asMinusMa; anchors.fill: parent; hoverEnabled: true; onClicked: root.appScaleStep(-1) }
-                        }
-                        Text {
-                            text: Config.appScale.toFixed(2) + "x"
-                            font.family: "Hack Nerd Font"; font.weight: Font.Black; font.pixelSize: root.s(14)
-                            color: box7.isActive ? root.base : root.sapphire
-                            Layout.minimumWidth: root.s(46); horizontalAlignment: Text.AlignHCenter
-                            Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                        }
-                        Rectangle {
-                            width: root.s(28); height: root.s(28); radius: root.s(22)
-                            color: asPlusMa.pressed ? Qt.alpha(root.base, 0.3) : (asPlusMa.containsMouse ? Qt.alpha(root.base, 0.2) : Qt.alpha(root.base, 0.15))
-                            scale: asPlusMa.pressed ? 0.90 : (asPlusMa.containsMouse ? 1.08 : 1.0)
-                            Behavior on scale { NumberAnimation { duration: 200; easing.type: Easing.OutQuart } }
-                            Behavior on color { ColorAnimation { duration: 200 } }
-                            Text {
-                                anchors.centerIn: parent; text: "+"
-                                font.family: "Hack Nerd Font"; font.weight: Font.Bold; font.pixelSize: root.s(15)
-                                color: box7.isActive ? root.base : root.sapphire
-                                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                            }
-                            MouseArea { id: asPlusMa; anchors.fill: parent; hoverEnabled: true; onClicked: root.appScaleStep(1) }
-                        }
-                    }
-                }
-            }
-
-            // ── Box 6: Current wallpaper ─────────────────────────────
-            Rectangle {
-                id: boxWall
-                Layout.fillWidth: true
-                Layout.columnSpan: 2
-                Layout.preferredHeight: colWall.implicitHeight + root.s(32)
-                radius: root.s(26)
-
-                property bool isActive: root.highlightedBox === 6
-                color: isActive ? root.peach : root.surface0
-                border.color: isActive ? root.peach : root.surface1
-                border.width: 1
-                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-
-                MouseArea { anchors.fill: parent; onClicked: root.highlightedBox = 6; z: -1 }
-
-                ColumnLayout {
-                    id: colWall
-                    anchors.top: parent.top; anchors.left: parent.left; anchors.right: parent.right; anchors.margins: root.s(16)
-                    spacing: root.s(16)
-                    RowLayout {
-                        Layout.fillWidth: true; spacing: root.s(14)
-                        Item {
-                            Layout.preferredWidth: root.s(22); Layout.alignment: Qt.AlignVCenter
-                            Text {
-                                anchors.centerIn: parent; text: "󰋩"
-                                font.family: "Hack Nerd Font"; font.pixelSize: root.s(18)
-                                color: boxWall.isActive ? root.base : root.peach
-                                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                            }
-                        }
-                        ColumnLayout {
-                            Layout.fillWidth: true; Layout.alignment: Qt.AlignVCenter; spacing: root.s(3)
-                            Text {
-                                text: "Wallpaper"; font.family: "Inter"; font.weight: Font.Medium; font.pixelSize: root.s(14)
-                                color: boxWall.isActive ? root.base : root.text; Layout.fillWidth: true
-                                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                            }
-                            Text {
-                                text: "Current desktop background"; font.family: "Inter"; font.pixelSize: root.s(11)
-                                color: boxWall.isActive ? Qt.alpha(root.base, 0.75) : Qt.alpha(root.subtext0, 0.7); Layout.fillWidth: true
-                                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                            }
-                        }
-                        // Botón de cambio: mismo toggle que SUPER+W (abre davincix)
-                        Rectangle {
-                            Layout.alignment: Qt.AlignVCenter
-                            width: root.s(34); height: root.s(34); radius: root.s(22)
-                            color: wpChangeMa.pressed
-                                ? Qt.alpha(root.base, 0.35)
-                                : (wpChangeMa.containsMouse ? Qt.alpha(root.base, 0.25) : Qt.alpha(root.base, 0.15))
-                            border.color: wpChangeMa.containsMouse ? (boxWall.isActive ? root.base : root.peach) : "transparent"
-                            border.width: 1
-                            scale: wpChangeMa.pressed ? 0.90 : (wpChangeMa.containsMouse ? 1.08 : 1.0)
-                            Behavior on scale { NumberAnimation { duration: 200; easing.type: Easing.OutQuart } }
-                            Behavior on color { ColorAnimation { duration: 200 } }
-                            Behavior on border.color { ColorAnimation { duration: 200 } }
-                            Text {
-                                anchors.centerIn: parent; text: "󰏫"
-                                font.family: "Hack Nerd Font"; font.pixelSize: root.s(16)
-                                color: boxWall.isActive ? root.base : root.peach
-                                Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                            }
-                            MouseArea {
-                                id: wpChangeMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
-                                onClicked: { root.highlightedBox = 6; root.openWallpaperPicker(); }
-                            }
-                        }
-                    }
-                    Rectangle {
-                        id: wpPreviewFrame
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: root.s(420)
-                        radius: root.s(18)
-                        color: boxWall.isActive ? Qt.alpha(root.base, 0.15) : root.surface1
-                        border.color: boxWall.isActive ? Qt.alpha(root.base, 0.3) : root.surface2
-                        border.width: 1
-                        Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-
-                        // La Image no hereda el radius del frame: se recorta con
-                        // MultiEffect (mismo patrón que MusicPopup/Lock) usando un
-                        // rectángulo redondeado invisible como máscara alpha.
-                        Item {
-                            id: wpPreviewLayer
-                            anchors.fill: parent
-                            layer.enabled: true
-                            layer.effect: MultiEffect {
-                                maskEnabled: true
-                                maskSource: wpPreviewMask
-                            }
-
-                            Image {
-                                id: wpPreviewImage
-                                anchors.fill: parent
-                                source: "file://" + root.currentWallpaperPath + "?v=" + root.wpCacheBust
-                                fillMode: Image.PreserveAspectCrop
-                                asynchronous: true
-                                cache: false
-                                visible: status === Image.Ready
-                            }
-                        }
-                        Rectangle {
-                            id: wpPreviewMask
-                            anchors.fill: parent
-                            radius: wpPreviewFrame.radius
-                            visible: false
-                            layer.enabled: true
-                        }
-                        Text {
-                            anchors.centerIn: parent
-                            text: "No wallpaper set"
-                            visible: wpPreviewImage.status === Image.Error || wpPreviewImage.status === Image.Null
-                            font.family: "Inter"; font.pixelSize: root.s(11)
-                            color: boxWall.isActive ? Qt.alpha(root.base, 0.6) : Qt.alpha(root.subtext0, 0.6)
-                            Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.OutExpo } }
-                        }
-                    }
-                }
-            }
-
-
         }
-    }        
+    }
 }

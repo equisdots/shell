@@ -122,7 +122,7 @@ PanelWindow {
         // t.comp is a URL STRING from WindowRegistry — it has no createObject.
         // Create a real Component first (the old code called createObject on the
         // string, which always threw and silently killed the whole preload).
-        let comp = Qt.createComponent(Qt.resolvedUrl("../" + t.comp));
+        let comp = Qt.createComponent(compUrl(t.comp));
         if (!comp) return;
         // El Component se mantiene vivo mientras existan sus objetos: destruirlo
         // invalidaba el contexto de los widgets creados (QQmlVMEMetaObject:
@@ -348,14 +348,56 @@ PanelWindow {
         let sw = masterWindow.screen ? masterWindow.screen.width  : masterWindow.width;
         let sh = masterWindow.screen ? masterWindow.screen.height : masterWindow.height;
         let pos = userWidgetPosition(name);
-        let key = name + "|" + sw + "|" + sh + "|" + masterWindow.globalUiScale + "|" + pos;
+        let key = name + "|" + sw + "|" + sh + "|" + masterWindow.globalUiScale + "|" + pos
+                  + "|" + PluginsCatalog.rev;
         if (_layoutCacheKey === key) return _layoutCache[key];
         let result = Registry.getLayout(name, 0, 0, sw, sh, masterWindow.globalUiScale);
+        if (!result) result = pluginPanelLayout(name, sw, sh);
         result = Registry.positionLayout(result, pos, sw, sh, masterWindow.globalUiScale);
         _layoutCache = {};
         _layoutCache[key] = result;
         _layoutCacheKey = key;
         return result;
+    }
+
+    // Plugin panels (equisdots plugin standard → provides.panels): a plugin
+    // declares `provides.panels.<name> = { comp, w, h, label? }` (comp is
+    // relative to the plugin UI root; w/h use the same 1920x1080 base units as
+    // the core registry). Enabled, compatible plugins only; the core never
+    // knows plugin ids.
+    function pluginPanelEntry(name) {
+        let list = PluginsCatalog.plugins || [];
+        for (let i = 0; i < list.length; i++) {
+            let p = list[i] || {};
+            if (p.enabled !== true) continue;
+            if (p.compat && p.compat.ok === false) continue;
+            let panels = (p.provides && typeof p.provides === "object") ? p.provides.panels : null;
+            if (panels && typeof panels === "object" && panels[name]) return { p: p, e: panels[name] };
+        }
+        return null;
+    }
+
+    function pluginPanelLayout(name, sw, sh) {
+        let hit = pluginPanelEntry(name);
+        if (!hit) return null;
+        let e = hit.e || {};
+        if (!e.comp) return null;
+        let scale = Registry.getScale(sw, sh, masterWindow.globalUiScale);
+        let w = Math.max(1, Registry.s(Number(e.w) > 0 ? Number(e.w) : 600, scale));
+        let h = Math.max(1, Registry.s(Number(e.h) > 0 ? Number(e.h) : 400, scale));
+        let comp = PluginsCatalog.isManaged(hit.p)
+            ? "ui/plugins/" + hit.p.id + "/" + String(e.comp).replace(/^\.\//, "")
+            : PluginsCatalog.uiPath(hit.p, e.comp);
+        return { w: w, h: h, rx: Math.floor((sw - w) / 2), ry: Math.floor((sh - h) / 2), comp: comp };
+    }
+
+    // Panel comp → URL: root-relative for managed plugins (inside the shell
+    // tree), file:// for user plugins (their own folder).
+    function compUrl(comp) {
+        comp = String(comp || "");
+        if (comp === "") return "";
+        if (comp.charAt(0) === "/") return "file://" + comp;
+        return Qt.resolvedUrl("../" + comp);
     }
 
     Connections {
@@ -640,9 +682,9 @@ PanelWindow {
             }
         } else {
             if (immediate) {
-                widgetStack.replace(Qt.resolvedUrl("../" + t.comp), {}, StackView.Immediate);
+                widgetStack.replace(compUrl(t.comp), {}, StackView.Immediate);
             } else {
-                widgetStack.replace(Qt.resolvedUrl("../" + t.comp), {});
+                widgetStack.replace(compUrl(t.comp), {});
             }
         }
 

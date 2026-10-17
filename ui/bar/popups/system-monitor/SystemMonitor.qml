@@ -169,7 +169,7 @@ Item {
                 ctx.lineWidth = window.s(7)
                 ctx.beginPath()
                 ctx.arc(cX, cY, rad, 0, 2 * Math.PI)
-                ctx.strokeStyle = window.surface0.toString()
+                ctx.strokeStyle = Theme.surfaceContainer.toString()
                 ctx.stroke()
 
                 var grad = ctx.createLinearGradient(0, height, width, 0)
@@ -190,7 +190,7 @@ Item {
 
             RowLayout {
                 Layout.alignment: Qt.AlignHCenter
-                spacing: window.s(4)
+                spacing: window.s(Theme.gapXs)
                 Text {
                     text: gauge.glyph
                     font.family: window.fontFamily
@@ -236,17 +236,17 @@ Item {
         property string value: ""
         property color accent: window.mauve
 
-        radius: window.s(12)
-        color: window.surface0
-        border.color: window.surface1
+        radius: window.s(Theme.radiusMd)
+        color: Theme.surfaceContainer
+        border.color: Theme.outlineVariant
         border.width: 1
         implicitHeight: window.s(58)
 
         RowLayout {
             anchors.fill: parent
-            anchors.leftMargin: window.s(12)
-            anchors.rightMargin: window.s(12)
-            spacing: window.s(10)
+            anchors.leftMargin: window.s(Theme.gapMd)
+            anchors.rightMargin: window.s(Theme.gapMd)
+            spacing: window.s(Theme.gapSm)
 
             Text {
                 text: chip.glyph
@@ -286,23 +286,23 @@ Item {
     // =========================================================================
     Rectangle {
         anchors.fill: parent
-        radius: window.s(22)
-        color: window.base
-        border.color: window.surface0
+        radius: window.s(Theme.radiusLg)
+        color: Theme.surfaceContainerLow
+        border.color: Theme.outlineVariant
         border.width: 1
         clip: true
 
         ColumnLayout {
             anchors.fill: parent
-            anchors.margins: window.s(22)
-            spacing: window.s(14)
+            anchors.margins: window.s(Theme.gapXl)
+            spacing: window.s(Theme.gapMd)
             opacity: window.intro
             transform: Translate { y: window.s(14) * (1 - window.intro) }
 
             // --- header ---
             RowLayout {
                 Layout.fillWidth: true
-                spacing: window.s(10)
+                spacing: window.s(Theme.gapSm)
 
                 Text {
                     text: "\uF109"
@@ -333,8 +333,8 @@ Item {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 columns: 2
-                rowSpacing: window.s(16)
-                columnSpacing: window.s(16)
+                rowSpacing: window.s(Theme.gapLg)
+                columnSpacing: window.s(Theme.gapLg)
 
                 RingGauge {
                     Layout.fillWidth: true
@@ -378,7 +378,7 @@ Item {
             // --- footer stats ---
             RowLayout {
                 Layout.fillWidth: true
-                spacing: window.s(12)
+                spacing: window.s(Theme.gapMd)
 
                 StatChip {
                     Layout.fillWidth: true

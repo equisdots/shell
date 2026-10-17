@@ -1,4 +1,5 @@
 import QtQuick
+import "../../../core"
 
 // Opción segmentada del BarEditor (Fase 4: familia GuidePopup).
 // Inactiva: alpha(surface0, 0.4) + borde surface1; hover: alpha(mauve, 0.12) +
@@ -15,16 +16,16 @@ Rectangle {
 
     height: bar ? bar.s(34) : 34
     implicitWidth: txt.implicitWidth + (bar ? bar.s(24) : 24)
-    radius: bar ? bar.s(18) : 18
+    radius: bar ? bar.s(Theme.radiusLg) : Theme.radiusLg
     color: !bar ? "transparent"
         : (pill.accentFill || pill.active)
             ? bar.colors.mauve
-            : (pillMa.containsMouse ? Qt.alpha(bar.colors.mauve, 0.12) : Qt.alpha(bar.colors.surface0, 0.4))
+            : (pillMa.containsMouse ? Theme.stateLayer(bar.colors.mauve, Theme.stateHover) : Theme.surfaceContainerLow)
     border.width: 1
     border.color: !bar ? "transparent"
         : (pill.accentFill || pill.active)
             ? bar.colors.mauve
-            : (pillMa.containsMouse ? bar.colors.mauve : bar.colors.surface1)
+            : (pillMa.containsMouse ? bar.colors.mauve : Theme.outlineVariant)
     scale: pillMa.pressed ? 0.95 : 1.0
     Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutQuart } }
     Behavior on color { ColorAnimation { duration: 150 } }

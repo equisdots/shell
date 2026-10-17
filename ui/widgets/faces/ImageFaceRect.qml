@@ -30,9 +30,11 @@ Item {
         return "file://" + p;
     }
 
-    Rectangle {
+    GlassCard {
         anchors.fill: parent
-        color: (root.path === "" || artImg.status !== Image.Ready) ? Theme.surface0 : "transparent"
+        fill: (root.path === "" || artImg.status !== Image.Ready) ? Theme.widgetFill : "transparent"
+        hairline: (root.path === "" || artImg.status !== Image.Ready) ? Theme.widgetHairline : "transparent"
+        cornerRadius: 0
         clip: true
 
         AnimatedImage {

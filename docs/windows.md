@@ -21,8 +21,9 @@ Windows mounted by `Shell.qml`:
 - **`ui/widgets/Widgets.qml`** — the desktop-widget system (one `WidgetLoader`
   per screen, Bottom-layer windows). See `docs/desktop-widgets.md`.
 - **`Lock.qml`** (repo root, alternate entry) — PAM session lock (`WlSessionLock`).
-- **`ui/ScreenshotOverlay.qml`** — region selection, recording controls, QR
-  scan, magnifier.
+- **Screenshots overlay** (`ui/plugins/screenshots/ui/`) — region selection,
+  recording controls, QR scan, magnifier; ships with the `screenshots` plugin
+  (`equisdots/plugins` → `plugins/screenshots`), installed by default.
 
 Shared services live in `core/`: `Config` (settings.json), `Caching`
 (cache/run/state paths), `Scaler`, `Theme`, `SysData`, `Cava`, `WidgetSync`,
@@ -42,16 +43,16 @@ dispatch through `qs_manager.sh` → `Main.qml` → `core/WindowRegistry.js`:
 | Network | `ui/bar/popups/network/NetworkPopup.qml` | SUPER + N | Top right |
 | Volume | `ui/bar/popups/volume/VolumePopup.qml` | SUPER + V | Top right |
 | App Launcher | `ui/bar/popups/applauncher/appLauncher.qml` | SUPER + D | Center |
-| Clipboard | `ui/panels/clipboard/ClipboardManager.qml` | SUPER + C | Center |
-| Calendar | `ui/timex/TimexPopup.qml` (timex subsystem) | SUPER + S | Top center |
+| Clipboard | `ui/plugins/clipboard/ui/ClipboardManager.qml` (clipboard plugin panel) | SUPER + C | Center |
+| Calendar | `ui/plugins/timex/ui/TimexPopup.qml` (timex plugin panel) | SUPER + S | Top center |
 | Music Player | `ui/bar/popups/music/MusicPopup.qml` | SUPER + M | Top left |
 | Davincix (wallpaper) | `ui/panels/davincix/DavincixPicker.qml` | SUPER + W | Center |
 | About | Settings panel, About tab (`ui/bar/editor/GuidePage.qml`) | SUPER + H | Center |
 | System Monitor | `ui/bar/popups/system-monitor/SystemMonitor.qml` | SUPER + I | Center |
 | Updater | `ui/bar/popups/updater/UpdaterPopup.qml` | SUPER + U | Center |
-| Quick Notes | `ui/panels/quicknotes/QuickNotes.qml` | SUPER + Y | Center |
-| RSS Reader | `ui/panels/rss-reader/RssReader.qml` | SUPER + O | Center |
-| File Search | `ui/panels/file-search/FileSearch.qml` | SUPER + ' | Center |
+| Quick Notes | `ui/plugins/quicknotes/ui/QuickNotes.qml` (quicknotes plugin panel) | SUPER + Y | Center |
+| RSS Reader | `ui/plugins/rss-reader/ui/RssReader.qml` (rss-reader plugin panel) | SUPER + O | Center |
+| File Search | `ui/plugins/file-search/ui/FileSearch.qml` (file-search plugin panel) | SUPER + ' | Center |
 | Focus Time | `ui/panels/focustime/FocusTimePopup.qml` | SUPER + SHIFT + T | Center |
 | Display Scale | `ui/panels/scale/ScalePicker.qml` | SUPER + Z | Center |
 | Idle | `ui/panels/idle/IdlePopup.qml` | SUPER + P | Center |
@@ -95,14 +96,15 @@ same config: each island capsule (`ui/bar/Zone.qml`) and the optional strip
 swallow clicks. Notifications and the lock screen are separate surfaces and
 are not covered.
 
-## Mascots
+## Host overlays (Nyx)
 
-The click-through island / notch is the standalone **Nyx** module (deployed to
-`ui/nyx/`, wrapped by `ui/Mascots.qml`, which injects the palette, the paths and
-the discovered catalogs). Its species and the notch "cards" are **discovered
-from folders** and edited from Theme → Mascots (ordered lineup with drag-and-drop
-reordering). See `docs/mascots.md` for the shell integration (discovery, cards,
-editor) and `ui/nyx/README.md` for the overlay API and species authoring.
+Installed plugins may ship a host adapter (manifest `host` entry) that the
+shell mounts generically (`ui/PluginHosts.qml`); Nyx — the click-through
+island/notch — is the first one, with its species and notch "cards"
+**discovered from provider plugins and user folders** and edited from
+Plugins → Nyx (ordered lineup with drag-and-drop reordering). Hosts publish
+`frameObstacle` rects consumed by the Frame (see above). See the Nyx docs
+(`equisdots/nyx` → `docs/shell-integration.md` and `ui/plugins/nyx/README.md`).
 
 ## Glassmorphism
 

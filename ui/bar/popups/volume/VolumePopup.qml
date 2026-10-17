@@ -239,16 +239,16 @@ Item {
 
         Rectangle {
             anchors.fill: parent
-            radius: window.s(26)
-            color: window.base
-            border.color: window.surface0
+            radius: window.s(Theme.radiusLg)
+            color: Theme.surfaceContainerLow
+            border.color: Theme.outlineVariant
             border.width: 1
             clip: true
 
             ColumnLayout {
                 anchors.fill: parent
-                anchors.margins: window.s(25)
-                spacing: window.s(20)
+                anchors.margins: window.s(Theme.gapXl)
+                spacing: window.s(Theme.gapLg)
 
                 // ==========================================
                 // HERO ORB & MASTER SLIDER (TOP SECTION)
@@ -261,7 +261,7 @@ Item {
 
                     RowLayout {
                         anchors.fill: parent
-                        spacing: window.s(25)
+                        spacing: window.s(Theme.gapXl)
 
                         // 1. The Orb
                         Item {
@@ -467,7 +467,7 @@ Item {
                         ColumnLayout {
                             Layout.fillWidth: true
                             Layout.fillHeight: true
-                            spacing: window.s(10)
+                            spacing: window.s(Theme.gapSm)
 
                             ColumnLayout {
                                 spacing: window.s(2)
@@ -489,7 +489,7 @@ Item {
 
                             RowLayout {
                                 Layout.fillWidth: true
-                                spacing: window.s(15)
+                                spacing: window.s(Theme.gapLg)
 
                                 // Slider
                                 Item {
@@ -513,14 +513,14 @@ Item {
                                     }
 
                                     Rectangle {
-                                        anchors.fill: parent; radius: window.s(16)
-                                        color: "#0dffffff"; border.color: "#1affffff"; border.width: 1
+                                        anchors.fill: parent; radius: Theme.radiusFull
+                                        color: Theme.surfaceContainer; border.color: Theme.outlineVariant; border.width: 1
                                         clip: true
 
                                         Rectangle {
                                             height: parent.height
                                             width: parent.width * (Math.min(100, window.activeVol) / 100)
-                                            radius: window.s(16)
+                                            radius: Theme.radiusFull
                                             opacity: window.activeMute ? 0.3 : (masterSliderMa.containsMouse ? 1.0 : 0.85)
                                             Behavior on opacity { NumberAnimation { duration: 200 } }
                                             Behavior on width { enabled: !window.draggingMaster; NumberAnimation { duration: 300; easing.type: Easing.OutQuint } }
@@ -560,9 +560,9 @@ Item {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: window.s(54)
-                    radius: window.s(18)
-                    color: "#0dffffff" 
-                    border.color: "#1affffff"
+                    radius: window.s(Theme.radiusMd)
+                    color: Theme.surfaceContainer
+                    border.color: Theme.outlineVariant
                     border.width: 1
                     opacity: introHeader
                     transform: Translate { y: window.s(20) * (1.0 - introHeader) }
@@ -571,7 +571,7 @@ Item {
                         width: (parent.width - window.s(2)) / 3 
                         height: parent.height - window.s(2)
                         y: window.s(1)
-                        radius: window.s(13)
+                        radius: window.s(Theme.radiusSm)
                         x: {
                             if (window.activeTab === "outputs") return window.s(1);
                             if (window.activeTab === "inputs") return width + window.s(1);
@@ -642,7 +642,7 @@ Item {
                     ListView {
                         id: contentList
                         anchors.fill: parent
-                        spacing: window.s(12)
+                        spacing: window.s(Theme.gapMd)
                         clip: true
                         boundsBehavior: Flickable.StopAtBounds
 
@@ -666,7 +666,7 @@ Item {
                             visible: contentList.count === 0
                             ColumnLayout {
                                 anchors.centerIn: parent
-                                spacing: window.s(10)
+                                spacing: window.s(Theme.gapSm)
                                 Text { Layout.alignment: Qt.AlignHCenter; font.family: "Hack Nerd Font"; font.pixelSize: window.s(32); color: window.surface2; text: "󰖁" }
                                 Text { Layout.alignment: Qt.AlignHCenter; font.family: "Hack Nerd Font"; font.pixelSize: window.s(14); color: window.overlay0; text: "No active streams" }
                             }
@@ -695,12 +695,12 @@ Item {
                             height: isActiveNode ? window.s(60) : window.s(100)
                             Behavior on height { NumberAnimation { duration: 400; easing.type: Easing.OutQuint } }
 
-                            radius: window.s(18)
+                            radius: window.s(Theme.radiusMd)
                             
                             property bool isHovered: cardMa.containsMouse && !isActiveNode
 
-                            color: isActiveNode ? window.tabColor : (isHovered ? "#0affffff" : "#05ffffff")
-                            border.color: isActiveNode ? window.tabColor : "#1affffff"
+                            color: isActiveNode ? window.tabColor : (isHovered ? Theme.stateLayer(window.tabColor, Theme.stateHover) : Theme.surfaceContainer)
+                            border.color: isActiveNode ? window.tabColor : Theme.outlineVariant
                             border.width: isActiveNode ? 2 : 1
                             Behavior on border.color { ColorAnimation { duration: 300 } }
                             Behavior on color { ColorAnimation { duration: 300 } }
@@ -722,16 +722,16 @@ Item {
 
                             ColumnLayout {
                                 anchors.fill: parent
-                                anchors.leftMargin: window.s(16)
-                                anchors.rightMargin: window.s(16)
-                                anchors.topMargin: window.s(12)
-                                anchors.bottomMargin: isActiveNode ? window.s(12) : window.s(16) // Prevent slider crowding bottom bounds
-                                spacing: window.s(12)
+                                anchors.leftMargin: window.s(Theme.gapLg)
+                                anchors.rightMargin: window.s(Theme.gapLg)
+                                anchors.topMargin: window.s(Theme.gapMd)
+                                anchors.bottomMargin: isActiveNode ? window.s(Theme.gapMd) : window.s(Theme.gapLg) // Prevent slider crowding bottom bounds
+                                spacing: window.s(Theme.gapMd)
 
                                 // Top row: Text info and Icon
                                 RowLayout {
                                     Layout.fillWidth: true
-                                    spacing: window.s(12)
+                                    spacing: window.s(Theme.gapMd)
 
                                     Text {
                                         font.family: "Hack Nerd Font"; font.pixelSize: window.s(22)
@@ -766,14 +766,14 @@ Item {
                                 // Bottom row: Custom Slider & Mute (Hides if it's the active node)
                                 RowLayout {
                                     Layout.fillWidth: true
-                                    spacing: window.s(15)
+                                    spacing: window.s(Theme.gapLg)
                                     visible: !isActiveNode
                                     opacity: isActiveNode ? 0.0 : 1.0
                                     Behavior on opacity { NumberAnimation { duration: 200 } }
 
                                     Rectangle {
-                                        Layout.preferredWidth: window.s(32); Layout.preferredHeight: window.s(32); radius: window.s(21)
-                                        color: muteMa.containsMouse ? "#1affffff" : "transparent"
+                                        Layout.preferredWidth: window.s(32); Layout.preferredHeight: window.s(32); radius: Theme.radiusFull
+                                        color: muteMa.containsMouse ? Theme.stateLayer(window.tabColor, Theme.stateHover) : "transparent"
                                         border.color: muteMa.containsMouse ? (model.mute ? window.overlay0 : window.tabColor) : "transparent"
                                         Behavior on color { ColorAnimation { duration: 150 } }
 
@@ -822,14 +822,14 @@ Item {
                                         }
 
                                         Rectangle {
-                                            anchors.fill: parent; radius: window.s(9)
-                                            color: "#0dffffff"; border.color: "#1affffff"; border.width: 1
+                                            anchors.fill: parent; radius: Theme.radiusFull
+                                            color: Theme.surfaceContainer; border.color: Theme.outlineVariant; border.width: 1
                                             clip: true
 
                                             Rectangle {
                                                 height: parent.height
                                                 width: parent.width * (Math.min(100, model.volume) / 100)
-                                                radius: window.s(9)
+                                                radius: Theme.radiusFull
                                                 
                                                 // Heavily dimmed if muted, slightly dimmed if background node
                                                 opacity: model.mute ? 0.3 : (volSliderMa.containsMouse ? 0.7 : 0.4)

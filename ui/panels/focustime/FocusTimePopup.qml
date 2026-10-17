@@ -512,9 +512,9 @@ Item {
 
         Rectangle {
             anchors.fill: parent
-            radius: window.s(26)
-            color: window.crust
-            border.color: Qt.alpha(window.surface1, 0.2)
+            radius: Theme.radiusLg
+            color: Theme.surfaceContainerLow
+            border.color: Theme.outlineVariant
             border.width: 1
             clip: true
 
@@ -535,15 +535,15 @@ Item {
 
             ColumnLayout {
                 anchors.fill: parent
-                anchors.margins: window.s(24)
-                spacing: window.s(16)
+                anchors.margins: Theme.gapXl
+                spacing: Theme.gapLg
 
                 // ==========================================
                 // 1. HEADER
                 // ==========================================
                 RowLayout {
                     Layout.fillWidth: true
-                    Layout.topMargin: window.s(4)
+                    Layout.topMargin: Theme.gapXs
                     Layout.preferredHeight: window.s(40)
 
                     opacity: introHeader
@@ -552,7 +552,7 @@ Item {
                     // Left Buttons (Overlapped to prevent layout shifting)
                     RowLayout {
                         Layout.alignment: Qt.AlignVCenter
-                        spacing: window.s(4)
+                        spacing: Theme.gapXs
 
                         // Wrapper to hold Back and Week buttons in the exact same 40x40 footprint
                         Item {
@@ -562,8 +562,8 @@ Item {
                             // Universal Return Arrow (Back to Daily / App List)
                             Rectangle {
                                 anchors.fill: parent
-                                radius: window.s(26)
-                                color: backMa.containsMouse ? window.surface0 : "transparent"
+                                radius: width / 2
+                                color: backMa.containsMouse ? Theme.stateLayer(window.text, Theme.stateHover) : "transparent"
                                 opacity: (window.selectedAppClass !== "" || window.isWeekView) ? 1.0 : 0.0
                                 visible: opacity > 0
                                 Behavior on opacity { NumberAnimation { duration: 350; easing.type: Easing.OutQuint } }
@@ -588,8 +588,8 @@ Item {
                             // Week View Open Button
                             Rectangle {
                                 anchors.fill: parent
-                                radius: window.s(26)
-                                color: weekMa.containsMouse ? window.surface0 : "transparent"
+                                radius: width / 2
+                                color: weekMa.containsMouse ? Theme.stateLayer(window.text, Theme.stateHover) : "transparent"
                                 opacity: (window.selectedAppClass === "" && !window.isWeekView) ? 1.0 : 0.0
                                 visible: opacity > 0
                                 Behavior on opacity { NumberAnimation { duration: 350; easing.type: Easing.OutQuint } }
@@ -607,8 +607,8 @@ Item {
                         Rectangle {
                             Layout.preferredWidth: window.s(40)
                             Layout.preferredHeight: window.s(40)
-                            radius: window.s(26)
-                            color: prevWeekMa.containsMouse ? window.surface0 : "transparent"
+                            radius: width / 2
+                            color: prevWeekMa.containsMouse ? Theme.stateLayer(window.text, Theme.stateHover) : "transparent"
                             Behavior on color { ColorAnimation { duration: 150 } }
                             Text { anchors.centerIn: parent; font.family: "Hack Nerd Font"; text: "󰅁"; color: window.text; font.pixelSize: window.s(18) }
                             MouseArea { id: prevWeekMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: changeDay(window.isWeekView ? -7 : -1) }
@@ -618,7 +618,7 @@ Item {
                     RowLayout {
                         Layout.fillWidth: true
                         Layout.alignment: Qt.AlignHCenter
-                        spacing: window.s(8)
+                        spacing: Theme.gapSm
                         
                         Item { Layout.fillWidth: true } // Left Spacer
 
@@ -656,8 +656,8 @@ Item {
                     Rectangle {
                         Layout.preferredWidth: window.s(40)
                         Layout.preferredHeight: window.s(40)
-                        radius: window.s(26)
-                        color: nextWeekMa.containsMouse ? window.surface0 : "transparent"
+                        radius: width / 2
+                        color: nextWeekMa.containsMouse ? Theme.stateLayer(window.text, Theme.stateHover) : "transparent"
                         Behavior on color { ColorAnimation { duration: 150 } }
                         Text { anchors.centerIn: parent; font.family: "Hack Nerd Font"; text: "󰅂"; color: window.text; font.pixelSize: window.s(18) }
                         MouseArea { id: nextWeekMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: changeDay(window.isWeekView ? 7 : 1) }
@@ -678,7 +678,7 @@ Item {
                     ColumnLayout {
                         id: dailyViewWrapper
                         anchors.fill: parent
-                        spacing: window.s(16)
+                        spacing: Theme.gapLg
                         
                         opacity: 1.0 - window.weekViewFocus
                         visible: opacity > 0
@@ -693,7 +693,7 @@ Item {
                             Layout.preferredHeight: window.s(90)
                             Layout.maximumHeight: window.s(90) 
                             Layout.minimumHeight: window.s(90)
-                            spacing: window.s(16)
+                            spacing: Theme.gapLg
 
                             opacity: introStats
                             transform: Translate { y: window.s(30) * (1 - introStats) }
@@ -703,14 +703,14 @@ Item {
                                 Layout.fillWidth: true
                                 Layout.fillHeight: true
                                 Layout.preferredWidth: window.s(200)
-                                radius: window.s(18)
-                                color: window.base
-                                border.color: Qt.alpha(window.surface1, 0.3)
+                                radius: Theme.radiusMd
+                                color: Theme.surfaceContainer
+                                border.color: Theme.outlineVariant
                                 border.width: 1
 
                                 ColumnLayout {
                                     anchors.centerIn: parent
-                                    spacing: window.s(2)
+                                    spacing: Theme.gap2xs
                                     Text {
                                         Layout.alignment: Qt.AlignHCenter
                                         font.family: "Hack Nerd Font"
@@ -744,9 +744,9 @@ Item {
                                 Layout.fillWidth: true
                                 Layout.fillHeight: true
                                 Layout.preferredWidth: window.s(300)
-                                radius: window.s(18)
-                                color: window.base
-                                border.color: Qt.alpha(window.surface1, 0.3)
+                                radius: Theme.radiusMd
+                                color: Theme.surfaceContainer
+                                border.color: Theme.outlineVariant
                                 border.width: 1
 
                                 ColumnLayout {
@@ -768,19 +768,19 @@ Item {
                                 Layout.fillWidth: true
                                 Layout.fillHeight: true
                                 Layout.preferredWidth: window.s(200)
-                                radius: window.s(18)
-                                color: window.base
-                                border.color: Qt.alpha(window.surface1, 0.3)
+                                radius: Theme.radiusMd
+                                color: Theme.surfaceContainer
+                                border.color: Theme.outlineVariant
                                 border.width: 1
 
                                 ColumnLayout {
                                     anchors.centerIn: parent
-                                    spacing: window.s(8)
+                                    spacing: Theme.gapSm
                                     
                                     // Trend Row
                                     RowLayout {
                                         Layout.alignment: Qt.AlignHCenter
-                                        spacing: window.s(8)
+                                        spacing: Theme.gapSm
                                         visible: !(window.totalSeconds === 0 && window.yesterdaySeconds === 0) && window.totalSeconds !== window.yesterdaySeconds
                                         
                                         Text {
@@ -831,16 +831,16 @@ Item {
                             Layout.fillWidth: true
                             Layout.preferredHeight: window.s(160)
                             Layout.fillHeight: false
-                            spacing: window.s(16)
+                            spacing: Theme.gapLg
 
                             // LEFT: Weekly Close-Knit Bar Chart
                             Rectangle {
                                 Layout.fillWidth: true
                                 Layout.fillHeight: true
                                 Layout.preferredWidth: window.s(400) 
-                                radius: window.s(18)
-                                color: window.base
-                                border.color: Qt.alpha(window.surface1, 0.3)
+                                radius: Theme.radiusMd
+                                color: Theme.surfaceContainer
+                                border.color: Theme.outlineVariant
                                 border.width: 1
 
                                 opacity: introMidLeft
@@ -849,7 +849,7 @@ Item {
                                 RowLayout {
                                     anchors.centerIn: parent
                                     height: parent.height - window.s(32)
-                                    spacing: window.s(12) 
+                                    spacing: Theme.gapMd 
 
                                     Repeater {
                                         model: weekListModel
@@ -869,7 +869,7 @@ Item {
 
                                             Item {
                                                 anchors.bottom: dayLbl.top
-                                                anchors.bottomMargin: window.s(8)
+                                                anchors.bottomMargin: Theme.gapSm
                                                 anchors.horizontalCenter: parent.horizontalCenter
                                                 width: window.s(45) 
                                                 // Tied strictly to the introAppBars multiplier for fluid simultaneous fill
@@ -882,8 +882,8 @@ Item {
 
                                                 Rectangle {
                                                     anchors.fill: parent
-                                                    radius: window.s(5) 
-                                                    color: window.surface0
+                                                    radius: Theme.radiusXs 
+                                                    color: Theme.surfaceContainer
                                                     visible: !model.isTarget
                                                     opacity: barMa.containsMouse ? 0.7 : 1.0
                                                     Behavior on color { ColorAnimation { duration: 400; easing.type: Easing.OutCubic } }
@@ -891,7 +891,7 @@ Item {
 
                                                 Rectangle {
                                                     anchors.fill: parent
-                                                    radius: window.s(5) 
+                                                    radius: Theme.radiusXs 
                                                     visible: model.isTarget
                                                     opacity: barMa.containsMouse ? 0.7 : 1.0
                                                     gradient: Gradient {
@@ -922,9 +922,9 @@ Item {
                                 Layout.fillWidth: true
                                 Layout.fillHeight: true
                                 Layout.preferredWidth: window.s(300)
-                                radius: window.s(18)
-                                color: window.base
-                                border.color: Qt.alpha(window.surface1, 0.3)
+                                radius: Theme.radiusMd
+                                color: Theme.surfaceContainer
+                                border.color: Theme.outlineVariant
                                 border.width: 1
 
                                 opacity: introMidRight
@@ -932,8 +932,8 @@ Item {
 
                                 ColumnLayout {
                                     anchors.fill: parent
-                                    anchors.margins: window.s(12)
-                                    spacing: window.s(8)
+                                    anchors.margins: Theme.gapMd
+                                    spacing: Theme.gapSm
 
                                     Text {
                                         Layout.alignment: Qt.AlignHCenter
@@ -948,15 +948,15 @@ Item {
                                         Layout.alignment: Qt.AlignCenter
                                         columns: 7 
                                         flow: Grid.LeftToRight 
-                                        spacing: window.s(6) 
+                                        spacing: Theme.gapXs 
 
                                         Repeater {
                                             model: monthListModel
                                             delegate: Rectangle {
                                                 width: window.s(18) 
                                                 height: window.s(18) 
-                                                radius: window.s(5)
-                                                color: model.total === -1 ? "transparent" : (model.total === 0 ? window.surface0 : Qt.rgba(window.mauve.r, window.mauve.g, window.mauve.b, Math.min(1.0, 0.3 + 0.7 * (model.total / window.maxMonthTotal))))
+                                                radius: Theme.radiusXs
+                                                color: model.total === -1 ? "transparent" : (model.total === 0 ? Theme.surfaceContainer : Qt.rgba(window.mauve.r, window.mauve.g, window.mauve.b, Math.min(1.0, 0.3 + 0.7 * (model.total / window.maxMonthTotal))))
                                                 Behavior on color { ColorAnimation { duration: 700; easing.type: Easing.OutQuint } }
 
                                                 border.color: model.isTarget ? window.text : "transparent"
@@ -993,9 +993,9 @@ Item {
                         Rectangle {
                             Layout.fillWidth: true
                             Layout.fillHeight: true 
-                            radius: window.s(18)
-                            color: window.base
-                            border.color: Qt.alpha(window.surface1, 0.3)
+                            radius: Theme.radiusMd
+                            color: Theme.surfaceContainer
+                            border.color: Theme.outlineVariant
                             border.width: 1
 
                             opacity: introBottom
@@ -1008,9 +1008,9 @@ Item {
                                 ListView {
                                     id: appList
                                     anchors.fill: parent
-                                    anchors.margins: window.s(8)
-                                    anchors.topMargin: window.s(12)
-                                    anchors.bottomMargin: window.s(12)
+                                    anchors.margins: Theme.gapSm
+                                    anchors.topMargin: Theme.gapMd
+                                    anchors.bottomMargin: Theme.gapMd
                                     
                                     opacity: 1.0 - window.appViewFocus
                                     visible: opacity > 0
@@ -1020,7 +1020,7 @@ Item {
                                     model: appListModel
                                     interactive: true 
                                     clip: true        
-                                    spacing: window.s(2)
+                                    spacing: Theme.gap2xs
                                     
                                     move: Transition { NumberAnimation { properties: "x,y"; duration: 400; easing.type: Easing.OutQuint } }
                                     
@@ -1028,14 +1028,14 @@ Item {
                                         active: appList.moving || appList.movingVertically
                                         width: window.s(4)
                                         policy: ScrollBar.AsNeeded
-                                        contentItem: Rectangle { implicitWidth: window.s(4); radius: window.s(3); color: window.surface2 }
+                                        contentItem: Rectangle { implicitWidth: window.s(4); radius: Theme.radiusXs; color: Theme.surfaceContainerHighest }
                                     }
                                     
                                     delegate: Rectangle {
                                         width: ListView.view.width
                                         height: window.s(58) 
                                         color: "transparent"
-                                        radius: window.s(13)
+                                        radius: Theme.radiusMd
 
                                         // Micro-staggering cascading animation inside the list
                                         opacity: introBottom
@@ -1043,8 +1043,8 @@ Item {
 
                                         Rectangle {
                                             anchors.fill: parent
-                                            radius: window.s(13)
-                                            color: rowMa.containsMouse ? window.surface0 : "transparent"
+                                            radius: Theme.radiusMd
+                                            color: rowMa.containsMouse ? Theme.stateLayer(window.text, Theme.stateHover) : "transparent"
                                             Behavior on color { ColorAnimation { duration: 150 } }
                                         }
 
@@ -1064,11 +1064,11 @@ Item {
 
                                         ColumnLayout {
                                             anchors.fill: parent
-                                            anchors.leftMargin: window.s(16)
-                                            anchors.rightMargin: window.s(16)
-                                            anchors.topMargin: window.s(10)
-                                            anchors.bottomMargin: window.s(10)
-                                            spacing: window.s(6)
+                                            anchors.leftMargin: Theme.gapLg
+                                            anchors.rightMargin: Theme.gapLg
+                                            anchors.topMargin: Theme.gapSm
+                                            anchors.bottomMargin: Theme.gapSm
+                                            spacing: Theme.gapXs
 
                                             RowLayout {
                                                 Layout.fillWidth: true
@@ -1080,7 +1080,7 @@ Item {
                                                     Layout.preferredWidth: window.s(20)
                                                     Layout.preferredHeight: window.s(20)
                                                     Layout.alignment: Qt.AlignVCenter
-                                                    Layout.rightMargin: window.s(8)
+                                                    Layout.rightMargin: Theme.gapSm
                                                     fillMode: Image.PreserveAspectFit
                                                 }
 
@@ -1105,12 +1105,12 @@ Item {
                                             Item {
                                                 Layout.fillWidth: true
                                                 height: window.s(10)
-                                                Rectangle { anchors.fill: parent; radius: window.s(7); color: window.crust }
+                                                Rectangle { anchors.fill: parent; radius: Theme.radiusSm; color: Theme.surfaceContainerLowest }
                                                 Rectangle {
                                                     height: parent.height
                                                     // Tied to the synchronized app bars state
                                                     width: Math.max(window.s(10), parent.width * (model.percent / 100.0) * window.introAppBars)
-                                                    radius: window.s(7)
+                                                    radius: Theme.radiusSm
                                                     gradient: Gradient {
                                                         orientation: Gradient.Horizontal
                                                         GradientStop { position: 0.0; color: window.mauve }
@@ -1130,8 +1130,8 @@ Item {
                                 ColumnLayout {
                                     id: appChartWrapper
                                     anchors.fill: parent
-                                    anchors.margins: window.s(16)
-                                    spacing: window.s(12)
+                                    anchors.margins: Theme.gapLg
+                                    spacing: Theme.gapMd
 
                                     opacity: window.appViewFocus
                                     visible: opacity > 0
@@ -1150,7 +1150,7 @@ Item {
                                     RowLayout {
                                         Layout.fillWidth: true
                                         Layout.fillHeight: true
-                                        spacing: window.s(4) 
+                                        spacing: Theme.gapXs 
 
                                         Repeater {
                                             model: 48 // 2 bars per hour (30 min intervals)
@@ -1163,8 +1163,8 @@ Item {
                                                     width: parent.width
                                                     // Actively grow from ground up tied to introAppBars
                                                     height: Math.max(window.s(4), parent.height * (window.hourlyData[index] / Math.max(window.maxHourlyTotal, 1)) * window.introAppBars)
-                                                    radius: window.s(3)
-                                                    color: window.hourlyData[index] > 0 ? window.blue : window.surface0
+                                                    radius: Theme.radiusXs
+                                                    color: window.hourlyData[index] > 0 ? window.blue : Theme.surfaceContainer
                                                     
                                                     Behavior on height { 
                                                         enabled: window.introAppBars === 1.0
@@ -1207,7 +1207,7 @@ Item {
                     ColumnLayout {
                         id: weekViewWrapper
                         anchors.fill: parent
-                        spacing: window.s(16)
+                        spacing: Theme.gapLg
 
                         opacity: window.weekViewFocus
                         visible: opacity > 0
@@ -1220,9 +1220,9 @@ Item {
                         Rectangle {
                             Layout.fillWidth: true
                             Layout.preferredHeight: window.s(260)
-                            radius: window.s(18)
-                            color: window.base
-                            border.color: Qt.alpha(window.surface1, 0.3)
+                            radius: Theme.radiusMd
+                            color: Theme.surfaceContainer
+                            border.color: Theme.outlineVariant
                             border.width: 1
 
                             opacity: introMidLeft
@@ -1231,20 +1231,20 @@ Item {
                             // Outer RowLayout: splits [Heatmap+Xaxis] (left) and [Stats] (right)
                             RowLayout {
                                 anchors.fill: parent
-                                anchors.margins: window.s(16)
-                                spacing: window.s(16)
+                                anchors.margins: Theme.gapLg
+                                spacing: Theme.gapLg
 
                                 // LEFT SIDE: Heatmap + X-Axis
                                 ColumnLayout {
                                     Layout.fillWidth: true
                                     Layout.fillHeight: true
-                                    spacing: window.s(6)
+                                    spacing: Theme.gapXs
 
                                     // 7 day rows of 24 hour cells
                                     ColumnLayout {
                                         Layout.fillWidth: true
                                         Layout.fillHeight: true
-                                        spacing: window.s(4)
+                                        spacing: Theme.gapXs
 
                                         Repeater {
                                             model: 7
@@ -1252,7 +1252,7 @@ Item {
                                                 property int dayIndex: index
                                                 Layout.fillWidth: true
                                                 Layout.fillHeight: true
-                                                spacing: window.s(8)
+                                                spacing: Theme.gapSm
 
                                                 opacity: introMidLeft
                                                 transform: Translate { x: window.s(-20) * (1 - introMidLeft) + (dayIndex * window.s(5) * (1 - introMidLeft)) }
@@ -1271,7 +1271,7 @@ Item {
                                                 Rectangle {
                                                     Layout.fillWidth: true
                                                     Layout.fillHeight: true
-                                                    radius: window.s(13)
+                                                    radius: Theme.radiusMd
                                                     color: "transparent"
                                                     clip: true
 
@@ -1288,7 +1288,7 @@ Item {
                                                                 
                                                                 property real val: (window.weekHeatmapData[dayIndex] && window.weekHeatmapData[dayIndex][index]) ? window.weekHeatmapData[dayIndex][index] : 0
                                                                 property real intensity: Math.min(1.0, 0.2 + 0.8 * (val / Math.max(window.maxWeekHour, 1)))
-                                                                color: val === 0 ? window.surface0 : Qt.rgba(window.mauve.r, window.mauve.g, window.mauve.b, intensity)
+                                                                color: val === 0 ? Theme.surfaceContainer : Qt.rgba(window.mauve.r, window.mauve.g, window.mauve.b, intensity)
 
                                                                 // Staggered animated popup matrix effect for the heatmap cells
                                                                 scale: window.isWeekView ? 1.0 : 0.5
@@ -1338,18 +1338,18 @@ Item {
                                 ColumnLayout {
                                     Layout.preferredWidth: window.s(120)
                                     Layout.fillHeight: true
-                                    spacing: window.s(12)
+                                    spacing: Theme.gapMd
 
                                     // Daily Average box
                                     Rectangle {
                                         Layout.fillWidth: true
                                         Layout.fillHeight: true
-                                        radius: window.s(13)
-                                        color: window.surface0
+                                        radius: Theme.radiusMd
+                                        color: Theme.surfaceContainer
 
                                         ColumnLayout {
                                             anchors.centerIn: parent
-                                            spacing: window.s(4)
+                                            spacing: Theme.gapXs
                                             Text {
                                                 Layout.alignment: Qt.AlignHCenter
                                                 font.family: "Hack Nerd Font"
@@ -1373,12 +1373,12 @@ Item {
                                     Rectangle {
                                         Layout.fillWidth: true
                                         Layout.fillHeight: true
-                                        radius: window.s(13)
-                                        color: window.surface0
+                                        radius: Theme.radiusMd
+                                        color: Theme.surfaceContainer
 
                                         ColumnLayout {
                                             anchors.centerIn: parent
-                                            spacing: window.s(4)
+                                            spacing: Theme.gapXs
                                             Text {
                                                 Layout.alignment: Qt.AlignHCenter
                                                 font.family: "Hack Nerd Font"
@@ -1405,9 +1405,9 @@ Item {
                         Rectangle {
                             Layout.fillWidth: true
                             Layout.fillHeight: true
-                            radius: window.s(18)
-                            color: window.base
-                            border.color: Qt.alpha(window.surface1, 0.3)
+                            radius: Theme.radiusMd
+                            color: Theme.surfaceContainer
+                            border.color: Theme.outlineVariant
                             border.width: 1
 
                             opacity: introBottom
@@ -1416,13 +1416,13 @@ Item {
                             ListView {
                                 id: weekAppList
                                 anchors.fill: parent
-                                anchors.margins: window.s(8)
-                                anchors.topMargin: window.s(12)
-                                anchors.bottomMargin: window.s(12)
+                                anchors.margins: Theme.gapSm
+                                anchors.topMargin: Theme.gapMd
+                                anchors.bottomMargin: Theme.gapMd
                                 model: weekAppListModel
                                 interactive: true 
                                 clip: true        
-                                spacing: window.s(2)
+                                spacing: Theme.gap2xs
                                 
                                 move: Transition { NumberAnimation { properties: "x,y"; duration: 400; easing.type: Easing.OutQuint } }
                                 
@@ -1430,22 +1430,22 @@ Item {
                                     active: weekAppList.moving || weekAppList.movingVertically
                                     width: window.s(4)
                                     policy: ScrollBar.AsNeeded
-                                    contentItem: Rectangle { implicitWidth: window.s(4); radius: window.s(3); color: window.surface2 }
+                                    contentItem: Rectangle { implicitWidth: window.s(4); radius: Theme.radiusXs; color: Theme.surfaceContainerHighest }
                                 }
                                 
                                 delegate: Rectangle {
                                     width: ListView.view.width
                                     height: window.s(58) 
                                     color: "transparent"
-                                    radius: window.s(13)
+                                    radius: Theme.radiusMd
 
                                     opacity: introBottom
                                     transform: Translate { y: (index * window.s(12)) * (1 - introBottom) }
 
                                     Rectangle {
                                         anchors.fill: parent
-                                        radius: window.s(13)
-                                        color: weekRowMa.containsMouse ? window.surface0 : "transparent"
+                                        radius: Theme.radiusMd
+                                        color: weekRowMa.containsMouse ? Theme.stateLayer(window.text, Theme.stateHover) : "transparent"
                                         Behavior on color { ColorAnimation { duration: 150 } }
                                     }
 
@@ -1466,11 +1466,11 @@ Item {
 
                                     ColumnLayout {
                                         anchors.fill: parent
-                                        anchors.leftMargin: window.s(16)
-                                        anchors.rightMargin: window.s(16)
-                                        anchors.topMargin: window.s(10)
-                                        anchors.bottomMargin: window.s(10)
-                                        spacing: window.s(6)
+                                        anchors.leftMargin: Theme.gapLg
+                                        anchors.rightMargin: Theme.gapLg
+                                        anchors.topMargin: Theme.gapSm
+                                        anchors.bottomMargin: Theme.gapSm
+                                        spacing: Theme.gapXs
 
                                         RowLayout {
                                             Layout.fillWidth: true
@@ -1482,7 +1482,7 @@ Item {
                                                 Layout.preferredWidth: window.s(20)
                                                 Layout.preferredHeight: window.s(20)
                                                 Layout.alignment: Qt.AlignVCenter
-                                                Layout.rightMargin: window.s(8)
+                                                Layout.rightMargin: Theme.gapSm
                                                 fillMode: Image.PreserveAspectFit
                                             }
 
@@ -1507,11 +1507,11 @@ Item {
                                         Item {
                                             Layout.fillWidth: true
                                             height: window.s(10)
-                                            Rectangle { anchors.fill: parent; radius: window.s(7); color: window.crust }
+                                            Rectangle { anchors.fill: parent; radius: Theme.radiusSm; color: Theme.surfaceContainerLowest }
                                             Rectangle {
                                                 height: parent.height
                                                 width: Math.max(window.s(10), parent.width * (model.percent / 100.0) * window.introAppBars)
-                                                radius: window.s(7)
+                                                radius: Theme.radiusSm
                                                 gradient: Gradient {
                                                     orientation: Gradient.Horizontal
                                                     GradientStop { position: 0.0; color: window.mauve }

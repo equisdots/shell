@@ -1,4 +1,5 @@
 import QtQuick
+import "../../../core"
 
 // on/off toggle del BarEditor (Fase 4: familia GuidePopup).
 // Track: surface1 (off) → mauve (on); handle: text (off) → crust (on);
@@ -12,7 +13,7 @@ Rectangle {
     width: bar ? bar.s(46) : 46
     height: bar ? bar.s(26) : 26
     radius: height / 2
-    color: !bar ? "transparent" : (checked ? bar.colors.mauve : bar.colors.surface1)
+    color: !bar ? "transparent" : (checked ? bar.colors.mauve : Theme.surfaceContainer)
     Behavior on color { ColorAnimation { duration: 150 } }
     scale: tglMa.pressed ? 0.95 : 1.0
     Behavior on scale { NumberAnimation { duration: 200; easing.type: Easing.OutBack } }

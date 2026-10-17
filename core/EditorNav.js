@@ -22,7 +22,6 @@ var GROUPS = [
         icon: "󰒓",
         items: [
             { id: "s_general",  icon: "󰒓", label: "General" },
-            { id: "s_timex",  icon: "󰖐", label: "Timex" },
             { id: "s_keyboard", icon: "󰌌", label: "Keyboard" },
             { id: "s_monitors", icon: "󰍹", label: "Monitors" },
             { id: "s_startup",  icon: "󰐥", label: "Startup" }
@@ -33,11 +32,10 @@ var GROUPS = [
         label: "Bar",
         icon: "󰮯",
         items: [
-            { id: "d_engine",     icon: "󰮯", label: "Engine" },
+            { id: "d_general",    icon: "󰮯", label: "General" },
             { id: "d_position",   icon: "󱂬", label: "Position" },
-            { id: "d_style",      icon: "󰏘", label: "Style",      engine: "bar" },
-            { id: "d_zones",      icon: "󰮯", label: "Zones",      engine: "bar" },
-            { id: "d_classic",    icon: "󰹑", label: "Classic Bar", engine: "classic" },
+            { id: "d_style",      icon: "󰏘", label: "Style" },
+            { id: "d_zones",      icon: "󰮯", label: "Zones" },
             { id: "d_modules",    icon: "󰍜", label: "Modules" },
             { id: "d_workspaces", icon: "󰠰", label: "Workspaces" }
         ]
@@ -47,12 +45,12 @@ var GROUPS = [
         label: "Theme",
         icon: "✦",
         items: [
+            { id: "d_appearance", icon: "󰏘", label: "Appearance" },
             { id: "d_palette",    icon: "✦", label: "Palette" },
             { id: "d_animations", icon: "󰔟", label: "Animations" },
             { id: "d_shadows",    icon: "󰹹", label: "Shadows" },
             { id: "d_frame",      icon: "󰝴", label: "Frame" },
-            { id: "d_glass",      icon: "󰖌", label: "Glass" },
-            { id: "d_mascots",    icon: "", label: "Mascots" }
+            { id: "d_glass",      icon: "󰖌", label: "Glass" }
         ]
     },
     {
@@ -95,6 +93,37 @@ function groups() {
             let it = {};
             for (let k in g.items[j]) it[k] = g.items[j][k];
             items.push(it);
+        }
+        out.push({ id: g.id, label: g.label, icon: g.icon, items: items });
+    }
+    return out;
+}
+
+// Inject one nav item per installed plugin that ships its own settings page
+// (plugin.json → settings.page). The page id is "p_<id>": the editor loads
+// it on demand from the plugin's deployed UI dir (ui/plugins/<id>/).
+function withPlugins(groups, plugins) {
+    if (!plugins || plugins.length === 0) return groups;
+    let out = [];
+    for (let i = 0; i < groups.length; i++) {
+        let g = groups[i];
+        let items = g.items.slice(0);
+        if (g.id === "plugins") {
+            for (let k = 0; k < plugins.length; k++) {
+                let p = plugins[k] || {};
+                let s = (p.settings && typeof p.settings === "object") ? p.settings : null;
+                if (!s || !s.page || !p.id) continue;
+                // Everything follows the plugin: its page shows only while the
+                // plugin is enabled and its config menu is on
+                // (`plugins.<id>.config`, default true).
+                if (p.enabled !== true) continue;
+                if (p.config === false) continue;
+                items.push({
+                    id: "p_" + p.id,
+                    icon: s.icon || "",
+                    label: s.label || p.name || p.id
+                });
+            }
         }
         out.push({ id: g.id, label: g.label, icon: g.icon, items: items });
     }

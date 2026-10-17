@@ -28,10 +28,11 @@ Item {
         onTriggered: root.currentTime = new Date()
     }
 
-    Rectangle {
+    GlassCard {
         anchors.fill: parent
-        radius: width / 2
-        color: Theme.surface0
+        cornerRadius: width / 2
+        fill: Theme.widgetFill
+        hairline: Theme.widgetHairline
 
         Rectangle {
             width: parent.width * 0.045

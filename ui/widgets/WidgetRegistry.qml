@@ -1,4 +1,5 @@
 import QtQuick
+import "../../core"
 
 // ============================================================================
 // WidgetRegistry — catalog of desktop-widget types, variants and face files.
@@ -11,7 +12,9 @@ import QtQuick
 // Types (id -> metadata):
 //   visualizer (bars | continuous), time (digital | analog | minimal),
 //   music (full | round), weather (compact | full | round),
-//   image (rect | rounded | round) — requiresFilePicker.
+//   image (rect | rounded | round) — requiresFilePicker,
+//   date (card), system (rings), calendar (month), battery (card),
+//   countdown (card).
 //
 // API:
 //   faceFile(type, variant)                       -> resolved URL or ""
@@ -29,7 +32,7 @@ QtObject {
 
     property var componentCache: ({})
 
-    readonly property var types: ({
+    readonly property var coreTypes: ({
         "visualizer": {
             name: "Visualizer",
             icon: "󰎈",
@@ -70,29 +73,6 @@ QtObject {
                 "round": { file: "faces/MusicFaceRound.qml", icon: "2", label: "Round" }
             }
         },
-        "weather": {
-            name: "Timex",
-            icon: "󰖐",
-            // Per-type default that all variants must survive:
-            //   compact — free-ish aspect (0.7..2.2), min 90x90; 300x140
-            //             (aspect ~2.14) fits inside its maxAspect.
-            //   round   — fixed aspect 1: Widget.updateEffectiveSize() clamps
-            //             the window to a square at instantiation.
-            //   full    — locked aspect 1.6 with min 420x260: the Widget
-            //             window clamps up to 420x260 when the variant is
-            //             instantiated, so the type default below never needs
-            //             to reach the full size itself.
-            defaultWidth: 300,
-            defaultHeight: 140,
-            defaultVariant: "compact",
-            stretchWidth: false,
-            requiresFilePicker: false,
-            variants: {
-                "compact": { file: "faces/WeatherFaceCompact.qml", icon: "1", label: "Compact" },
-                "full": { file: "faces/WeatherFaceFull.qml", icon: "2", label: "Full" },
-                "round": { file: "faces/WeatherFaceRound.qml", icon: "3", label: "Round" }
-            }
-        },
         "image": {
             name: "Image",
             icon: "󰋩",
@@ -106,8 +86,113 @@ QtObject {
                 "rounded": { file: "faces/ImageFaceRounded.qml", icon: "2", label: "Rounded" },
                 "round": { file: "faces/ImageFaceRound.qml", icon: "3", label: "Round" }
             }
+        },
+        "date": {
+            name: "Date",
+            icon: "󰃴",
+            defaultWidth: 340,
+            defaultHeight: 150,
+            defaultVariant: "card",
+            stretchWidth: true,
+            requiresFilePicker: false,
+            variants: {
+                "card": { file: "faces/DateGreetingFace.qml", icon: "1", label: "Card" }
+            }
+        },
+        "system": {
+            name: "System",
+            icon: "󰍛",
+            defaultWidth: 340,
+            defaultHeight: 170,
+            defaultVariant: "rings",
+            stretchWidth: true,
+            requiresFilePicker: false,
+            variants: {
+                "rings": { file: "faces/SystemFace.qml", icon: "1", label: "Rings" }
+            }
+        },
+        "calendar": {
+            name: "Calendar",
+            icon: "󰃭",
+            defaultWidth: 280,
+            defaultHeight: 280,
+            defaultVariant: "month",
+            stretchWidth: false,
+            requiresFilePicker: false,
+            variants: {
+                "month": { file: "faces/CalendarFace.qml", icon: "1", label: "Month" }
+            }
+        },
+        "battery": {
+            name: "Battery",
+            icon: "󰁹",
+            defaultWidth: 200,
+            defaultHeight: 150,
+            defaultVariant: "card",
+            stretchWidth: false,
+            requiresFilePicker: false,
+            variants: {
+                "card": { file: "faces/BatteryFace.qml", icon: "1", label: "Card" }
+            }
+        },
+        "countdown": {
+            name: "Countdown",
+            icon: "󰔛",
+            defaultWidth: 340,
+            defaultHeight: 150,
+            defaultVariant: "card",
+            stretchWidth: true,
+            requiresFilePicker: false,
+            variants: {
+                "card": { file: "faces/CountdownFace.qml", icon: "1", label: "Card" }
+            }
         }
     })
+
+    // Plugin-provided widget faces (provides.widgets.faces): a plugin owns the
+    // widget TYPES it ships (variant files relative to its UI root), so a plugin
+    // can bring its own desktop widgets. Plugins win on id collisions.
+    readonly property var pluginTypes: {
+        PluginsCatalog.rev;
+        let out = {};
+        let list = PluginsCatalog.plugins || [];
+        for (let i = 0; i < list.length; i++) {
+            let p = list[i] || {};
+            if (p.enabled !== true) continue;
+            let faces = p.provides && p.provides.widgets && p.provides.widgets.faces;
+            if (!faces || typeof faces !== "object") continue;
+            for (let tid in faces) {
+                let t = faces[tid];
+                if (!t || typeof t !== "object" || !t.variants) continue;
+                let variants = {};
+                for (let vid in t.variants) {
+                    let v = t.variants[vid] || {};
+                    let comp = String(v.comp || v.file || "");
+                    if (comp === "") continue;
+                    let rel = PluginsCatalog.isManaged(p)
+                        ? ("../plugins/" + p.id + "/" + comp.replace(/^\.\//, ""))
+                        : PluginsCatalog.uiUrl(p, comp);
+                    variants[vid] = { file: rel, icon: v.icon, label: v.label };
+                }
+                out[tid] = {
+                    name: t.name || tid, icon: t.icon || "",
+                    defaultWidth: t.defaultWidth, defaultHeight: t.defaultHeight,
+                    defaultVariant: t.defaultVariant, stretchWidth: t.stretchWidth === true,
+                    requiresFilePicker: t.requiresFilePicker === true,
+                    variants: variants, _plugin: p.id
+                };
+            }
+        }
+        return out;
+    }
+
+    // Merged catalog: the core types plus the plugin-provided ones (plugin wins).
+    readonly property var types: {
+        let out = {};
+        for (let k in coreTypes) out[k] = coreTypes[k];
+        for (let k in pluginTypes) out[k] = pluginTypes[k];
+        return out;
+    }
 
     // Face file URL for a type+variant (variant falls back to the type default).
     function faceFile(type, variant) {

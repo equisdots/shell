@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Effects
 import Quickshell
 import "BarLayout.js" as BarLayout
+import "../../core"
 
 // ============================================================================
 // Zone — renders ONE zone of the bar.
@@ -202,11 +203,25 @@ Item {
                 width: item ? item.implicitWidth : 0
                 height: item ? item.implicitHeight : 0
 
-                Component.onCompleted: {
-                    let mod = BarLayout.getModule(slotWrap.modelData);
-                    if (!mod) return;
+                // Resolve the component for this slot. Core modules come from the
+                // JS catalog synchronously; plugin-provided modules (manifest
+                // provides.bar.modules) are resolved from PluginsCatalog, which is
+                // populated ASYNCHRONOUSLY by the plugin scan — so on the very
+                // first pass it is still empty and returns "". We therefore retry
+                // whenever the catalog updates (Connections below) instead of
+                // giving up forever.
+                function resolveComp(id) {
+                    let mod = BarLayout.getModule(id);
+                    let comp = mod ? mod.component : "";
+                    if (comp === "") comp = PluginsCatalog.barModuleComp(id);
+                    return comp;
+                }
+                function ensureLoaded() {
+                    if (slotLoader.item !== null) return;      // already mounted
+                    let comp = resolveComp(slotWrap.modelData);
+                    if (comp === "") return;                   // not resolvable (yet)
                     // Module components live in bar/modules/ (same level as this file).
-                    setSource(Qt.resolvedUrl(mod.component), {
+                    setSource(Qt.resolvedUrl(comp), {
                         "bar": zoneRoot.bar,
                         "colors": zoneRoot.colors,
                         "zoneReady": Qt.binding(() => zoneRoot.ready),
@@ -216,6 +231,11 @@ Item {
                         "unified": Qt.binding(() => zoneRoot.unified),
                         "fillMode": zoneRoot.zoneFillMode
                     });
+                }
+                Component.onCompleted: ensureLoaded()
+                Connections {
+                    target: PluginsCatalog
+                    function onRevChanged() { slotLoader.ensureLoaded(); }
                 }
             }
 

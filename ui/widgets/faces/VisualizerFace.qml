@@ -96,6 +96,13 @@ Item {
         return out;
     }
 
+    GlassCard {
+        anchors.fill: parent
+        fill: Theme.widgetFill
+        hairline: Theme.widgetHairline
+        cornerRadius: Theme.radiusLg
+    }
+
     Row {
         anchors.left: parent.left
         anchors.right: parent.right

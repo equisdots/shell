@@ -5,6 +5,12 @@
 // `host` = root de SettingsPopup: el cuerpo del tab quedó intacto y usa
 // root.s(), root.<rol>, root.highlightedBox, etc. mediante el bloque de
 // forwarding de abajo (mismos nombres que el root del popup).
+//
+// Layout (MD3): Flickable → ColumnLayout (page inset gapLg) → cabecera de
+// página + UNA card (surfaceContainerLow / outlineVariant / radiusLg) con
+// cabecera de sección, las filas de comandos (surfaceContainer / radiusMd) y
+// el botón "+ Add" como última fila en flujo normal. Cada fila expande su
+// panel de edición EN FLUJO (la altura de la card crece con el contenido).
 // ═══════════════════════════════════════════════════════════════════════════
 
 import QtQuick
@@ -69,7 +75,7 @@ Item {
         id: startupFlickable
         anchors.fill: parent
         contentWidth: width
-        contentHeight: startupColLayout.implicitHeight + root.s(100)
+        contentHeight: startupColLayout.implicitHeight + root.s(Theme.gapXl)
         boundsBehavior: Flickable.StopAtBounds
         clip: true
 
@@ -77,170 +83,281 @@ Item {
 
         ColumnLayout {
             id: startupColLayout
-            width: parent.width
-            spacing: root.s(8)
+            x: root.s(Theme.gapLg)
+            y: root.s(Theme.gapLg)
+            width: parent.width - root.s(Theme.gapLg) * 2
+            spacing: root.s(Theme.gapXl)
 
-            ListView {
-                id: startupListView
+            // ── Cabecera de página ────────────────────────────────────────
+            ColumnLayout {
                 Layout.fillWidth: true
-                Layout.preferredHeight: implicitHeight
-                implicitHeight: dynamicStartupModel.count * root.s(56) + root.s(20)
-                model: dynamicStartupModel
-                interactive: false
-                cacheBuffer: root.s(2000)
-                spacing: root.s(8)
+                spacing: root.s(Theme.gapXs)
 
-                delegate: Rectangle {
-                    id: startupRowRect
-                    property int outerIndex: index
-                    property bool isJumpHighlighted: root.highlightedBox === outerIndex
+                Text {
+                    Layout.fillWidth: true
+                    text: "Startup"
+                    font.family: "Hack Nerd Font"
+                    font.weight: Font.Black
+                    font.pixelSize: root.s(24)
+                    color: root.text
+                }
+                Text {
+                    Layout.fillWidth: true
+                    text: "Commands launched once at session start. Saving writes them to ~/.config/hypr/config/user-startup.lua and reloads Hyprland."
+                    font.family: "Hack Nerd Font"
+                    font.pixelSize: root.s(11)
+                    color: root.subtext0
+                    wrapMode: Text.WordWrap
+                }
+            }
 
-                    property bool layoutReady: false
-                    Component.onCompleted: Qt.callLater(() => layoutReady = true)
+            // ── Card de sección: lista de comandos ────────────────────────
+            Rectangle {
+                id: startupCard
+                Layout.fillWidth: true
+                radius: root.s(Theme.radiusLg)
+                color: Theme.surfaceContainerLow
+                border.width: 1
+                border.color: Theme.outlineVariant
+                implicitHeight: inner.implicitHeight + root.s(Theme.gapLg) * 2
 
-                    width: startupListView.width
-                    height: root.s(44) + (model.isEditing ? editPanel.implicitHeight + root.s(12) : 0)
-                    radius: root.s(18)
+                ColumnLayout {
+                    id: inner
+                    anchors.fill: parent
+                    anchors.margins: root.s(Theme.gapLg)
+                    spacing: root.s(Theme.gapMd)
 
-                    HoverHandler { id: startupRowHover }
-                    property bool isHovered: startupRowHover.hovered || model.isEditing || isJumpHighlighted
-                    color: isJumpHighlighted ? root.surface1 : (isHovered ? root.surface1 : root.surface0)
-                    border.color: isJumpHighlighted ? root.green : (isHovered ? Qt.alpha(root.green, 0.5) : root.surface1)
-                    border.width: isJumpHighlighted ? 2 : 1
+                    Text {
+                        Layout.fillWidth: true
+                        text: "Autostart commands"
+                        font.family: "Hack Nerd Font"
+                        font.weight: Font.Medium
+                        font.pixelSize: root.s(12)
+                        color: root.text
+                    }
 
-                    Behavior on height { NumberAnimation { duration: 250; easing.type: Easing.OutQuart } }
-                    Behavior on color { ColorAnimation { duration: 200; easing.type: Easing.OutExpo } }
-                    Behavior on border.color { ColorAnimation { duration: 200; easing.type: Easing.OutExpo } }
-                    Behavior on border.width { NumberAnimation { duration: 150 } }
+                    // Filas en FLUJO NORMAL: el Repeater inserta sus items en el
+                    // ColumnLayout en su propia posición, así la card mide a
+                    // contenido y el panel de edición empuja el resto hacia abajo.
+                    Repeater {
+                        id: startupListView
+                        model: dynamicStartupModel
 
-                    MouseArea { anchors.fill: parent; z: -2; onClicked: root.highlightedBox = outerIndex; }
+                        delegate: Rectangle {
+                            id: startupRowRect
+                            property int outerIndex: index
+                            property bool isJumpHighlighted: root.highlightedBox === outerIndex
 
-                    ColumnLayout {
-                        anchors.fill: parent; anchors.margins: root.s(10); spacing: root.s(10)
+                            property bool layoutReady: false
+                            Component.onCompleted: Qt.callLater(() => layoutReady = true)
 
-                        Item {
-                            Layout.fillWidth: true; Layout.preferredHeight: root.s(24); clip: true
+                            Layout.fillWidth: true
+                            Layout.minimumHeight: root.s(48)
+                            implicitHeight: rowCol.implicitHeight + root.s(Theme.gapMd) * 2
+                            radius: root.s(Theme.radiusMd)
 
-                            Rectangle {
-                                id: startupEditBtn
-                                width: root.s(26); height: root.s(26); radius: root.s(22)
-                                anchors.verticalCenter: parent.verticalCenter
-                                x: startupRowRect.isHovered ? parent.width - width : parent.width
-                                color: model.isEditing
-                                    ? root.green
-                                    : (startupEditMa.containsMouse ? root.green : root.surface2)
-                                Behavior on x {
-                                    enabled: startupRowRect.layoutReady
-                                    NumberAnimation { duration: 250; easing.type: Easing.OutQuart }
-                                }
-                                Behavior on color { ColorAnimation { duration: 180; easing.type: Easing.OutExpo } }
-                                Text {
-                                    anchors.centerIn: parent
-                                    text: model.isEditing ? "▴" : "󰏫"
-                                    font.family: model.isEditing ? "Inter" : "Hack Nerd Font"
-                                    font.pixelSize: root.s(13)
-                                    color: model.isEditing
-                                        ? root.base
-                                        : (startupEditMa.containsMouse ? root.base : root.subtext0)
-                                    Behavior on color { ColorAnimation { duration: 180; easing.type: Easing.OutExpo } }
-                                }
-                                MouseArea {
-                                    id: startupEditMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor;
-                                    onClicked: {
-                                        dynamicStartupModel.setProperty(outerIndex, "isEditing", !model.isEditing);
-                                        if (!model.isEditing) root.forceActiveFocus();
+                            HoverHandler { id: startupRowHover }
+                            property bool isHovered: startupRowHover.hovered || model.isEditing || isJumpHighlighted
+                            color: isHovered ? Theme.surfaceContainerHigh : Theme.surfaceContainer
+                            border.color: isJumpHighlighted
+                                ? root.green
+                                : (isHovered ? Theme.stateLayer(root.green, 0.5) : Theme.outlineVariant)
+                            border.width: isJumpHighlighted ? 2 : 1
+
+                            Behavior on implicitHeight { NumberAnimation { duration: Theme.durMedium; easing.type: Easing.OutQuart } }
+                            Behavior on color { ColorAnimation { duration: Theme.durShort; easing.type: Easing.OutExpo } }
+                            Behavior on border.color { ColorAnimation { duration: Theme.durShort; easing.type: Easing.OutExpo } }
+                            Behavior on border.width { NumberAnimation { duration: Theme.durShort } }
+
+                            MouseArea { anchors.fill: parent; z: -2; onClicked: root.highlightedBox = outerIndex; }
+
+                            ColumnLayout {
+                                id: rowCol
+                                anchors.fill: parent
+                                anchors.margins: root.s(Theme.gapMd)
+                                spacing: root.s(Theme.gapMd)
+
+                                // Comando (izquierda, elide) + controles (derecha)
+                                RowLayout {
+                                    Layout.fillWidth: true
+                                    spacing: root.s(Theme.gapSm)
+
+                                    Text {
+                                        Layout.fillWidth: true
+                                        Layout.alignment: Qt.AlignVCenter
+                                        text: model.command !== "" ? model.command : "(empty command)"
+                                        font.family: "Hack Nerd Font"
+                                        font.pixelSize: root.s(11)
+                                        color: model.command !== "" ? root.text : root.overlay0
+                                        elide: Text.ElideRight
+                                    }
+
+                                    Rectangle {
+                                        id: startupEditBtn
+                                        Layout.preferredWidth: root.s(28)
+                                        Layout.preferredHeight: root.s(28)
+                                        Layout.alignment: Qt.AlignVCenter
+                                        radius: root.s(Theme.radiusFull)
+                                        color: model.isEditing
+                                            ? root.green
+                                            : (startupEditMa.containsMouse ? root.green : Theme.surfaceContainerHighest)
+                                        border.width: 1
+                                        border.color: model.isEditing
+                                            ? root.green
+                                            : (startupEditMa.containsMouse ? root.green : Theme.outlineVariant)
+                                        Behavior on color { ColorAnimation { duration: Theme.durShort; easing.type: Easing.OutExpo } }
+
+                                        Text {
+                                            anchors.centerIn: parent
+                                            text: model.isEditing ? "▴" : "󰏫"
+                                            font.family: model.isEditing ? "Inter" : "Hack Nerd Font"
+                                            font.pixelSize: root.s(13)
+                                            color: model.isEditing
+                                                ? root.base
+                                                : (startupEditMa.containsMouse ? root.base : root.subtext0)
+                                            Behavior on color { ColorAnimation { duration: Theme.durShort; easing.type: Easing.OutExpo } }
+                                        }
+                                        MouseArea {
+                                            id: startupEditMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor;
+                                            onClicked: {
+                                                dynamicStartupModel.setProperty(outerIndex, "isEditing", !model.isEditing);
+                                                if (!model.isEditing) root.forceActiveFocus();
+                                            }
+                                        }
+                                    }
+
+                                    Rectangle {
+                                        id: startupDelRow
+                                        Layout.preferredWidth: root.s(28)
+                                        Layout.preferredHeight: root.s(28)
+                                        Layout.alignment: Qt.AlignVCenter
+                                        radius: root.s(Theme.radiusFull)
+                                        color: startupDelMa.containsMouse ? root.red : Theme.surfaceContainerHighest
+                                        border.color: startupDelMa.containsMouse ? root.red : Theme.outlineVariant
+                                        border.width: 1
+                                        Behavior on color { ColorAnimation { duration: Theme.durShort } }
+                                        Text {
+                                            anchors.centerIn: parent
+                                            text: "󰆴"
+                                            font.family: "Hack Nerd Font"
+                                            font.pixelSize: root.s(12)
+                                            color: startupDelMa.containsMouse ? root.base : root.red
+                                            Behavior on color { ColorAnimation { duration: Theme.durShort } }
+                                        }
+                                        MouseArea {
+                                            id: startupDelMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor;
+                                            onClicked: { dynamicStartupModel.remove(outerIndex); root.saveAllStartup(); }
+                                        }
                                     }
                                 }
-                            }
 
-                            Item {
-                                anchors.left: parent.left
-                                anchors.right: startupEditBtn.left; anchors.rightMargin: root.s(6)
-                                anchors.verticalCenter: parent.verticalCenter; height: parent.height; clip: true
+                                // Panel de edición de la fila (en flujo: al abrirse
+                                // crece la fila y, con ella, la card).
+                                Item {
+                                    id: editPanel
+                                    Layout.fillWidth: true
+                                    implicitHeight: editPanelCol.implicitHeight
+                                    visible: model.isEditing
+                                    opacity: model.isEditing ? 1.0 : 0.0
+                                    Behavior on opacity { NumberAnimation { duration: Theme.durMedium; easing.type: Easing.OutExpo } }
 
-                                Text {
-                                    anchors.left: parent.left; anchors.verticalCenter: parent.verticalCenter
-                                    text: model.command !== "" ? model.command : "(empty command)"
-                                    font.family: "Hack Nerd Font"; font.pixelSize: root.s(10)
-                                    color: model.command !== "" ? root.text : root.overlay0
-                                    elide: Text.ElideRight; width: parent.width
+                                    ColumnLayout {
+                                        id: editPanelCol
+                                        anchors.left: parent.left; anchors.right: parent.right
+                                        spacing: root.s(Theme.gapSm)
+
+                                        Rectangle {
+                                            Layout.fillWidth: true
+                                            Layout.preferredHeight: root.s(34)
+                                            radius: root.s(Theme.radiusMd)
+                                            color: Theme.surfaceContainerHigh
+                                            border.color: cmdInputFocus.activeFocus ? root.green : Theme.outlineVariant
+                                            border.width: 1
+                                            Behavior on border.color { ColorAnimation { duration: Theme.durShort } }
+                                            RowLayout {
+                                                anchors.fill: parent
+                                                anchors.leftMargin: root.s(Theme.gapMd)
+                                                anchors.rightMargin: root.s(Theme.gapMd)
+                                                spacing: root.s(Theme.gapSm)
+                                                TextInput {
+                                                    id: cmdInputFocus
+                                                    Layout.fillWidth: true; Layout.fillHeight: true; verticalAlignment: TextInput.AlignVCenter
+                                                    font.family: "Hack Nerd Font"; font.pixelSize: root.s(11); color: root.text; clip: true; selectByMouse: true
+                                                    text: model.command
+                                                    onTextChanged: dynamicStartupModel.setProperty(outerIndex, "command", text)
+                                                    Keys.onEscapePressed: { dynamicStartupModel.setProperty(outerIndex, "isEditing", false); root.forceActiveFocus(); }
+                                                    Text {
+                                                        anchors.left: parent.left; anchors.verticalCenter: parent.verticalCenter
+                                                        text: "e.g. waybar, dunst, nm-applet"
+                                                        color: Qt.alpha(root.subtext0, 0.45); visible: !parent.text && !parent.activeFocus
+                                                        font.family: "Hack Nerd Font"; font.pixelSize: root.s(11)
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        RowLayout {
+                                            Layout.alignment: Qt.AlignRight; spacing: root.s(Theme.gapSm)
+
+                                            Rectangle {
+                                                Layout.preferredHeight: root.s(30)
+                                                Layout.preferredWidth: startupDoneRow.implicitWidth + root.s(Theme.gapLg)
+                                                radius: root.s(Theme.radiusFull)
+                                                color: startupDoneMa.containsMouse ? root.green : Theme.surfaceContainerHigh
+                                                border.color: startupDoneMa.containsMouse ? root.green : Theme.outlineVariant; border.width: 1
+                                                Behavior on color { ColorAnimation { duration: Theme.durShort } }
+                                                RowLayout {
+                                                    id: startupDoneRow; anchors.centerIn: parent; spacing: root.s(Theme.gapXs)
+                                                    Text { text: "󰸞"; font.family: "Hack Nerd Font"; font.pixelSize: root.s(12); color: startupDoneMa.containsMouse ? root.base : root.green; Behavior on color { ColorAnimation { duration: Theme.durShort } } }
+                                                    Text { text: "Done"; font.family: "Hack Nerd Font"; font.pixelSize: root.s(10); color: startupDoneMa.containsMouse ? root.base : root.green; Behavior on color { ColorAnimation { duration: Theme.durShort } } }
+                                                }
+                                                MouseArea {
+                                                    id: startupDoneMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                                                    onClicked: {
+                                                        dynamicStartupModel.setProperty(outerIndex, "isEditing", false);
+                                                        root.forceActiveFocus();
+                                                        root.saveAllStartup();
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
+                    }
 
-                        Item {
-                            id: editPanel
-                            Layout.fillWidth: true
-                            implicitHeight: editPanelCol.implicitHeight
-                            visible: model.isEditing
-                            opacity: model.isEditing ? 1.0 : 0.0
-                            Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutExpo } }
+                    // ── "+ Add": última fila de la card, alineada a la derecha,
+                    //    en flujo (ya no flota sobre el contenido) ──────────────
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: root.s(Theme.gapSm)
 
-                            ColumnLayout {
-                                id: editPanelCol
-                                anchors.left: parent.left; anchors.right: parent.right
-                                spacing: root.s(8)
+                        Item { Layout.fillWidth: true }
 
-                                Rectangle {
-                                    Layout.fillWidth: true; Layout.preferredHeight: root.s(32); radius: root.s(22)
-                                    color: root.surface0; border.color: cmdInputFocus.activeFocus ? root.green : root.surface2; border.width: 1
-                                    Behavior on border.color { ColorAnimation { duration: 150 } }
-                                    RowLayout {
-                                        anchors.fill: parent; anchors.leftMargin: root.s(10); anchors.rightMargin: root.s(10); spacing: root.s(8)
-                                        TextInput {
-                                            id: cmdInputFocus
-                                            Layout.fillWidth: true; Layout.fillHeight: true; verticalAlignment: TextInput.AlignVCenter
-                                            font.family: "Hack Nerd Font"; font.pixelSize: root.s(10); color: root.text; clip: true; selectByMouse: true
-                                            text: model.command
-                                            onTextChanged: dynamicStartupModel.setProperty(outerIndex, "command", text)
-                                            Keys.onEscapePressed: { dynamicStartupModel.setProperty(outerIndex, "isEditing", false); root.forceActiveFocus(); }
-                                            Text {
-                                                anchors.left: parent.left; anchors.verticalCenter: parent.verticalCenter
-                                                text: "e.g. waybar, dunst, nm-applet"
-                                                color: Qt.alpha(root.subtext0, 0.45); visible: !parent.text && !parent.activeFocus
-                                                font.family: "Hack Nerd Font"; font.pixelSize: root.s(10)
-                                            }
-                                        }
-                                    }
-                                }
+                        Rectangle {
+                            Layout.preferredHeight: root.s(32)
+                            Layout.preferredWidth: startupAddRow.implicitWidth + root.s(Theme.gapLg)
+                            radius: root.s(Theme.radiusFull)
+                            color: startupAddMa.containsMouse ? root.green : Theme.surfaceContainer
+                            border.color: startupAddMa.containsMouse ? root.green : Theme.outlineVariant
+                            border.width: 1
+                            Behavior on color { ColorAnimation { duration: Theme.durShort } }
 
-                                RowLayout {
-                                    Layout.fillWidth: true; Layout.alignment: Qt.AlignRight; spacing: root.s(8)
+                            RowLayout {
+                                id: startupAddRow
+                                anchors.centerIn: parent
+                                spacing: root.s(Theme.gapXs)
+                                Text { text: "󰐕"; font.family: "Hack Nerd Font"; font.pixelSize: root.s(12); color: startupAddMa.containsMouse ? root.base : root.green; Behavior on color { ColorAnimation { duration: Theme.durShort } } }
+                                Text { text: "Add"; font.family: "Hack Nerd Font"; font.pixelSize: root.s(10); color: startupAddMa.containsMouse ? root.base : root.green; Behavior on color { ColorAnimation { duration: Theme.durShort } } }
+                            }
 
-                                    Rectangle {
-                                        Layout.preferredHeight: root.s(28); Layout.preferredWidth: startupDelRow.implicitWidth + root.s(16)
-                                        radius: root.s(22)
-                                        color: startupDelMa.containsMouse ? root.red : root.surface1
-                                        border.color: startupDelMa.containsMouse ? root.red : root.surface2; border.width: 1
-                                        Behavior on color { ColorAnimation { duration: 150 } }
-                                        RowLayout {
-                                            id: startupDelRow; anchors.centerIn: parent; spacing: root.s(5)
-                                            Text { text: "󰆴"; font.family: "Hack Nerd Font"; font.pixelSize: root.s(12); color: startupDelMa.containsMouse ? root.base : root.red; Behavior on color { ColorAnimation { duration: 150 } } }
-                                            Text { text: "Delete"; font.family: "Hack Nerd Font"; font.pixelSize: root.s(10); color: startupDelMa.containsMouse ? root.base : root.red; Behavior on color { ColorAnimation { duration: 150 } } }
-                                        }
-                                        MouseArea { id: startupDelMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: { dynamicStartupModel.remove(outerIndex); root.saveAllStartup(); } }
-                                    }
-
-                                    Rectangle {
-                                        Layout.preferredHeight: root.s(28); Layout.preferredWidth: startupDoneRow.implicitWidth + root.s(16)
-                                        radius: root.s(22)
-                                        color: startupDoneMa.containsMouse ? root.green : root.surface1
-                                        border.color: startupDoneMa.containsMouse ? root.green : root.surface2; border.width: 1
-                                        Behavior on color { ColorAnimation { duration: 150 } }
-                                        RowLayout {
-                                            id: startupDoneRow; anchors.centerIn: parent; spacing: root.s(5)
-                                            Text { text: "󰸞"; font.family: "Hack Nerd Font"; font.pixelSize: root.s(12); color: startupDoneMa.containsMouse ? root.base : root.green; Behavior on color { ColorAnimation { duration: 150 } } }
-                                            Text { text: "Done"; font.family: "Hack Nerd Font"; font.pixelSize: root.s(10); color: startupDoneMa.containsMouse ? root.base : root.green; Behavior on color { ColorAnimation { duration: 150 } } }
-                                        }
-                                        MouseArea {
-                                            id: startupDoneMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
-                                            onClicked: {
-                                                dynamicStartupModel.setProperty(outerIndex, "isEditing", false);
-                                                root.forceActiveFocus();
-                                                root.saveAllStartup();
-                                            }
-                                        }
-                                    }
+                            MouseArea {
+                                id: startupAddMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                                onClicked: {
+                                    if (!dynamicStartupModel) return;
+                                    dynamicStartupModel.append({ command: "", isEditing: true });
+                                    Qt.callLater(() => root.scrollToBottom());
                                 }
                             }
                         }

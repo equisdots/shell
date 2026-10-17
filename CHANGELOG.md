@@ -3,6 +3,40 @@
 All notable changes to the equisdots shell are documented here.
 Dates use YYYY-MM-DD.
 
+## [2026-10-16]
+
+### Added
+- **Bar master switch** (`bar.enabled`): the Bar group's new **General** page toggles the whole bar live — off unmaps every bar window (no UI, no reserved edge) and preserves the layout for the way back on.
+- **Complete plugin bars** (`provides.bar.provider`): a plugin can ship a whole bar; `ui/PluginHosts.qml` mounts it exactly like a host adapter (injected `host` handle, `surfaces`/`frameObstacle` contracts) with the plugin's master switch and its own settings page as its menu. POC fixture: `plugins/hello-bar` in `equisdots/plugins`.
+- **Id-integrity warnings in the Plugins manager**: a card whose plugin shadows another copy (the scan's `shadowed` list) or lives in a folder that does not match its manifest id (`dirMismatch`) shows a short warning note — duplicates are never silent.
+
+### Changed
+- **Bar group pages**: Engine → **General** (`d_engine` → `d_general`), now hosting the master switch, a live overview and the popup-position grid.
+- `barEngine` and `classicbar` are no longer read: leftover keys in user files are ignored, never rewritten.
+
+### Removed
+- **Classic bar engine**: `ui/bar/ClassicBar.qml`, the Classic Bar editor page, `PosCardClassic`, `ClassicSectionCard`, the `classic*` helpers in `BarLayout.js` and the classic branches in `Bar.qml`/`BarEditor.qml`.
+
+### Fixed
+- **Empty-file trap in the plugin settings writes** (Plugins manager + Plugins panel): the jq guards now seed with `[ -s ]` (exists *and* non-empty) instead of `[ -f ]` — `jq` on an empty file exits 0 with no output, so a truncated `settings.json` could never repair itself through the old seed.
+
+### Documentation
+- `docs/bar.md` rewritten for the single bar + plugin bars; `docs/personalization.md` updated.
+
+## [2026-10-15]
+
+### Changed
+- **Screenshots overlay left the shell**: `ScreenshotOverlay.qml` now ships with the `screenshots` plugin (deployed to `ui/plugins/screenshots/ui/`); the recording bar module resolves the plugin's script across deploy layouts (managed registry/tree, user plugin, transitional core path).
+- **Timex and RSS Reader moved to plugins**: `ui/Main.qml` resolves plugin-provided panels (`manifest provides.panels`) and the General position grid lists them dynamically; the `timex` plugin ships the calendar/weather popup + its settings page, the `rss-reader` plugin a rebuilt reader panel + its own feed manager page. `SUPER+S`/`SUPER+O` come from the plugins' `hypr.lua`.
+- **Clipboard, QuickNotes and File Search moved to plugins**: same panel mechanism + their own settings pages; `SUPER+C`, `SUPER+Y` and `SUPER+'` come from each plugin's `hypr.lua`.
+- **Bar modules can be plugin-provided**: `provides.bar.modules.<id>` lets a plugin supply a module implementation for a core slot; the recording indicator is now `screenshots`' `bar/Recording.qml` and the shell keeps no recording state (`bar.isRecording` and the core poller were removed).
+- **Weather and Resources islands moved to their plugins**: the weather bar module now ships with `timex` (self-polling the engine; the `weather.sh` shim and the bar's weather poller are gone) and the CPU/RAM island ships with `sysmon` (reads the core `SysData`); the sysmon plugin installs by default and its floating monitor becomes opt-in via a new `sysmon.panelEnabled` toggle.
+
+### Removed
+- `ScreenshotOverlay.qml` (the plugin owns it; `dots` installs the plugin by default).
+- `ui/timex/` (popup + settings tab) and `ui/panels/rss-reader/` (panel + fetcher + feeds) — both ship with their plugins now.
+- `ui/panels/clipboard/`, `ui/panels/quicknotes/`, `ui/panels/file-search/` and `ui/bar/modules/RecordingModule.qml` — the plugins ship them now.
+
 ## [2026-10-02]
 
 ### Added

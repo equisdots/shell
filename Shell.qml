@@ -5,6 +5,7 @@ import "./ui"
 import "./ui/bar"
 import "./ui/frame"
 import "./ui/widgets"
+import "./ui/surfaces"
 
 ShellRoot {
     Connections {
@@ -16,7 +17,8 @@ ShellRoot {
     Main {}
     Frame {}
     Bar {}
+    SurfaceHost {}
     Floating {}
     Widgets {}
-    Mascots {}
+    PluginHosts {}
 }

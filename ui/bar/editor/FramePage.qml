@@ -12,9 +12,9 @@ import "../../../core/FrameGeometry.js" as FG
 // "frame"). It edits the section that ui/frame/Frame.qml consumes live.
 //
 // The frame is a border wrapping all four screen edges, drawn on the Bottom
-// layer (behind the bar, mascot islands and windows) and reserving space on
+// layer (behind the bar, host overlays and windows) and reserving space on
 // each side so tiled windows never cross it (same model as the bar). Where the
-// bar, the nyx island or an edge-anchored widget (launcher/panels) meet it, the
+// bar, a host overlay or an edge-anchored widget (launcher/panels) meet it, the
 // line sinks and hugs them with rounded corners (muescas).
 //
 // Contract: receives the BarEditor root as `bar` (bar.s(), bar.colors).
@@ -62,7 +62,7 @@ Item {
     property real frReserveExtra: d.reserveExtra
     property bool frNotchBar: d.notchBar
     property bool frNotchWidget: d.notchWidget
-    property bool frNotchMascot: d.notchMascot
+    property bool frNotchHosts: d.notchHosts
     property bool frBackgroundLayer: d.layer === "background"
 
     readonly property var flickable: body.item ? body.item.flickable : null
@@ -87,7 +87,7 @@ Item {
         root.frReserveExtra = c.reserveExtra;
         root.frNotchBar = c.notchBar;
         root.frNotchWidget = c.notchWidget;
-        root.frNotchMascot = c.notchMascot;
+        root.frNotchHosts = c.notchHosts;
         root.frBackgroundLayer = c.layer === "background";
     }
     Component.onCompleted: root.syncFromConfig()
@@ -161,7 +161,7 @@ Item {
                 anchors.fill: parent
                 clip: true
                 boundsBehavior: Flickable.StopAtBounds
-                contentHeight: pageCol.height + bar.s(16)
+                contentHeight: pageCol.height + bar.s(Theme.gapLg)
                 ScrollBar.vertical: ScrollBar {
                     id: vScroll
                     width: bar.s(4)
@@ -169,8 +169,8 @@ Item {
                     hoverEnabled: true
                     active: pageFlick.moving || vScroll.hovered
                     contentItem: Rectangle {
-                        radius: bar.s(2)
-                        color: bar.colors.surface2
+                        radius: bar.s(Theme.radiusXs)
+                        color: Theme.surfaceContainerHighest
                         opacity: vScroll.active ? 1.0 : 0.45
                     }
                     background: Item {}
@@ -178,10 +178,10 @@ Item {
 
                 Column {
                     id: pageCol
-                    x: bar.s(8)
-                    y: bar.s(8)
-                    width: pageFlick.width - bar.s(16)
-                    spacing: bar.s(12)
+                    x: bar.s(Theme.gapSm)
+                    y: bar.s(Theme.gapSm)
+                    width: pageFlick.width - bar.s(Theme.gapLg)
+                    spacing: bar.s(Theme.gapLg)
 
                     Text {
                         text: "Frame"
@@ -193,7 +193,7 @@ Item {
                     EditLabel {
                         bar: root.bar
                         width: parent.width
-                        text: "A border wrapping all four screen edges, drawn behind the bar, the mascots and the windows. It reserves space on each side so tiled windows never cross it, and hugs the bar/mascot/launcher with rounded corners. Applies live."
+                        text: "A border wrapping all four screen edges, drawn behind the bar, host overlays and the windows. It reserves space on each side so tiled windows never cross it, and hugs the bar/overlay/launcher with rounded corners. Applies live."
                         font.pixelSize: bar.s(11)
                         color: bar.colors.subtext0
                         wrapMode: Text.WordWrap
@@ -208,7 +208,7 @@ Item {
                     }
                     Flow {
                         width: parent.width
-                        spacing: bar.s(8)
+                        spacing: bar.s(Theme.gapSm)
                         Repeater {
                             model: FG.presets()
                             delegate: EditorButton {
@@ -280,7 +280,7 @@ Item {
                         width: parent.width
                         bar: root.bar
                         icon: "󰅁"
-                        label: "Border line (hugs the bar/mascot)"
+                        label: "Border line (hugs the bar/overlays)"
                         checked: root.frLine
                         onToggled: { root.frLine = !root.frLine; root.set("line", root.frLine); }
                     }
@@ -361,22 +361,22 @@ Item {
                         Rectangle {
                             anchors.right: parent.right
                             anchors.verticalCenter: parent.verticalCenter
-                            width: bar.s(64); height: bar.s(24); radius: bar.s(7)
+                            width: bar.s(64); height: bar.s(24); radius: bar.s(Theme.radiusSm)
                             color: root.colorOf(root.frColor)
-                            border.width: 1; border.color: bar.colors.surface1
+                            border.width: 1; border.color: Theme.outlineVariant
                         }
                     }
                     Flow {
                         width: parent.width
-                        spacing: bar.s(6)
+                        spacing: bar.s(Theme.gapSm)
                         Repeater {
                             model: root.frameColors
                             delegate: Rectangle {
                                 readonly property bool sel: String(root.frColor) === String(modelData)
-                                width: bar.s(24); height: bar.s(24); radius: bar.s(7)
+                                width: bar.s(24); height: bar.s(24); radius: bar.s(Theme.radiusSm)
                                 color: root.colorOf(modelData)
                                 border.width: sel ? 2 : 1
-                                border.color: sel ? bar.colors.text : bar.colors.surface2
+                                border.color: sel ? bar.colors.text : Theme.outlineVariant
                                 MouseArea {
                                     anchors.fill: parent
                                     cursorShape: Qt.PointingHandCursor
@@ -417,23 +417,23 @@ Item {
                         Rectangle {
                             anchors.right: parent.right
                             anchors.verticalCenter: parent.verticalCenter
-                            width: bar.s(64); height: bar.s(24); radius: bar.s(7)
+                            width: bar.s(64); height: bar.s(24); radius: bar.s(Theme.radiusSm)
                             color: root.colorOf(root.frFillColor)
-                            border.width: 1; border.color: bar.colors.surface1
+                            border.width: 1; border.color: Theme.outlineVariant
                         }
                     }
                     Flow {
                         width: parent.width
                         visible: root.frFill
-                        spacing: bar.s(6)
+                        spacing: bar.s(Theme.gapSm)
                         Repeater {
                             model: root.frameColors
                             delegate: Rectangle {
                                 readonly property bool sel: String(root.frFillColor) === String(modelData)
-                                width: bar.s(24); height: bar.s(24); radius: bar.s(7)
+                                width: bar.s(24); height: bar.s(24); radius: bar.s(Theme.radiusSm)
                                 color: root.colorOf(modelData)
                                 border.width: sel ? 2 : 1
-                                border.color: sel ? bar.colors.text : bar.colors.surface2
+                                border.color: sel ? bar.colors.text : Theme.outlineVariant
                                 MouseArea {
                                     anchors.fill: parent
                                     cursorShape: Qt.PointingHandCursor
@@ -483,9 +483,9 @@ Item {
                         width: parent.width
                         bar: root.bar
                         icon: ""
-                        label: "Hug the mascot island"
-                        checked: root.frNotchMascot
-                        onToggled: { root.frNotchMascot = !root.frNotchMascot; root.set("notchMascot", root.frNotchMascot); }
+                        label: "Hug host overlays"
+                        checked: root.frNotchHosts
+                        onToggled: { root.frNotchHosts = !root.frNotchHosts; root.set("notchHosts", root.frNotchHosts); }
                     }
 
                     // ── Space & layer ───────────────────────────────────────

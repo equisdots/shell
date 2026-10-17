@@ -138,12 +138,12 @@ Item {
         signal clicked()
         Layout.fillWidth: true
         height: root.bar.s(32)
-        radius: root.bar.s(10)
-        color: actionMa.containsMouse ? Qt.alpha(root.bar.colors.surface1, 0.5) : Qt.alpha(root.bar.colors.surface0, 0.35)
+        radius: root.bar.s(Theme.radiusMd)
+        color: actionMa.containsMouse ? Theme.surfaceContainer : Theme.surfaceContainerLow
         Behavior on color { ColorAnimation { duration: 120 } }
         Row {
             anchors.centerIn: parent
-            spacing: root.bar.s(7)
+            spacing: root.bar.s(Theme.gapSm)
             Text {
                 text: action.icon
                 font.family: "Hack Nerd Font"; font.pixelSize: root.bar.s(13)
@@ -177,30 +177,30 @@ Item {
                 anchors.fill: parent
                 clip: true
                 boundsBehavior: Flickable.StopAtBounds
-                contentHeight: pageCol.height + bar.s(16)
+                contentHeight: pageCol.height + bar.s(Theme.gapLg)
                 ScrollBar.vertical: ScrollBar {
                     width: bar.s(3)
                     policy: ScrollBar.AsNeeded
-                    contentItem: Rectangle { radius: bar.s(2); color: bar.colors.surface2; opacity: parent.active ? 0.8 : 0.35 }
+                    contentItem: Rectangle { radius: bar.s(Theme.radiusXs); color: Theme.surfaceContainerHighest; opacity: parent.active ? 0.8 : 0.35 }
                     background: Item {}
                 }
 
                 Column {
                     id: pageCol
-                    x: bar.s(8); y: bar.s(8)
-                    width: pageFlick.width - bar.s(16)
-                    spacing: bar.s(12)
+                    x: bar.s(Theme.gapSm); y: bar.s(Theme.gapSm)
+                    width: pageFlick.width - bar.s(Theme.gapLg)
+                    spacing: bar.s(Theme.gapLg)
 
                     // ── Header ─────────────────────────────────────────────
                     Column {
                         width: parent.width
-                        spacing: bar.s(8)
-                        topPadding: bar.s(2)
+                        spacing: bar.s(Theme.gapSm)
+                        topPadding: bar.s(Theme.gap2xs)
                         Row {
-                            spacing: bar.s(6)
-                            Rectangle { width: bar.s(8); height: bar.s(8); radius: bar.s(4); color: bar.colors.mauve }
-                            Rectangle { width: bar.s(8); height: bar.s(8); radius: bar.s(4); color: bar.colors.blue }
-                            Rectangle { width: bar.s(8); height: bar.s(8); radius: bar.s(4); color: bar.colors.green }
+                            spacing: bar.s(Theme.gapSm)
+                            Rectangle { width: bar.s(8); height: bar.s(8); radius: bar.s(Theme.radiusFull); color: bar.colors.mauve }
+                            Rectangle { width: bar.s(8); height: bar.s(8); radius: bar.s(Theme.radiusFull); color: bar.colors.blue }
+                            Rectangle { width: bar.s(8); height: bar.s(8); radius: bar.s(Theme.radiusFull); color: bar.colors.green }
                         }
                         Row {
                             spacing: 0
@@ -228,23 +228,23 @@ Item {
                     GridLayout {
                         width: parent.width
                         columns: 3
-                        columnSpacing: bar.s(10)
-                        rowSpacing: bar.s(10)
+                        columnSpacing: bar.s(Theme.gapMd)
+                        rowSpacing: bar.s(Theme.gapMd)
                         Repeater {
                             model: root.stats
                             delegate: Rectangle {
                                 required property var modelData
                                 Layout.fillWidth: true
                                 height: bar.s(58)
-                                radius: bar.s(12)
-                                color: Qt.alpha(bar.colors.surface0, 0.35)
+                                radius: bar.s(Theme.radiusMd)
+                                color: Theme.surfaceContainerLow
                                 Column {
                                     anchors.left: parent.left
                                     anchors.right: parent.right
                                     anchors.verticalCenter: parent.verticalCenter
-                                    anchors.leftMargin: bar.s(14)
-                                    anchors.rightMargin: bar.s(10)
-                                    spacing: bar.s(3)
+                                    anchors.leftMargin: bar.s(Theme.gapMd)
+                                    anchors.rightMargin: bar.s(Theme.gapMd)
+                                    spacing: bar.s(Theme.gapXs)
                                     Text {
                                         text: modelData.label
                                         font.family: "Hack Nerd Font"; font.pixelSize: bar.s(10)
@@ -266,7 +266,7 @@ Item {
                     // ── Actions (one row, equal width) ─────────────────────
                     RowLayout {
                         width: parent.width
-                        spacing: bar.s(10)
+                        spacing: bar.s(Theme.gapMd)
                         ActionButton {
                             icon: "󰆏"; label: root.copiedFlash ? "Copied!" : "Copy debug info"
                             onClicked: {
@@ -297,14 +297,14 @@ Item {
                     Rectangle {
                         width: parent.width
                         visible: root.doctorOut !== ""
-                        height: visible ? doctorCol.implicitHeight + bar.s(28) : 0
-                        radius: bar.s(12)
-                        color: Qt.alpha(bar.colors.surface0, 0.35)
+                        height: visible ? doctorCol.implicitHeight + bar.s(Theme.gapMd) * 2 : 0
+                        radius: bar.s(Theme.radiusMd)
+                        color: Theme.surfaceContainerLow
                         Column {
                             id: doctorCol
-                            x: bar.s(16); y: bar.s(12)
+                            x: bar.s(Theme.gapLg); y: bar.s(Theme.gapMd)
                             width: parent.width - bar.s(52)
-                            spacing: bar.s(6)
+                            spacing: bar.s(Theme.gapSm)
                             Text {
                                 text: "dots doctor"
                                 font.family: "Hack Nerd Font"; font.weight: Font.Bold; font.pixelSize: bar.s(12)
@@ -335,24 +335,24 @@ Item {
                     GridLayout {
                         width: parent.width
                         columns: 2
-                        columnSpacing: bar.s(10)
-                        rowSpacing: bar.s(10)
+                        columnSpacing: bar.s(Theme.gapMd)
+                        rowSpacing: bar.s(Theme.gapMd)
                         Repeater {
                             model: root.sections
                             delegate: Rectangle {
                                 required property var modelData
                                 Layout.fillWidth: true
-                                radius: bar.s(12)
-                                color: Qt.alpha(bar.colors.surface0, 0.35)
+                                radius: bar.s(Theme.radiusMd)
+                                color: Theme.surfaceContainerLow
                                 height: bar.s(52 + 24 * root.maxSectionRows)
                                 Column {
-                                    x: bar.s(16); y: bar.s(14)
-                                    width: parent.width - bar.s(32)
-                                    spacing: bar.s(6)
+                                    x: bar.s(Theme.gapLg); y: bar.s(Theme.gapLg)
+                                    width: parent.width - bar.s(Theme.gapLg) * 2
+                                    spacing: bar.s(Theme.gapSm)
                                     Row {
-                                        spacing: bar.s(7)
+                                        spacing: bar.s(Theme.gapSm)
                                         Rectangle {
-                                            width: bar.s(6); height: bar.s(6); radius: bar.s(3)
+                                            width: bar.s(6); height: bar.s(6); radius: bar.s(Theme.radiusFull)
                                             anchors.verticalCenter: parent.verticalCenter
                                             color: Qt.alpha(bar.colors.mauve, 0.9)
                                         }
@@ -375,7 +375,7 @@ Item {
                                             // value text collapsed to 0 px).
                                             width: parent.width
                                             height: bar.s(22)
-                                            spacing: bar.s(10)
+                                            spacing: bar.s(Theme.gapMd)
                                             Text {
                                                 width: bar.s(80)
                                                 anchors.verticalCenter: parent.verticalCenter
@@ -401,7 +401,7 @@ Item {
 
                     // ── Repositories (single column, uniform rows) ─────────
                     Text {
-                        topPadding: bar.s(4)
+                        topPadding: bar.s(Theme.gapXs)
                         text: "Repositories"
                         font.family: "Hack Nerd Font"; font.weight: Font.Bold
                         font.pixelSize: bar.s(13)
@@ -409,29 +409,29 @@ Item {
                     }
                     Rectangle {
                         width: parent.width
-                        radius: bar.s(12)
-                        color: Qt.alpha(bar.colors.surface0, 0.35)
-                        height: repoCol.implicitHeight + bar.s(12)
+                        radius: bar.s(Theme.radiusMd)
+                        color: Theme.surfaceContainerLow
+                        height: repoCol.implicitHeight + bar.s(Theme.gapSm) * 2
                         Column {
                             id: repoCol
-                            x: bar.s(6); y: bar.s(6)
-                            width: parent.width - bar.s(12)
+                            x: bar.s(Theme.gapSm); y: bar.s(Theme.gapSm)
+                            width: parent.width - bar.s(Theme.gapSm) * 2
                             Repeater {
                                 model: root.repos
                                 delegate: Rectangle {
                                     required property var modelData
                                     width: repoCol.width
                                     height: bar.s(40)
-                                    radius: bar.s(9)
-                                    color: repoMa.containsMouse ? Qt.alpha(bar.colors.surface1, 0.45) : "transparent"
+                                    radius: bar.s(Theme.radiusSm)
+                                    color: repoMa.containsMouse ? Theme.surfaceContainer : "transparent"
                                     Behavior on color { ColorAnimation { duration: 120 } }
                                     RowLayout {
                                         anchors.left: parent.left
                                         anchors.right: parent.right
-                                        anchors.leftMargin: bar.s(10)
-                                        anchors.rightMargin: bar.s(12)
+                                        anchors.leftMargin: bar.s(Theme.gapMd)
+                                        anchors.rightMargin: bar.s(Theme.gapMd)
                                         anchors.verticalCenter: parent.verticalCenter
-                                        spacing: bar.s(10)
+                                        spacing: bar.s(Theme.gapMd)
                                         Text {
                                             text: modelData.icon
                                             font.family: "Hack Nerd Font"; font.pixelSize: bar.s(15)
@@ -477,8 +477,8 @@ Item {
 
                     // ── Footer ─────────────────────────────────────────────
                     Text {
-                        topPadding: bar.s(6)
-                        bottomPadding: bar.s(4)
+                        topPadding: bar.s(Theme.gapSm)
+                        bottomPadding: bar.s(Theme.gapXs)
                         width: parent.width
                         text: "MIT licensed · built with Quickshell · wallpaper daemon: xwww (fork of awww) · base16 palettes"
                         font.family: "Hack Nerd Font"; font.pixelSize: bar.s(10)

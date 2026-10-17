@@ -63,23 +63,19 @@ function getLayout(name, mx, my, mw, mh, userScale) {
         
         // --- Central Standard Tools ---
         "applauncher": { w: s(800, scale), h: s(700, scale), rx: Math.floor((mw/2)-(s(800, scale)/2)), ry: Math.floor((mh/2)-(s(700, scale)/2)), comp: "ui/bar/popups/applauncher/appLauncher.qml" },
-        "clipboard": { w: s(800, scale), h: s(700, scale), rx: Math.floor((mw/2)-(s(800, scale)/2)), ry: Math.floor((mh/2)-(s(700, scale)/2)), comp: "ui/panels/clipboard/ClipboardManager.qml" },
         "idle": { w: s(560, scale), h: s(430, scale), rx: Math.floor((mw/2)-(s(560, scale)/2)), ry: Math.floor((mh/2)-(s(430, scale)/2)), comp: "ui/panels/idle/IdlePopup.qml" },
 
         // --- Central Large Tools ---
         "focustime": { w: s(900, scale), h: s(700, scale), rx: Math.floor((mw/2)-(s(900, scale)/2)), ry: Math.floor((mh/2)-(s(700, scale)/2)), comp: "ui/panels/focustime/FocusTimePopup.qml" },
 
         // --- Extralarge / Custom Centered ---
-        "calendar": { w: s(1450, scale), h: s(750, scale), rx: Math.floor((mw/2)-(s(1450, scale)/2)), ry: Math.floor((mh/2)-(s(750, scale)/2)), comp: "ui/timex/TimexPopup.qml" },
         "updater": { w: s(950, scale), h: s(850, scale), rx: Math.floor((mw/2)-(s(950, scale)/2)), ry: Math.floor((mh/2)-(s(850, scale)/2)), comp: "ui/bar/popups/updater/UpdaterPopup.qml" },
         "system-monitor": { w: s(720, scale), h: s(600, scale), rx: Math.floor((mw/2)-(s(720, scale)/2)), ry: Math.floor((mh/2)-(s(600, scale)/2)), comp: "ui/bar/popups/system-monitor/SystemMonitor.qml" },
-        "quicknotes": { w: s(480, scale), h: s(460, scale), rx: Math.floor((mw/2)-(s(480, scale)/2)), ry: Math.floor((mh/2)-(s(460, scale)/2)), comp: "ui/panels/quicknotes/QuickNotes.qml" },
-        "rss-reader": { w: s(650, scale), h: s(560, scale), rx: Math.floor((mw/2)-(s(650, scale)/2)), ry: Math.floor((mh/2)-(s(560, scale)/2)), comp: "ui/panels/rss-reader/RssReader.qml" },
-        "file-search": { w: s(600, scale), h: s(500, scale), rx: Math.floor((mw/2)-(s(600, scale)/2)), ry: Math.floor((mh/2)-(s(500, scale)/2)), comp: "ui/panels/file-search/FileSearch.qml" },
-        "palette": { w: s(620, scale), h: s(650, scale), rx: Math.floor((mw/2)-(s(620, scale)/2)), ry: Math.floor((mh/2)-(s(650, scale)/2)), comp: "ui/panels/palette/PaletteWidget.qml" },
+        "palette": { w: mw - s(40, scale), h: Math.min(s(880, scale), mh - s(60, scale)), rx: s(20, scale), ry: Math.floor((mh - Math.min(s(880, scale), mh - s(60, scale))) / 2), comp: "ui/panels/palette/PaletteWidget.qml" },
         "scale": { w: s(520, scale), h: s(560, scale), rx: Math.floor((mw/2)-(s(520, scale)/2)), ry: Math.floor((mh/2)-(s(560, scale)/2)), comp: "ui/panels/scale/ScalePicker.qml" },
         "window-controls": { w: s(480, scale), h: s(800, scale), rx: Math.floor((mw/2)-(s(480, scale)/2)), ry: Math.floor((mh/2)-(s(800, scale)/2)), comp: "ui/panels/window-controls/WindowControls.qml" },
         "bar-editor": { w: Math.min(s(1260, scale), mw - s(40, scale)), h: s(760, scale), rx: Math.floor((mw - Math.min(s(1260, scale), mw - s(40, scale))) / 2), ry: Math.floor((mh/2)-(s(760, scale)/2)), comp: "ui/bar/BarEditor.qml" },
+        "plugins": { w: s(1000, scale), h: s(780, scale), rx: Math.floor((mw/2)-(s(1000, scale)/2)), ry: Math.floor((mh/2)-(s(780, scale)/2)), comp: "ui/panels/plugins/PluginsPanel.qml" },
         "wallpaper": { w: mw, h: s(650, scale), rx: 0, ry: Math.floor((mh/2)-(s(650, scale)/2)), comp: "ui/panels/davincix/DavincixPicker.qml" },
         
         // --- Top Left Edge ---

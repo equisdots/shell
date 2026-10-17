@@ -2,3 +2,9 @@ __pycache__/
 *.pyc
 # Nyx (mascot module) is a separate repo deployed here by the dots installer.
 ui/nyx/
+
+# Plugin SDK / API deploy artifacts — placed by dots from equisdots/plugin-sdk
+# and equisdots/plugin-api (not shell sources).
+core/sdk/
+plugin-api.json
+core/scripts/plugins_compat.sh

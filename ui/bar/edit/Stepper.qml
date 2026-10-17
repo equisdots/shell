@@ -1,4 +1,5 @@
 import QtQuick
+import "../../../core"
 
 // − value + stepper del BarEditor (Fase 4: familia GuidePopup).
 // Botones: alpha(surface0, 0.4) + borde surface1; hover alpha(mauve, 0.15) +
@@ -10,14 +11,14 @@ Row {
     signal dec()
     signal inc()
 
-    spacing: bar ? bar.s(6) : 6
+    spacing: bar ? bar.s(Theme.gapXs) : Theme.gapXs
 
     Rectangle {
         id: decPill
         width: bar ? bar.s(26) : 26; height: width; radius: width / 2
-        color: !bar ? "transparent" : (decMa.containsMouse ? Qt.alpha(bar.colors.mauve, 0.15) : Qt.alpha(bar.colors.surface0, 0.4))
+        color: !bar ? "transparent" : (decMa.containsMouse ? Theme.stateLayer(bar.colors.mauve, Theme.stateHover) : Theme.surfaceContainerLow)
         border.width: 1
-        border.color: !bar ? "transparent" : (decMa.containsMouse ? bar.colors.mauve : bar.colors.surface1)
+        border.color: !bar ? "transparent" : (decMa.containsMouse ? bar.colors.mauve : Theme.outlineVariant)
         scale: decMa.pressed ? 0.94 : 1.0
         Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutQuart } }
         Behavior on color { ColorAnimation { duration: 150 } }
@@ -44,9 +45,9 @@ Row {
     Rectangle {
         id: incPill
         width: bar ? bar.s(26) : 26; height: width; radius: width / 2
-        color: !bar ? "transparent" : (incMa.containsMouse ? Qt.alpha(bar.colors.mauve, 0.15) : Qt.alpha(bar.colors.surface0, 0.4))
+        color: !bar ? "transparent" : (incMa.containsMouse ? Theme.stateLayer(bar.colors.mauve, Theme.stateHover) : Theme.surfaceContainerLow)
         border.width: 1
-        border.color: !bar ? "transparent" : (incMa.containsMouse ? bar.colors.mauve : bar.colors.surface1)
+        border.color: !bar ? "transparent" : (incMa.containsMouse ? bar.colors.mauve : Theme.outlineVariant)
         scale: incMa.pressed ? 0.94 : 1.0
         Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutQuart } }
         Behavior on color { ColorAnimation { duration: 150 } }

@@ -5,6 +5,7 @@
 // confirmed()/dismissed(); el picker root decide qué hacer en cada caso.
 // ═══════════════════════════════════════════════════════════════════════════
 import QtQuick
+import "../../../../core"
 
 Item {
     id: confirmRoot
@@ -40,15 +41,15 @@ Item {
         anchors.centerIn: parent
         width: Math.min(ctx.s(420), confirmRoot.parent.width - ctx.s(60))
         height: ctx.s(150)
-        radius: ctx.s(16)
-        color: theme.mantle
-        border.color: theme.surface2
+        radius: Theme.radiusLg
+        color: Theme.surfaceContainerHigh
+        border.color: Theme.outlineVariant
         border.width: 1
 
         Column {
             anchors.fill: parent
-            anchors.margins: ctx.s(18)
-            spacing: ctx.s(8)
+            anchors.margins: Theme.gapLg
+            spacing: Theme.gapSm
 
             Text {
                 text: confirmRoot.title
@@ -67,19 +68,19 @@ Item {
                 width: parent.width
             }
 
-            Item { width: 1; height: ctx.s(6) }
+            Item { width: 1; height: Theme.gapXs }
 
             Row {
                 anchors.right: parent.right
-                spacing: ctx.s(10)
+                spacing: Theme.gapSm
 
                 // Cancel.
                 Rectangle {
                     width: cancelText.implicitWidth + ctx.s(30)
                     height: ctx.s(36)
-                    radius: ctx.s(12)
-                    color: cancelMouse.containsMouse ? theme.surface1 : theme.surface0
-                    border.color: theme.surface1
+                    radius: Theme.radiusMd
+                    color: cancelMouse.containsMouse ? Theme.surfaceContainerHigh : Theme.surfaceContainer
+                    border.color: Theme.outlineVariant
                     border.width: 1
                     Behavior on color { ColorAnimation { duration: 150 } }
 
@@ -105,7 +106,7 @@ Item {
                 Rectangle {
                     width: confirmText.implicitWidth + ctx.s(30)
                     height: ctx.s(36)
-                    radius: ctx.s(12)
+                    radius: Theme.radiusMd
                     color: confirmMouse.containsMouse
                         ? Qt.alpha(theme.mauve, 0.8)
                         : Qt.alpha(theme.mauve, 0.6)

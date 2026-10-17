@@ -71,18 +71,11 @@ Item {
     // text roles
     property string idleRole: "text"
     property string hoverRole: ""
-    // Flat-mode icon tinting (bar.accentTintMode, classic solid/fill styles):
-    // keep the module's state color as the CONTENT color even when the island
-    // fill is disabled — colored icon on the strip, no double fill.
-    readonly property bool accentTint: bar && bar.accentTintMode === true
     readonly property color contentColor: {
         let custom = root.moduleCfg.color !== "" ? root.moduleCfg.color
             : (bar.iconColor !== undefined && bar.iconColor !== null ? bar.iconColor : "");
         if (custom !== "") return colors[custom] !== undefined ? colors[custom] : custom;
         if (accentVisible || (root.fillForced && root.accentActive && root.effectiveAccentRole !== "")) return colors.base;
-        if (root.accentTint && root.effectiveAccentRole !== "") {
-            return root.hasAccentColor ? root.accentColor : (colors[root.effectiveAccentRole] || colors.text);
-        }
         if (hovered) return colors[hoverRole !== "" ? hoverRole : idleRole] || colors.text;
         return colors[idleRole] || colors.text;
     }
