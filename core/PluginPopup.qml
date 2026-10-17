@@ -50,6 +50,9 @@ Item {
         scope: popup.scopeName !== "" ? popup.scopeName : popup.pluginId
     }
 
+    // Expose the plugin's own SettingsScope to the popup content (read/write).
+    readonly property var settings: cfg
+
     readonly property string anchor: cfg.get("popupAnchor", "center")
 
     readonly property real _w: s(popupWidth)
