@@ -236,22 +236,51 @@ Item {
                 contentH = h;
             }
 
-            onChildrenChanged: Qt.callLater(contentHost.recalc)
-            Component.onCompleted: Qt.callLater(contentHost.recalc)
+            // Content can grow at runtime (workspace pills gaining app icons,
+            // labels changing). Re-measure whenever a child changes size; the
+            // old startup-only sampling left the island clipped until a full
+            // shell reload (SUPER+R).
+            property var watchedKids: []
 
-            // Content sizes settle asynchronously after load (fonts, images,
-            // data). Re-measure briefly after startup; orientation changes
-            // rebuild modules so this re-runs on every fresh instance.
-            Timer {
-                interval: 120
-                repeat: true
-                running: true
-                property int ticks: 0
-                onTriggered: {
-                    contentHost.recalc();
-                    ticks++;
-                    if (ticks > 25) running = false;
+            function scheduleRecalc() { recalcDebounce.restart(); }
+
+            function unwatchKids() {
+                for (var i = 0; i < watchedKids.length; i++) {
+                    var c = watchedKids[i];
+                    if (!c) continue;
+                    try { c.widthChanged.disconnect(scheduleRecalc); } catch (e) {}
+                    try { c.implicitWidthChanged.disconnect(scheduleRecalc); } catch (e) {}
+                    try { c.heightChanged.disconnect(scheduleRecalc); } catch (e) {}
+                    try { c.implicitHeightChanged.disconnect(scheduleRecalc); } catch (e) {}
+                    try { c.visibleChanged.disconnect(scheduleRecalc); } catch (e) {}
                 }
+                watchedKids = [];
+            }
+
+            function watchKids() {
+                unwatchKids();
+                var kids = contentHost.data;
+                for (var i = 0; i < kids.length; i++) {
+                    var c = kids[i];
+                    if (!c) continue;
+                    watchedKids.push(c);
+                    try { c.widthChanged.connect(scheduleRecalc); } catch (e) {}
+                    try { c.implicitWidthChanged.connect(scheduleRecalc); } catch (e) {}
+                    try { c.heightChanged.connect(scheduleRecalc); } catch (e) {}
+                    try { c.implicitHeightChanged.connect(scheduleRecalc); } catch (e) {}
+                    try { c.visibleChanged.connect(scheduleRecalc); } catch (e) {}
+                }
+                scheduleRecalc();
+            }
+
+            onChildrenChanged: Qt.callLater(contentHost.watchKids)
+            Component.onCompleted: Qt.callLater(contentHost.watchKids)
+
+            // Coalesces a burst of child size changes into one measurement.
+            Timer {
+                id: recalcDebounce
+                interval: 0
+                onTriggered: contentHost.recalc()
             }
         }
 
