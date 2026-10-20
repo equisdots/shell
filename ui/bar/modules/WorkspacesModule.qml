@@ -166,6 +166,9 @@ ModulePill {
                     "eclipse": "", "netbeans": "", "code": "", "code-oss": "",
                     "code-insiders": "", "codium": "", "vscodium": "", "visual-studio-code": "",
                     "vscode": "",
+                    "com.microsoft.vscode": "", "com.microsoft.vscodeinsiders": "",
+                    "com.vscodium.codium": "", "com.visualstudio.code": "",
+                    "com.visualstudio.code.insiders": "",
                     // JetBrains IDEs
                     "jetbrains-idea": "", "idea": "", "intellij": "", "pycharm": "",
                     "webstorm": "", "clion": "", "goland": "", "rider": "",
