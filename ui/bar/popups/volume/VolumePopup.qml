@@ -103,6 +103,7 @@ Item {
     // -------------------------------------------------------------------------
     Settings {
         id: cache
+        location: "file://" + Quickshell.statePath("volume-cache.ini")
         property string lastAudioJson: ""
     }
 

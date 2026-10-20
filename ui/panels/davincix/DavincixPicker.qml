@@ -249,6 +249,7 @@ Item {
 
     Settings {
         id: searchState
+        location: "file://" + Quickshell.statePath("davincix-search.ini")
         category: "QS_Davincix"
         property string query: ""
         property bool searched: false

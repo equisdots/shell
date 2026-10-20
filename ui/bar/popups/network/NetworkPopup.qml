@@ -48,6 +48,7 @@ Item {
 
     Settings {
         id: cache
+        location: "file://" + Quickshell.statePath("network-cache.ini")
         category: "QS_NetworkWidgetUnified"
         property string lastWifiSsid: ""
         property string lastWifiJson: ""

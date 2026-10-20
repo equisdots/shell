@@ -133,7 +133,7 @@ Item {
         Image {
             anchors.fill: parent
             source: fileUrl
-            sourceSize: Qt.size(1, 1)
+            sourceSize: Qt.size(16, 16)
             fillMode: Image.Stretch
             // Fondo estirado solo en modo rect; en square/circle el entorno
             // de la tarjeta queda TRANSPARENTE (sin cuadrado de fondo).
