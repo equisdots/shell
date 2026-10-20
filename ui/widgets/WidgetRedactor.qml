@@ -879,7 +879,7 @@ Item {
     // ---------------------------------------------------------------------------
     // Keyboard
     // ---------------------------------------------------------------------------
-    Keys.onEscapePressed: {
+    Keys.onEscapePressed: (event) => {
         if (root.pickerOpen) {
             root.closePicker();
             event.accepted = true;
@@ -888,7 +888,7 @@ Item {
         root.exitRedactor();
         event.accepted = true;
     }
-    Keys.onDeletePressed: {
+    Keys.onDeletePressed: (event) => {
         if (!root.pickerOpen)
             root.deleteSelected();
 

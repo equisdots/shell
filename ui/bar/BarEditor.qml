@@ -1868,7 +1868,7 @@ Item {
     // pendientes (closeFlush) y anima la salida antes de qs_manager.sh close.
     // Buscador (Fase 5): si el overlay está abierto, ESC lo cierra primero y
     // NO cierra el panel (el overlay devuelve el foco con onClosed).
-    Keys.onEscapePressed: {
+    Keys.onEscapePressed: (event) => {
         if (root.searchOpen) {
             root.closeSearch();
             event.accepted = true;
@@ -1880,7 +1880,7 @@ Item {
     // Phase 2: Tab / Shift+Tab cycle the visible pages (same list the rail
     // renders); ESC keeps the phase-1 contract.
     // Con el buscador abierto no cambian de página (el foco vive en el input).
-    Keys.onTabPressed: {
+    Keys.onTabPressed: (event) => {
         event.accepted = true;
         if (root.searchOpen) return;
         let nav = root.navForEngine();
@@ -1888,7 +1888,7 @@ Item {
         let idx = root.navIndex(root.currentPage);
         root.gotoPage(nav[(idx + 1) % nav.length].id);
     }
-    Keys.onBacktabPressed: {
+    Keys.onBacktabPressed: (event) => {
         event.accepted = true;
         if (root.searchOpen) return;
         let nav = root.navForEngine();

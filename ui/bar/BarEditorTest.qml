@@ -7,8 +7,8 @@ import Quickshell.Wayland
 PanelWindow {
     id: w
     color: "transparent"
-    width: 800
-    height: 700
+    implicitWidth: 800
+    implicitHeight: 700
     anchors.top: true
     anchors.left: true
     margins { top: 10; left: 10 }

@@ -189,7 +189,6 @@ Item {
 
         Behavior on width { enabled: !root.dragSuppress; NumberAnimation { duration: 400; easing.type: Easing.OutQuint } }
         Behavior on height { enabled: !root.dragSuppress; NumberAnimation { duration: 400; easing.type: Easing.OutQuint } }
-        Behavior on opacity { enabled: !root.dragSuppress; NumberAnimation { duration: 300 } }
 
         scale: (!root.dragSuppress && isHovered) ? 1.05 : 1.0
         Behavior on scale { NumberAnimation { duration: 250; easing.type: Easing.OutExpo } }
@@ -200,7 +199,7 @@ Item {
             y: root.initAnimTrigger ? 0 : bar.s(15)
             Behavior on y { NumberAnimation { duration: 500; easing.type: Easing.OutBack } }
         }
-        Behavior on opacity { NumberAnimation { duration: 400; easing.type: Easing.OutCubic } }
+        Behavior on opacity { enabled: !root.dragSuppress; NumberAnimation { duration: 400; easing.type: Easing.OutCubic } }
 
         // Content host. An Item never auto-sizes to its children, so we measure
         // the VISIBLE children (modules toggle horizontal/compact branches) and
@@ -273,8 +272,21 @@ Item {
                 scheduleRecalc();
             }
 
-            onChildrenChanged: Qt.callLater(contentHost.watchKids)
-            Component.onCompleted: Qt.callLater(contentHost.watchKids)
+            onChildrenChanged: watchDebounce.restart()
+            Component.onCompleted: watchDebounce.start()
+
+            // A Timer (not Qt.callLater) so a pending callback dies with this
+            // item instead of running against a destroyed JS context.
+            Timer {
+                id: watchDebounce
+                interval: 0
+                onTriggered: {
+                    try {
+                        if (contentHost && typeof contentHost.watchKids === "function")
+                            contentHost.watchKids();
+                    } catch (e) {}
+                }
+            }
 
             // Coalesces a burst of child size changes into one measurement.
             Timer {
