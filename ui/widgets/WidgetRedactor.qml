@@ -1026,10 +1026,20 @@ Item {
                 property bool selected: root.selectedId === wId
                 property bool hovered: false
                 // Effective logical size (face-clamped) and visual box size.
-                property var eff: root.effSize(wType, wVariant, wW, wH)
-                property bool odd: root.parityOf(wRotation)
-                property real boxW: odd ? eff.h : eff.w
-                property real boxH: odd ? eff.w : eff.h
+                // Keep the two scalar values as separate bindings instead of a
+                // JS-object property: a var object here can trip Qt's binding
+                // loop detector while the model row is being populated.
+                readonly property real effW: {
+                    const e = root.effSize(wType, wVariant, wW, wH);
+                    return e.w;
+                }
+                readonly property real effH: {
+                    const e = root.effSize(wType, wVariant, wW, wH);
+                    return e.h;
+                }
+                readonly property bool odd: root.parityOf(wRotation)
+                readonly property real boxW: odd ? effH : effW
+                readonly property real boxH: odd ? effW : effH
                 property int chipH: s(18)
 
                 x: Math.round(wX)
@@ -1046,8 +1056,8 @@ Item {
                     property string imagePath: wImagePath
 
                     anchors.centerIn: parent
-                    width: proxy.eff.w
-                    height: proxy.eff.h
+                    width: proxy.effW
+                    height: proxy.effH
                     rotation: wRotation
                     opacity: wOpacity
                     source: registry.faceFile(wType, wVariant)
