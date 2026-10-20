@@ -21,6 +21,7 @@ Item {
     
     Connections {
         target: window.notifModel
+        ignoreUnknownSignals: true
         function onCountChanged() {
             Qt.callLater(window.enforceNotificationSort);
         }

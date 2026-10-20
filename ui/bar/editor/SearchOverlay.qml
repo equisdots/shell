@@ -287,7 +287,7 @@ Item {
                     root.rebuild();
                     resultsFlick.contentY = 0;
                 }
-                Keys.onPressed: root.handleKey(event)
+                Keys.onPressed: (event) => root.handleKey(event)
             }
             // Limpiar
             Rectangle {

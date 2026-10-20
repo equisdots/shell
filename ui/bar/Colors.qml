@@ -362,6 +362,7 @@ Item {
     // (FileView.path binding) and re-reads through the paletteReader process.
     FileView {
         id: paletteWatcher
+        printErrors: false
         path: root.palettesDir + "/" + root.paletteName + ".json"
         watchChanges: true
         blockLoading: true
@@ -371,6 +372,7 @@ Item {
     // edits of an active community palette working (same contract as above).
     FileView {
         id: paletteWatcherCommunity
+        printErrors: false
         path: root.palettesDir + "/community/" + root.paletteName + ".json"
         watchChanges: true
         blockLoading: true

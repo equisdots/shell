@@ -37,7 +37,7 @@ Item {
     property string paletteName: "x"
 
     // Emitted whenever a palette file finished applying.
-    signal paletteChanged()
+    signal paletteApplied()
     // Emitted whenever settings.json was re-read (font / palette switch).
     signal settingsChanged()
 
@@ -284,7 +284,7 @@ Item {
                 try { root[key] = r[key]; } catch (e) {}
             }
         }
-        root.paletteChanged();
+        root.paletteApplied();
     }
 
     // --- settings.json reader (active palette + font) --------------------------
@@ -417,12 +417,14 @@ Item {
     // (top-level + community) mirror Colors.qml so community palettes stay live.
     FileView {
         id: paletteWatcher
+        printErrors: false
         path: root.palettesDir + "/" + root.paletteName + ".json"
         watchChanges: true
         onFileChanged: root.refreshPalette()
     }
     FileView {
         id: paletteWatcherCommunity
+        printErrors: false
         path: root.palettesDir + "/community/" + root.paletteName + ".json"
         watchChanges: true
         onFileChanged: root.refreshPalette()

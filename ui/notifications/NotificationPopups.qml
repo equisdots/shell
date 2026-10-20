@@ -70,10 +70,10 @@ PanelWindow {
     focusable: false
     color: "transparent"
 
-    width: popupWindow.layoutConfig.w
-    height: Math.min(popupList.contentHeight, Screen.height * 0.8)
+    implicitWidth: popupWindow.layoutConfig.w
+    implicitHeight: Math.min(popupList.contentHeight, Screen.height * 0.8)
 
-    Behavior on height {
+    Behavior on implicitHeight {
         NumberAnimation { duration: 400; easing.type: Easing.OutQuint }
     }
 

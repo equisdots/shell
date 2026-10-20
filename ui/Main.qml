@@ -463,6 +463,7 @@ PanelWindow {
 
     Connections {
         target: widgetStack.currentItem
+        ignoreUnknownSignals: true
         function onTargetMasterWidthChanged()  { masterWindow.applyMasterTargets(); }
         function onTargetMasterHeightChanged() { masterWindow.applyMasterTargets(); }
         function onTargetMasterXChanged()      { masterWindow.applyMasterTargets(); }
@@ -569,7 +570,7 @@ PanelWindow {
                 anchors.fill: parent
                 focus: true
 
-                Keys.onEscapePressed: {
+                Keys.onEscapePressed: (event) => {
                     switchWidget("hidden", "");
                     event.accepted = true;
                 }
