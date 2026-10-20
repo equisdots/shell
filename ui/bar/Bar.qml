@@ -596,6 +596,9 @@ Variants {
                     "google-chrome": "󰈹", "chromium": "󰈹", "brave": "󰈹",
                     "kitty": "󰄛", "alacritty": "󰄛", "ghostty": "󰄛", "konsole": "󰄛", "wezterm": "󰄛", "xterm": "󰄛",
                     "code": "󰨞", "codium": "󰨞", "code-oss": "󰨞",
+                    "code-insiders": "󰨞", "vscodium": "󰨞", "visual-studio-code": "󰨞",
+                    "com.microsoft.vscode": "󰨞", "com.microsoft.vscodeinsiders": "󰨞",
+                    "com.vscodium.codium": "󰨞", "com.visualstudio.code": "󰨞",
                     "spotify": "󰓇", "discord": "󰙯", "vesktop": "󰙯",
                     "nautilus": "󰉋", "dolphin": "󰉋", "thunar": "󰉋", "nemo": "󰉋",
                     "obsidian": "󰠮", "zathura": "󰈇", "org.gnome.nautilus": "󰉋"
