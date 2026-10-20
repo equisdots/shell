@@ -5,14 +5,14 @@ import "../edit"
 import "../../../core"
 
 // ═══════════════════════════════════════════════════════════════════════════
-// AnimationsPage — BarEditor tab (grupo System): on/off y velocidad global de
-// las animaciones de Hyprland.
+// AnimationsPage — BarEditor tab (grupo System): on/off, velocidad global y
+// transiciones de workspace (estilo, curva, scratchpads y wraparound).
 //
-// Las 6 curvas y las 12 animaciones base viven en animations.lua; el panel NO
-// las edita: regenera config/user-animations.lua (cargado al final de
-// hyprland.lua → siempre gana) con la velocidad escalada (speed = base ×
-// multiplier) y recarga. El guardado es debounced en BarEditor:
-// applyAnimations → persist-hypr.sh animations, 600 ms.
+// Las 6 curvas y las animaciones base viven en animations.lua; el panel no
+// redefine las curvas, solo elige sus nombres y regenera
+// config/user-animations.lua (cargado al final de hyprland.lua → siempre gana)
+// con la velocidad escalada (speed = base × multiplier) y recarga. El guardado
+// es debounced en BarEditor: applyAnimations → persist-hypr.sh animations, 600 ms.
 // Gate: el cuerpo se crea cuando `bar` ya está inyectado (initial property
 // aplicada tras la creación del root), evitando bindings evaluados con null.
 // ═══════════════════════════════════════════════════════════════════════════
@@ -150,10 +150,118 @@ Item {
                         })
                     }
 
+                    // ── Workspace transitions ───────────────────────────────
+                    Text {
+                        text: "Workspace transitions"
+                        font.family: "Hack Nerd Font"
+                        font.weight: Font.Black
+                        font.pixelSize: bar.s(16)
+                        color: bar.colors.text
+                    }
+                    GridLayout {
+                        width: parent.width
+                        columns: 3
+                        columnSpacing: bar.s(Theme.gapMd)
+                        rowSpacing: bar.s(Theme.gapMd)
+                        Repeater {
+                            model: [
+                                { id: "slide",           label: "Slide",       icon: "󰒮" },
+                                { id: "slidefade",       label: "Slide fade",  icon: "󰖌" },
+                                { id: "slidevert",       label: "Slide vert",  icon: "󰁝" },
+                                { id: "slidefadevert",   label: "Vert fade",   icon: "󰒲" },
+                                { id: "fade",            label: "Fade",        icon: "󰔟" }
+                            ]
+                            delegate: OptionCard {
+                                required property var modelData
+                                Layout.fillWidth: true
+                                bar: root.bar
+                                icon: modelData.icon
+                                label: modelData.label
+                                active: root.bar.animationsCfg.workspaceStyle === modelData.id
+                                onActivated: root.bar.applyAnimations({ workspaceStyle: modelData.id })
+                            }
+                        }
+                    }
+
+                    Text {
+                        text: "Curve"
+                        font.family: "Hack Nerd Font"
+                        font.weight: Font.Black
+                        font.pixelSize: bar.s(16)
+                        color: bar.colors.text
+                    }
+                    GridLayout {
+                        width: parent.width
+                        columns: 3
+                        columnSpacing: bar.s(Theme.gapMd)
+                        rowSpacing: bar.s(Theme.gapMd)
+                        Repeater {
+                            model: [
+                                { id: "smooth",         label: "Smooth",       icon: "󰒮" },
+                                { id: "overshot",       label: "Overshot",     icon: "󰁝" },
+                                { id: "easeOutExpo",    label: "Ease out expo", icon: "󰓅" },
+                                { id: "easeOutQuint",   label: "Ease out quint", icon: "󰐊" },
+                                { id: "easeInOutQuart", label: "Ease in-out",  icon: "󰒲" },
+                                { id: "linear",         label: "Linear",       icon: "󰁔" }
+                            ]
+                            delegate: OptionCard {
+                                required property var modelData
+                                Layout.fillWidth: true
+                                bar: root.bar
+                                icon: modelData.icon
+                                label: modelData.label
+                                active: root.bar.animationsCfg.workspaceCurve === modelData.id
+                                onActivated: root.bar.applyAnimations({ workspaceCurve: modelData.id })
+                            }
+                        }
+                    }
+
+                    Text {
+                        text: "Special workspace"
+                        font.family: "Hack Nerd Font"
+                        font.weight: Font.Black
+                        font.pixelSize: bar.s(16)
+                        color: bar.colors.text
+                    }
+                    GridLayout {
+                        width: parent.width
+                        columns: 3
+                        columnSpacing: bar.s(Theme.gapMd)
+                        rowSpacing: bar.s(Theme.gapMd)
+                        Repeater {
+                            model: [
+                                { id: "slide",         label: "Slide",      icon: "󰒮" },
+                                { id: "slidefade",     label: "Slide fade", icon: "󰖌" },
+                                { id: "slidevert",     label: "Slide vert", icon: "󰁝" },
+                                { id: "slidefadevert", label: "Vert fade",  icon: "󰒲" },
+                                { id: "fade",          label: "Fade",       icon: "󰔟" }
+                            ]
+                            delegate: OptionCard {
+                                required property var modelData
+                                Layout.fillWidth: true
+                                bar: root.bar
+                                icon: modelData.icon
+                                label: modelData.label
+                                active: root.bar.animationsCfg.specialStyle === modelData.id
+                                onActivated: root.bar.applyAnimations({ specialStyle: modelData.id })
+                            }
+                        }
+                    }
+
+                    ToggleCard {
+                        width: parent.width
+                        bar: root.bar
+                        icon: "󰁔"
+                        label: "Wrap around"
+                        checked: root.bar.animationsCfg.workspaceWrap === true
+                        onToggled: root.bar.applyAnimations({
+                            workspaceWrap: !(root.bar.animationsCfg.workspaceWrap === true)
+                        })
+                    }
                     EditLabel {
                         bar: root.bar
                         width: parent.width
-                        text: "Animations come from animations.lua; the panel regenerates config/user-animations.lua with the chosen speed and reloads Hyprland. Higher speed value = slower animation."
+                        text: "Workspace styles: slide, slidefade, slidevert, slidefadevert and fade. The curve drives both the workspace slide and window movement on switch. The panel regenerates config/user-animations.lua and reloads Hyprland; higher speed value = slower animation."
                         font.pixelSize: bar.s(11)
                         color: bar.colors.subtext0
                         wrapMode: Text.WordWrap
