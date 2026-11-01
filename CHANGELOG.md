@@ -19,6 +19,9 @@ Dates use YYYY-MM-DD.
 - **`scripts/check.sh` semantic test**: the required-layout list still named the removed `calendar`/`clipboard` core layouts (they are plugin surfaces now), so the check failed. It now validates the current core layouts (`applauncher`, `bar-editor`, `network`, `idle`, `focustime`, `wallpaper`, `system-monitor`).
 - **Shadow render power range**: `decoration:shadow:render_power` is `1..4` in Hyprland, and 0.57 rejects out-of-range values as config errors. Both editors now cap the slider at 1..4, `HyprEffects` defaults to 4 and clamps on read/write, and `hypr-effects.sh` clamps the state/JSON/Lua path and heals a legacy `window-effects.lua` (`render_power = 10`) on the next read.
 
+### Documentation
+- **Testing section**: the README documents `scripts/check.sh`, the qmllint/node checks, the WindowRegistry semantic test and the 15+37 sandbox assertions for effect ranges and `hypr-effects`.
+
 ## [2026-10-16]
 
 ### Added
