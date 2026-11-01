@@ -34,12 +34,20 @@ Item {
         gaps_out: 25,
         border_size: 2,
         shadow_range: 35,
-        shadow_render_power: 5,
+        shadow_render_power: 4,
         shadow_offset_x: 0,
         shadow_offset_y: 10
     })
 
     function get(key) { return root.values[key]; }
+
+    // Hyprland defines decoration:shadow:render_power as 1..4 and 0.57
+    // rejects out-of-range values, so clamp at the single UI boundary.
+    function _clamp(key, v) {
+        if (key === "shadow_render_power")
+            return Math.max(1, Math.min(4, Math.round(v)));
+        return v;
+    }
 
     // Re-read the live values (when each UI opens and on demand).
     function refresh() { reader.running = true; }
@@ -58,7 +66,7 @@ Item {
                     if (eq < 0) continue;
                     let key = lines[i].slice(0, eq).trim();
                     let num = parseFloat(lines[i].slice(eq + 1).trim());
-                    if (key in next && !isNaN(num)) next[key] = num;
+                    if (key in next && !isNaN(num)) next[key] = root._clamp(key, num);
                 }
                 root.values = next;
             }
@@ -79,6 +87,7 @@ Item {
     }
     function set(key, v) {
         if (typeof v !== "number" || isNaN(v)) return;
+        v = root._clamp(key, v);
         if (root.values[key] === v) return;
         let next = {};
         for (let k in root.values) next[k] = root.values[k];
@@ -116,7 +125,7 @@ Item {
         root.set("blur_size", 8);
         root.set("blur_passes", 3);
         root.set("shadow_range", 35);
-        root.set("shadow_render_power", 5);
+        root.set("shadow_render_power", 4);
         root.set("shadow_offset_x", 0);
         root.set("shadow_offset_y", 10);
         root.flush();
