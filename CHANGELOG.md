@@ -5,6 +5,16 @@ Dates use YYYY-MM-DD.
 
 ## [2026-11-01]
 
+### Added
+- **Hyprland 0.57 effect controls**: the effects kernel now exposes `decoration:blur:variant` (all 11 names), `decoration:blur:proportional` and `decoration:wobble.{enabled,intensity}`. `core/EffectRanges.js` is the single source for the 0.57 ranges (rounding `0..100`, shadow range `0..100`, render power `1..4`, wobble intensity `0..2`) and the ordered variant table with low/medium/high cost hints. Both editors show a dense cycle control for the variant plus proportional-blur and wobble toggles, and hide those rows when `supports057` is false.
+- **Version-aware effects state**: `hypr-effects.sh` probes `decoration:blur:variant`, prints `supports_057=1|0`, and only reads/writes the 0.57 keys when the compositor supports them. The generated Lua includes `variant`, `proportional` and the `wobble` table on 0.57 and omits them entirely on <= 0.56; values are clamped in the JSON, the live `hyprctl eval` and the Lua path.
+- **Effects tests**: `tests/effect-ranges.test.js` covers the ranges, clamps and the 11 variants; `tests/hypr-effects.test.sh` runs the kernel against fake 0.57/0.56 `hyprctl` binaries. Both run from `scripts/check.sh`.
+
+### Changed
+- **Effect slider limits** now come from `EffectRanges.RANGES` in both editors: rounding `0..100`, blur size `0..100`, shadow range `0..100`, gaps `0..100`, border `0..20`, render power `1..4`. Opacity keeps its 0.3 comfort floor and shadow offsets their ±30 UI window.
+- **Window Controls height**: the panel registry entry grows from 800 to 900 px so the new 0.57 blur/wobble rows fit without clipping.
+- **Refresh button in the Hyprland tab** now calls `HyprEffects.refresh()` (it referenced the removed `loadCurrent()`).
+
 ### Fixed
 - **`scripts/check.sh` semantic test**: the required-layout list still named the removed `calendar`/`clipboard` core layouts (they are plugin surfaces now), so the check failed. It now validates the current core layouts (`applauncher`, `bar-editor`, `network`, `idle`, `focustime`, `wallpaper`, `system-monitor`).
 - **Shadow render power range**: `decoration:shadow:render_power` is `1..4` in Hyprland, and 0.57 rejects out-of-range values as config errors. Both editors now cap the slider at 1..4, `HyprEffects` defaults to 4 and clamps on read/write, and `hypr-effects.sh` clamps the state/JSON/Lua path and heals a legacy `window-effects.lua` (`render_power = 10`) on the next read.

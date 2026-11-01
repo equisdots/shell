@@ -73,7 +73,10 @@ function getLayout(name, mx, my, mw, mh, userScale) {
         "system-monitor": { w: s(720, scale), h: s(600, scale), rx: Math.floor((mw/2)-(s(720, scale)/2)), ry: Math.floor((mh/2)-(s(600, scale)/2)), comp: "ui/bar/popups/system-monitor/SystemMonitor.qml" },
         "palette": { w: mw - s(40, scale), h: Math.min(s(880, scale), mh - s(60, scale)), rx: s(20, scale), ry: Math.floor((mh - Math.min(s(880, scale), mh - s(60, scale))) / 2), comp: "ui/panels/palette/PaletteWidget.qml" },
         "scale": { w: s(520, scale), h: s(560, scale), rx: Math.floor((mw/2)-(s(520, scale)/2)), ry: Math.floor((mh/2)-(s(560, scale)/2)), comp: "ui/panels/scale/ScalePicker.qml" },
-        "window-controls": { w: s(480, scale), h: s(800, scale), rx: Math.floor((mw/2)-(s(480, scale)/2)), ry: Math.floor((mh/2)-(s(800, scale)/2)), comp: "ui/panels/window-controls/WindowControls.qml" },
+        // 900 px: the 0.57 blur/wobble rows fit without clipping on 1080p
+        // (the surface is centred, so it still fits on smaller screens thanks
+        // to getScale()).
+        "window-controls": { w: s(480, scale), h: s(900, scale), rx: Math.floor((mw/2)-(s(480, scale)/2)), ry: Math.floor((mh/2)-(s(900, scale)/2)), comp: "ui/panels/window-controls/WindowControls.qml" },
         "bar-editor": { w: Math.min(s(1260, scale), mw - s(40, scale)), h: s(760, scale), rx: Math.floor((mw - Math.min(s(1260, scale), mw - s(40, scale))) / 2), ry: Math.floor((mh/2)-(s(760, scale)/2)), comp: "ui/bar/BarEditor.qml" },
         "plugins": { w: s(1000, scale), h: s(780, scale), rx: Math.floor((mw/2)-(s(1000, scale)/2)), ry: Math.floor((mh/2)-(s(780, scale)/2)), comp: "ui/panels/plugins/PluginsPanel.qml" },
         "wallpaper": { w: mw, h: s(650, scale), rx: 0, ry: Math.floor((mh/2)-(s(650, scale)/2)), comp: "ui/panels/davincix/DavincixPicker.qml" },

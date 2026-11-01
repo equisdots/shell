@@ -77,8 +77,31 @@ if command -v node >/dev/null 2>&1; then
         echo "node semantic FAIL: WindowRegistry widget layouts missing"
         fail=1
     fi
+
+    # effect-ranges unit tests (RANGES/clamp/VARIANTS). Silent on success.
+    if [ -f tests/effect-ranges.test.js ]; then
+        if node tests/effect-ranges.test.js >/dev/null 2>&1; then
+            echo "node test: EffectRanges OK"
+        else
+            node tests/effect-ranges.test.js
+            echo "node test FAIL: EffectRanges"
+            fail=1
+        fi
+    fi
 else
     echo "note: node not found, skipping the JS syntax check" >&2
+fi
+
+# hypr-effects.sh sandbox (fake hyprctl for 0.57 and 0.56). Fast and silent
+# on success, so it stays in the default check.
+if [ -f tests/hypr-effects.test.sh ]; then
+    if bash tests/hypr-effects.test.sh >/dev/null 2>&1; then
+        echo "bash test: hypr-effects OK"
+    else
+        bash tests/hypr-effects.test.sh
+        echo "bash test FAIL: hypr-effects"
+        fail=1
+    fi
 fi
 
 if [ "$fail" -eq 0 ]; then

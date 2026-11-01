@@ -5,6 +5,7 @@ import Quickshell
 import Quickshell.Io
 import "../edit"
 import "../../../core"
+import "../../../core/EffectRanges.js" as EffectRanges
 
 // ═══════════════════════════════════════════════════════════════════════════
 // HyprlandPage — BarEditor tab (System group): the 12 window-effect / layout
@@ -40,6 +41,23 @@ Item {
     // Reset: opacities/blur/rounding/shadow only (gaps and border untouched,
     // same as WindowControls.resetDefaults). Applied by the singleton.
     function resetDefaults() { HyprEffects.resetEffects(); }
+
+    // 0.57 blur variant cycle (wraps around the 11 enum entries).
+    function stepVariant(delta) {
+        let names = HyprEffects.variantNames;
+        if (!names || names.length === 0) return;
+        let idx = HyprEffects.variantIndex(fx.blur_variant);
+        idx = (idx + delta + names.length) % names.length;
+        HyprEffects.set("blur_variant", HyprEffects.variantName(idx));
+    }
+
+    // Short cost hint colour: green low, peach medium, red high.
+    function variantCostColor(name) {
+        let cost = HyprEffects.variantCost(name);
+        if (cost === "high") return root.bar ? root.bar.colors.red : "#f38ba8";
+        if (cost === "medium") return root.bar ? root.bar.colors.peach : "#fab387";
+        return root.bar ? root.bar.colors.green : "#a6e3a1";
+    }
 
     Loader {
         id: body
@@ -142,7 +160,9 @@ Item {
                         bar: root.bar
                         icon: "\uF192"
                         label: "Rounding"
-                        from: 0; to: 35; step: 1
+                        from: EffectRanges.RANGES.rounding.min
+                        to: EffectRanges.RANGES.rounding.max
+                        step: EffectRanges.RANGES.rounding.step
                         suffix: "px"
                         accentColor: bar.colors.green
                         value: fx.rounding
@@ -162,7 +182,9 @@ Item {
                         bar: root.bar
                         icon: "\uF0EB"
                         label: "Blur Size"
-                        from: 0; to: 24; step: 1
+                        from: EffectRanges.RANGES.blur_size.min
+                        to: EffectRanges.RANGES.blur_size.max
+                        step: EffectRanges.RANGES.blur_size.step
                         suffix: "px"
                         accentColor: bar.colors.peach
                         value: fx.blur_size
@@ -179,6 +201,31 @@ Item {
                         onEdited: (v) => HyprEffects.set("blur_passes", v)
                     }
 
+                    // 0.57-only blur controls. Hidden on <= 0.56, where the
+                    // kernel neither reads nor writes these options.
+                    CycleCard {
+                        width: parent.width
+                        visible: HyprEffects.supports057
+                        bar: root.bar
+                        icon: "\uF2C8"
+                        label: "Blur Variant"
+                        model: HyprEffects.variantNames
+                        index: HyprEffects.variantIndex(fx.blur_variant)
+                        hint: HyprEffects.variantHint(fx.blur_variant)
+                        hintColor: root.variantCostColor(fx.blur_variant)
+                        accentColor: bar.colors.sapphire
+                        onStepped: (delta) => root.stepVariant(delta)
+                    }
+                    ToggleCard {
+                        width: parent.width
+                        visible: HyprEffects.supports057
+                        bar: root.bar
+                        icon: "\uF0C1"
+                        label: "Proportional Blur"
+                        checked: fx.blur_proportional
+                        onToggled: HyprEffects.set("blur_proportional", !fx.blur_proportional)
+                    }
+
                     // ── Layout ──────────────────────────────────────────────
                     Text {
                         text: "Layout"
@@ -192,7 +239,9 @@ Item {
                         bar: root.bar
                         icon: "\uF239"
                         label: "Gaps In"
-                        from: 0; to: 50; step: 2
+                        from: EffectRanges.RANGES.gaps_in.min
+                        to: EffectRanges.RANGES.gaps_in.max
+                        step: EffectRanges.RANGES.gaps_in.step
                         suffix: "px"
                         accentColor: bar.colors.mauve
                         value: fx.gaps_in
@@ -203,7 +252,9 @@ Item {
                         bar: root.bar
                         icon: "\uF108"
                         label: "Gaps Out"
-                        from: 0; to: 50; step: 2
+                        from: EffectRanges.RANGES.gaps_out.min
+                        to: EffectRanges.RANGES.gaps_out.max
+                        step: EffectRanges.RANGES.gaps_out.step
                         suffix: "px"
                         accentColor: bar.colors.blue
                         value: fx.gaps_out
@@ -214,7 +265,9 @@ Item {
                         bar: root.bar
                         icon: "\uF358"
                         label: "Border Width"
-                        from: 0; to: 20; step: 1
+                        from: EffectRanges.RANGES.border_size.min
+                        to: EffectRanges.RANGES.border_size.max
+                        step: EffectRanges.RANGES.border_size.step
                         suffix: "px"
                         accentColor: bar.colors.peach
                         value: fx.border_size
@@ -234,7 +287,9 @@ Item {
                         bar: root.bar
                         icon: "\uF042"
                         label: "Shadow Range"
-                        from: 0; to: 50; step: 1
+                        from: EffectRanges.RANGES.shadow_range.min
+                        to: EffectRanges.RANGES.shadow_range.max
+                        step: EffectRanges.RANGES.shadow_range.step
                         suffix: "px"
                         accentColor: bar.colors.peach
                         value: fx.shadow_range
@@ -273,6 +328,43 @@ Item {
                         onEdited: (v) => HyprEffects.set("shadow_offset_y", v)
                     }
 
+                    // ── Wobble (0.57-only) ──────────────────────────────────
+                    Text {
+                        visible: HyprEffects.supports057
+                        text: "Wobble"
+                        font.family: "Hack Nerd Font"
+                        font.weight: Font.Black
+                        font.pixelSize: bar.s(16)
+                        color: bar.colors.text
+                    }
+                    ToggleCard {
+                        width: parent.width
+                        visible: HyprEffects.supports057
+                        bar: root.bar
+                        icon: "\uF0C8"
+                        label: "Window Wobble (spring deformation on move/resize)"
+                        checked: fx.wobble_enabled
+                        onToggled: HyprEffects.set("wobble_enabled", !fx.wobble_enabled)
+                    }
+                    EffectSlider {
+                        width: parent.width
+                        visible: HyprEffects.supports057
+                        // Intensity only matters while wobble is on; keep the
+                        // row visible but inert so the layout does not jump.
+                        enabled: fx.wobble_enabled
+                        opacity: fx.wobble_enabled ? 1.0 : 0.45
+                        bar: root.bar
+                        icon: "\uF0E7"
+                        label: "Wobble Intensity"
+                        from: EffectRanges.RANGES.wobble_intensity.min
+                        to: EffectRanges.RANGES.wobble_intensity.max
+                        step: EffectRanges.RANGES.wobble_intensity.step
+                        decimals: 2
+                        accentColor: bar.colors.mauve
+                        value: fx.wobble_intensity
+                        onEdited: (v) => HyprEffects.set("wobble_intensity", v)
+                    }
+
                     // ── Window borders (shared component, also in Bar → Style) ──
                     WindowBordersSection {
                         width: parent.width
@@ -296,7 +388,7 @@ Item {
                             compact: true
                             icon: "\uF021"
                             label: "Refresh"
-                            onActivated: root.loadCurrent()
+                            onActivated: HyprEffects.refresh()
                         }
                     }
 
