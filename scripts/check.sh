@@ -62,8 +62,10 @@ if command -v node >/dev/null 2>&1; then
         const src = fs.readFileSync("core/WindowRegistry.js", "utf8")
             .replace(/^[ \t]*\.pragma[^\n]*\n/, "");
         const ctx = {}; vm.createContext(ctx); vm.runInContext(src, ctx);
-        const required = ["calendar", "bar-editor", "network", "idle",
-                          "applauncher", "clipboard", "wallpaper"];
+        // Core WindowRegistry layouts only: plugin surfaces (calendar/timex,
+        // clipboard, ...) are mounted by the plugin host, not getLayout().
+        const required = ["applauncher", "bar-editor", "network", "idle",
+                          "focustime", "wallpaper", "system-monitor"];
         const missing = required.filter(n => !ctx.getLayout(n, 0, 0, 1920, 1080, 1));
         if (missing.length) {
             console.error("WindowRegistry: missing layouts: " + missing.join(", "));
