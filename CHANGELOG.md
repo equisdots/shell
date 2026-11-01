@@ -3,6 +3,11 @@
 All notable changes to the equisdots shell are documented here.
 Dates use YYYY-MM-DD.
 
+## [2026-11-01]
+
+### Fixed
+- **Shadow render power range**: `decoration:shadow:render_power` is `1..4` in Hyprland, and 0.57 rejects out-of-range values as config errors. Both editors now cap the slider at 1..4, `HyprEffects` defaults to 4 and clamps on read/write, and `hypr-effects.sh` clamps the state/JSON/Lua path and heals a legacy `window-effects.lua` (`render_power = 10`) on the next read.
+
 ## [2026-10-16]
 
 ### Added

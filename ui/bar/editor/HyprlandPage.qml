@@ -245,7 +245,7 @@ Item {
                         bar: root.bar
                         icon: "\uF0E7"
                         label: "Shadow Power"
-                        from: 0; to: 10; step: 1
+                        from: 1; to: 4; step: 1
                         accentColor: bar.colors.sapphire
                         value: fx.shadow_render_power
                         onEdited: (v) => HyprEffects.set("shadow_render_power", v)

@@ -177,7 +177,7 @@ Item {
             RowLayout { Layout.fillWidth: true; Layout.preferredHeight: s(44); spacing: Theme.gapSm
                 Text { text: "\uF0E7"; font.family: "Hack Nerd Font"; font.pixelSize: s(14); color: window.sapphire; Layout.preferredWidth: s(20) }
                 Text { text: "Shadow Power"; font.family: "Hack Nerd Font"; font.pixelSize: s(11); color: window.subtext0; Layout.preferredWidth: s(100) }
-                DragSlider { id: spDs; from: 0; to: 10; step: 1; initial: fx.shadow_render_power; barColor: window.sapphire
+                DragSlider { id: spDs; from: 1; to: 4; step: 1; initial: fx.shadow_render_power; barColor: window.sapphire
                     onDragged: function(v) { HyprEffects.set("shadow_render_power", v); markDirty() }
                 }
                 Text { text: Math.round(spDs.current); font.family: "Hack Nerd Font"; font.pixelSize: s(12); font.weight: Font.Bold; color: window.text; Layout.preferredWidth: s(45); horizontalAlignment: Text.AlignRight }

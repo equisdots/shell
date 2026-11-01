@@ -43,6 +43,19 @@ SPECS=(
     "shadow_offset_y decoration:shadow:offset vec2y"
 )
 
+# Clamp values that Hyprland validates (0.57 rejects out-of-range options).
+clamp_value() {
+    local key="$1" v="$2"
+    case "$key" in
+        shadow_render_power)
+            [[ "$v" =~ ^-?[0-9]+$ ]] || { printf '4'; return 0; }
+            if (( v < 1 )); then v=1; fi
+            if (( v > 4 )); then v=4; fi
+            ;;
+    esac
+    printf '%s' "$v"
+}
+
 read_one() {
     local key="$1" opt="$2" kind="$3" json v
     json="$(hyprctl -j getoption "$opt" 2>/dev/null)" || return 0
@@ -60,7 +73,27 @@ read_one() {
     fi
 }
 
+# Heal a legacy state file (and its generated Lua) once: values written before
+# the 1..4 clamp (e.g. shadow_render_power = 10) are fixed on the next read.
+sanitize_state() {
+    [[ -f "$STATE" ]] || return 0
+    local cur clamped tmp
+    cur="$(jq -r '.shadow_render_power // empty' "$STATE" 2>/dev/null)" || return 0
+    [[ -n "$cur" ]] || return 0
+    clamped="$(clamp_value shadow_render_power "$cur")"
+    [[ "$clamped" == "$cur" ]] && return 0
+    tmp="$(mktemp "$CONF_DIR/.we-state.XXXXXX")" || return 1
+    if jq -c --argjson v "$clamped" '.shadow_render_power = $v' "$STATE" > "$tmp"; then
+        mv "$tmp" "$STATE"
+        write_lua "$(cat "$STATE")"
+    else
+        rm -f "$tmp"
+        return 1
+    fi
+}
+
 cmd_read() {
+    sanitize_state
     local spec
     for spec in "${SPECS[@]}"; do
         read_one $spec
@@ -92,7 +125,7 @@ write_lua() {
     go="$(jq -r '.gaps_out // 25'               <<<"$state")"
     bw="$(jq -r '.border_size // 2'             <<<"$state")"
     sr="$(jq -r '.shadow_range // 35'           <<<"$state")"
-    sp="$(jq -r '.shadow_render_power // 5'     <<<"$state")"
+    sp="$(clamp_value shadow_render_power "$(jq -r '.shadow_render_power // 4' <<<"$state")")"
     ox="$(jq -r '.shadow_offset_x // 0'         <<<"$state")"
     oy="$(jq -r '.shadow_offset_y // 10'        <<<"$state")"
 
@@ -165,7 +198,7 @@ apply_live() {
     [[ -n "${patch[blur_size]:-}"   ]] && blur+=("size = ${patch[blur_size]}")
     [[ -n "${patch[blur_passes]:-}" ]] && blur+=("passes = ${patch[blur_passes]}")
     [[ -n "${patch[shadow_range]:-}"        ]] && shadow+=("range = ${patch[shadow_range]}")
-    [[ -n "${patch[shadow_render_power]:-}" ]] && shadow+=("render_power = ${patch[shadow_render_power]}")
+    [[ -n "${patch[shadow_render_power]:-}" ]] && shadow+=("render_power = $(clamp_value shadow_render_power "${patch[shadow_render_power]}")")
     if [[ -n "${patch[shadow_offset_x]:-}" || -n "${patch[shadow_offset_y]:-}" ]]; then
         shadow+=("offset = { $(jq -r '.shadow_offset_x' <<<"$state"), $(jq -r '.shadow_offset_y' <<<"$state") }")
     fi
@@ -188,7 +221,7 @@ update_state() {
     state="$(cat "$STATE")"
     for pair in "$@"; do
         k="${pair%%=*}"
-        v="${pair#*=}"
+        v="$(clamp_value "${pair%%=*}" "${pair#*=}")"
         state="$(jq -c --arg k "$k" --argjson v "$v" '.[$k] = $v' <<<"$state")" || return 1
     done
     printf '%s\n' "$state"
