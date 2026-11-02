@@ -511,12 +511,31 @@ Item {
         opacity: introMain
 
         Rectangle {
+            id: focusGlass
             anchors.fill: parent
             radius: Theme.radiusLg
             color: Theme.surfaceContainerLow
             border.color: Theme.outlineVariant
             border.width: 1
             clip: true
+            LiquidGlass {
+                anchors.fill: parent
+                enabled: Theme.liquidGlass
+                screenPosOverride: {
+                    const p = focusGlass.mapToItem(null, 0, 0);
+                    return Qt.vector2d(p.x, p.y);
+                }
+                topLeftRadius: Theme.radiusLg
+                topRightRadius: Theme.radiusLg
+                bottomLeftRadius: Theme.radiusLg
+                bottomRightRadius: Theme.radiusLg
+                tintColor: "#101018"
+                tintAmount: 0.42
+                bezel: Math.max(8, Math.min(20, Math.min(width, height) * 0.25))
+                frost: Math.max(6, Math.min(16, Math.min(width, height) * 0.20))
+                interiorShade: 0.38
+            rim: 0.95
+            }
 
             Rectangle {
                 width: parent.width * 1.2; height: width; radius: width / 2

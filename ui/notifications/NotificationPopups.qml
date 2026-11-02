@@ -206,12 +206,25 @@ PanelWindow {
                     id: popupCard
                     anchors.fill: parent
                     radius: popupWindow.layoutConfig.radius
-                    color: _theme.base
+                    color: _theme.liquidGlass ? "transparent" : _theme.base
                     border.color: _theme.surface1
                     border.width: 1
                     clip: true
 
-
+                    LiquidGlass {
+                        anchors.fill: parent
+                        enabled: _theme.liquidGlass
+                        topLeftRadius: popupCard.radius
+                        topRightRadius: popupCard.radius
+                        bottomLeftRadius: popupCard.radius
+                        bottomRightRadius: popupCard.radius
+                        tintColor: "#101018"
+                        tintAmount: 0.38
+                        bezel: Math.max(8, Math.min(22, Math.min(width, height) * 0.28))
+                        frost: Math.max(6, Math.min(16, Math.min(width, height) * 0.22))
+                        interiorShade: 0.30
+                        rim: 0.92
+                    }
 
                     Timer {
                         interval: delegateRoot.effectiveTimeout > 0 ? delegateRoot.effectiveTimeout : 5000

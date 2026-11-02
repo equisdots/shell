@@ -267,6 +267,25 @@ Item {
         border.width: window.s(window.lcfg.borderWidth)
         clip: true
 
+        LiquidGlass {
+            anchors.fill: parent
+            enabled: Theme.liquidGlass
+            screenPosOverride: {
+                const p = mainBg.mapToItem(null, 0, 0);
+                return Qt.vector2d(p.x, p.y);
+            }
+            topLeftRadius: window.s(window.lcfg.radius)
+            topRightRadius: window.s(window.lcfg.radius)
+            bottomLeftRadius: window.s(window.lcfg.radius)
+            bottomRightRadius: window.s(window.lcfg.radius)
+            tintColor: "#101018"
+            tintAmount: 0.42
+            bezel: Math.max(8, Math.min(20, Math.min(width, height) * 0.25))
+            frost: Math.max(6, Math.min(16, Math.min(width, height) * 0.20))
+            interiorShade: 0.38
+            rim: 0.95
+        }
+
         // Intro direccional (600 ms OutExpo): el panel "sale" de su extremo
         // anclado — escala desde ese borde (transformOrigin) + deslizamiento
         // (slideX/slideY) + el clip del morph.

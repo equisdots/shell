@@ -75,7 +75,7 @@ PanelWindow {
     implicitWidth: masterWindow.screen.width
     implicitHeight: masterWindow.screen.height
 
-    visible: isVisible
+    visible: isVisible && !Theme.captureFreeze
 
     mask: Region { item: topBarHole; intersection: Intersection.Xor }
 
@@ -509,7 +509,9 @@ PanelWindow {
     // =========================================================
     RectangularShadow {
         id: panelShadow
-        visible: masterWindow.shadowsEnabled && masterWindow.isVisible && widgetStack.currentItem !== null
+        visible: masterWindow.shadowsEnabled && masterWindow.isVisible
+            && widgetStack.currentItem !== null
+            && !(widgetStack.currentItem.hideShadow === true)
         x: widgetBox.x
         y: widgetBox.y
         width: widgetBox.width
@@ -558,6 +560,26 @@ PanelWindow {
                 duration: 160
                 easing.type: masterWindow.isVisible ? Easing.OutCubic : Easing.InCubic
             }
+        }
+
+        // One shared liquid lens behind every popup/panel/settings surface.
+        // Tonal fills are transparent in liquid mode (Theme.surfaceTone), so
+        // only borders and type stay on top of this backdrop.
+        LiquidGlass {
+            anchors.fill: parent
+            enabled: Theme.liquidGlass && masterWindow.isVisible
+                && widgetStack.currentItem !== null
+                && !(widgetStack.currentItem.disableSharedGlass === true)
+            topLeftRadius: Theme.radiusLg
+            topRightRadius: Theme.radiusLg
+            bottomLeftRadius: Theme.radiusLg
+            bottomRightRadius: Theme.radiusLg
+            tintColor: "#101018"
+            tintAmount: 0.28
+            interiorShade: 0.28
+            bezel: Math.max(8, Math.min(24, Math.min(width, height) * 0.28))
+            frost: Math.max(8, Math.min(18, Math.min(width, height) * 0.20))
+            rim: 0.92
         }
 
         MouseArea { anchors.fill: parent }

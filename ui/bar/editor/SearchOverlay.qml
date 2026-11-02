@@ -236,9 +236,32 @@ Item {
     }
 
     // ── Fondo (click fuera = cerrar) ──────────────────────────────────────
+    // The search page is nested above the settings page, so the shared lens in
+    // Main sits behind that page. Liquid mode gets a local lens here; standard
+    // mode keeps the near-opaque palette backdrop.
     Rectangle {
+        id: searchBackdrop
         anchors.fill: parent
-        color: Qt.alpha(themeColors.base, 0.97)
+        color: Theme.liquidGlass ? "transparent" : Qt.alpha(themeColors.base, 0.97)
+
+        LiquidGlass {
+            anchors.fill: parent
+            enabled: Theme.liquidGlass
+            screenPosOverride: {
+                const p = searchBackdrop.mapToItem(null, 0, 0);
+                return Qt.vector2d(p.x, p.y);
+            }
+            topLeftRadius: root.s(Theme.radiusLg)
+            topRightRadius: root.s(Theme.radiusLg)
+            bottomLeftRadius: root.s(Theme.radiusLg)
+            bottomRightRadius: root.s(Theme.radiusLg)
+            tintColor: "#101018"
+            tintAmount: 0.38
+            bezel: Math.max(8, Math.min(20, Math.min(width, height) * 0.24))
+            frost: Math.max(8, Math.min(16, Math.min(width, height) * 0.18))
+            interiorShade: 0.30
+            rim: 0.90
+        }
     }
     MouseArea {
         anchors.fill: parent

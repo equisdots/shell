@@ -42,6 +42,9 @@ Item {
     // alpha so the compositor backdrop blur (hyprland layers.lua) shows through.
     property var glassSettings: ({})
     readonly property bool glassOn: glassSettings.enabled === true
+    readonly property bool prismGlass: glassSettings.prism === true
+    readonly property bool auroraGlass: glassSettings.aurora === true && glassSettings.prism !== true
+    readonly property bool liquidGlass: glassSettings.liquid === true || root.prismGlass || root.auroraGlass
     readonly property real glassOpacity: glassSettings.opacity !== undefined
         ? Math.max(0.2, Math.min(1.0, glassSettings.opacity)) : 0.85
     readonly property real glassAlpha: root.glassOn ? root.glassOpacity : 1.0

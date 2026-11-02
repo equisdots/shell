@@ -158,6 +158,8 @@ Variants {
             // unmaps its windows (no UI, no reserved edge) and comes back
             // exactly as configured when re-enabled (see syncBarConfig).
             property bool barEnabled: true
+            // Optional LiquidGlass mode (settings.json -> glass.liquid).
+            readonly property bool liquidGlass: barColors.liquidGlass
             // Clock format for the clock island (bar.timeFormat).
             property string timeFormat: "HH:mm:ss"
             property string dateFormat: "dddd, MMMM dd" 
@@ -948,6 +950,23 @@ Variants {
                 offset: Qt.vector2d(barWindow.shadowOffX, barWindow.shadowOffY)
                 color: Qt.rgba(0, 0, 0, barWindow.shadowOpacity)
             }
+            LiquidGlass {
+                id: barGlass
+                anchors.fill: barBackground
+                enabled: barWindow.liquidGlass && barWindow.barBg && barWindow.barEnabled
+                tintColor: barColors.base
+                tintAmount: 0.16
+                frost: barWindow.s(10)
+                rim: 0.55
+                ior: 1.45
+                dispersion: 0.02
+                grain: 0.02
+                bezel: barWindow.s(14)
+                topLeftRadius: barBackground.topLeftRadius
+                topRightRadius: barBackground.topRightRadius
+                bottomLeftRadius: barBackground.bottomLeftRadius
+                bottomRightRadius: barBackground.bottomRightRadius
+            }
             Rectangle {
                 id: barBackground
                 anchors.fill: parent
@@ -962,7 +981,7 @@ Variants {
                 bottomLeftRadius: orientation === "vertical" ? 0 : (position === "bottom" ? 0 : radius)
                 bottomRightRadius: orientation === "vertical" ? 0 : (position === "bottom" ? 0 : radius)
                 // vertical: flat on the screen-edge side
-                color: Qt.rgba(barColors.base.r, barColors.base.g, barColors.base.b, barWindow.pillSolid ? barColors.base.a : barWindow.barOpacity * barColors.base.a)
+                color: barGlass.visible ? "transparent" : Qt.rgba(barColors.base.r, barColors.base.g, barColors.base.b, barWindow.pillSolid ? barColors.base.a : barWindow.barOpacity * barColors.base.a)
                 border.width: barWindow.borderWidth
                 border.color: barColors[borderColor] || barColors.surface1
                 Behavior on color { ColorAnimation { duration: 300 } }

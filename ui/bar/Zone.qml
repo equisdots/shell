@@ -138,12 +138,30 @@ Item {
         radius: bar.pillRadius(bar.pillHeight + bar.s(4))
         opacity: 0
         color: {
+            if (bar.liquidGlass) return "transparent";
             let c = colors[zoneData.zoneBg] || colors.surface0;
             return Qt.rgba(c.r, c.g, c.b, (zoneData.zoneBgSolid === true ? 1.0 : 0.35) * colors.glassAlpha);
         }
         Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
         Behavior on color { ColorAnimation { duration: 200 } }
         onVisibleChanged: if (zoneContainer.visible) zoneContainer.opacity = 1
+
+        LiquidGlass {
+            anchors.fill: parent
+            enabled: bar.liquidGlass
+            topLeftRadius: zoneContainer.radius
+            topRightRadius: zoneContainer.radius
+            bottomLeftRadius: zoneContainer.radius
+            bottomRightRadius: zoneContainer.radius
+            tintColor: colors[zoneData.zoneBg] || colors.surface0
+            tintAmount: 0.12
+            frost: Math.max(6, Math.min(12, Math.min(width, height) * 0.22))
+            bezel: Math.max(6, Math.min(18, Math.min(width, height) * 0.30))
+            rim: 0.55
+            ior: 1.45
+            dispersion: 0.02
+            grain: 0.02
+        }
     }
 
     // --- unified pill behind the whole zone ---------------------------------
@@ -161,11 +179,28 @@ Item {
         visible: zoneRoot.unified && zoneRoot.zoneFillMode !== "off"
         anchors.fill: parent
         radius: isHorizontal ? bar.pillRadius(bar.pillHeight) : bar.pillRadius(bar.pillWidth)
-        color: Qt.rgba(colors.surface0.r, colors.surface0.g, colors.surface0.b, colors.glassAlpha)
+        color: bar.liquidGlass ? "transparent" : Qt.rgba(colors.surface0.r, colors.surface0.g, colors.surface0.b, colors.glassAlpha)
         border.width: zoneData.borderWidth || 0
         border.color: colors[zoneData.borderColor] || colors.surface1
         Behavior on border.width { NumberAnimation { duration: 200 } }
         Behavior on color { ColorAnimation { duration: 200 } }
+
+        LiquidGlass {
+            anchors.fill: parent
+            enabled: bar.liquidGlass
+            topLeftRadius: unifyPill.radius
+            topRightRadius: unifyPill.radius
+            bottomLeftRadius: unifyPill.radius
+            bottomRightRadius: unifyPill.radius
+            tintColor: colors.surface0
+            tintAmount: 0.12
+            frost: Math.max(6, Math.min(12, Math.min(width, height) * 0.22))
+            bezel: Math.max(6, Math.min(18, Math.min(width, height) * 0.30))
+            rim: 0.55
+            ior: 1.45
+            dispersion: 0.02
+            grain: 0.02
+        }
     }
 
     // --- module flow (shared delegate) ---------------------------------------

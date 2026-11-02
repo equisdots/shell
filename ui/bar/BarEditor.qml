@@ -1249,12 +1249,36 @@ Item {
         scale: 0.95 + (0.05 * root.introBase)
 
         Rectangle {
+            id: panelBg
             anchors.fill: parent
             radius: s(21)
-            color: colors.base
+            // Liquid glass: the shared wallpaper lens sits behind the panel;
+            // letting the palette base through would hide it completely.
+            color: Theme.liquidGlass ? "transparent" : colors.base
             border.width: 1
             border.color: colors.surface0
             clip: true
+
+            // Local lens: some core panels are nested above the shared backdrop
+            // in Main, so keep an explicit lens inside the panel itself.
+            LiquidGlass {
+                anchors.fill: parent
+                enabled: Theme.liquidGlass
+                screenPosOverride: {
+                    const p = panelBg.mapToItem(null, 0, 0);
+                    return Qt.vector2d(p.x, p.y);
+                }
+                topLeftRadius: s(21)
+                topRightRadius: s(21)
+                bottomLeftRadius: s(21)
+                bottomRightRadius: s(21)
+                tintColor: "#101018"
+                tintAmount: 0.42
+                bezel: Math.max(8, Math.min(24, Math.min(width, height) * 0.28))
+                frost: Math.max(8, Math.min(18, Math.min(width, height) * 0.20))
+                interiorShade: 0.38
+            rim: 0.95
+            }
 
             Row {
                 anchors.fill: parent
@@ -1267,7 +1291,7 @@ Item {
                     width: s(220)
                     height: parent.height
                     radius: s(16)
-                    color: Qt.alpha(colors.surface0, 0.4)
+                    color: Theme.liquidGlass ? "transparent" : Qt.alpha(colors.surface0, 0.4)
                     border.width: 1
                     border.color: colors.surface1
                     clip: true

@@ -29,9 +29,32 @@ Rectangle {
     width: filterRow.width + ctx.s(24)
     radius: Theme.radiusLg
 
-    color: Theme.surfaceContainerHigh
+    // The toolbar has its own compact glass lens. Its width is driven by
+    // filterRow, so the glass follows the dynamic toolbar instead of spanning
+    // the monitor or sharing the wallpaper grid's lens.
+    color: Theme.liquidGlass ? "transparent" : Theme.surfaceContainerHigh
     border.color: Theme.outlineVariant
     border.width: 1
+
+    LiquidGlass {
+        anchors.fill: parent
+        z: -1
+        enabled: Theme.liquidGlass
+        screenPosOverride: {
+            const p = filterBarBackground.mapToItem(null, 0, 0);
+            return Qt.vector2d(p.x, p.y);
+        }
+        topLeftRadius: filterBarBackground.radius
+        topRightRadius: filterBarBackground.radius
+        bottomLeftRadius: filterBarBackground.radius
+        bottomRightRadius: filterBarBackground.radius
+        tintColor: "#101018"
+        tintAmount: 0.38
+        interiorShade: 0.26
+        bezel: Math.max(8, Math.min(16, height * 0.26))
+        frost: Math.max(10, Math.min(18, height * 0.32))
+        rim: 0.85
+    }
 
     Row {
         id: filterRow

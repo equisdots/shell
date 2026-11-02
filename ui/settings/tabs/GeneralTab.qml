@@ -60,6 +60,19 @@ Item {
 
     function appScaleStep(dir) { if (host) host.appScaleStep(dir); }
 
+    // Global Apple-style liquid glass (settings.json -> glass.liquid). Theme
+    // already watches settings.json, so this stays in sync with the Glass page.
+    readonly property bool liquidOn: Theme.liquidGlass
+    function toggleLiquid() {
+        let g = {};
+        const cur = Config.rawSettings.glass;
+        if (cur && typeof cur === "object") for (let k in cur) g[k] = cur[k];
+        g.liquid = !root.liquidOn;
+        g.prism = false;
+        g.aurora = false;
+        Config.setSetting("glass", g);
+    }
+
 
     // ════ Movidos desde SettingsPopup.qml (exclusivos de este tab) ════
 
@@ -415,6 +428,73 @@ Item {
                     font.pixelSize: root.s(11)
                     color: root.subtext0
                     wrapMode: Text.WordWrap
+                }
+            }
+
+            // ── Liquid glass (global appearance) ──────────────────────
+            Rectangle {
+                id: liquidCard
+                Layout.fillWidth: true
+                implicitHeight: liquidRow.implicitHeight + root.s(Theme.gapLg) * 2
+                radius: root.s(Theme.radiusLg)
+                color: Theme.surfaceContainerLow
+                border.width: 1
+                border.color: liquidHover.hovered || root.liquidOn ? root.mauve : Theme.outlineVariant
+                Behavior on border.color { ColorAnimation { duration: Theme.durShort } }
+
+                HoverHandler { id: liquidHover }
+
+                RowLayout {
+                    id: liquidRow
+                    anchors.fill: parent
+                    anchors.margins: root.s(Theme.gapLg)
+                    spacing: root.s(Theme.gapMd)
+
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        Layout.alignment: Qt.AlignVCenter
+                        spacing: root.s(Theme.gap2xs)
+                        Text {
+                            Layout.fillWidth: true
+                            text: "Liquid glass"
+                            font.family: "Hack Nerd Font"; font.weight: Font.DemiBold; font.pixelSize: root.s(13)
+                            color: root.text
+                        }
+                        Text {
+                            Layout.fillWidth: true
+                            text: "Apple-style wallpaper lens on bar capsules, popups, settings, notifications and centered floating widgets. Follows the xwww still image."
+                            font.family: "Hack Nerd Font"; font.pixelSize: root.s(11)
+                            color: root.subtext0
+                            wrapMode: Text.WordWrap
+                        }
+                    }
+
+                    Rectangle {
+                        id: liquidSwitch
+                        Layout.alignment: Qt.AlignVCenter
+                        width: root.s(46); height: root.s(26)
+                        radius: height / 2
+                        color: root.liquidOn ? root.mauve
+                            : (Theme.liquidGlass ? Theme.surfaceContainerHighSolid : Theme.surfaceContainer)
+                        Behavior on color { ColorAnimation { duration: 150 } }
+
+                        Rectangle {
+                            width: liquidSwitch.height - root.s(6)
+                            height: width
+                            radius: width / 2
+                            color: root.liquidOn ? root.base : root.text
+                            x: root.liquidOn ? liquidSwitch.width - width - root.s(3) : root.s(3)
+                            Behavior on x { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+                            Behavior on color { ColorAnimation { duration: 150 } }
+                        }
+                    }
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: root.toggleLiquid()
                 }
             }
 

@@ -158,11 +158,30 @@ Item {
         anchors.top: parent.top
         anchors.horizontalCenter: parent.horizontalCenter
 
+        id: scaleGlass
         radius: Theme.radiusLg
         color: Theme.surfaceContainerLow
         border.color: Theme.outlineVariant
         border.width: 1
         clip: true
+        LiquidGlass {
+            anchors.fill: parent
+            enabled: Theme.liquidGlass
+            screenPosOverride: {
+                const p = scaleGlass.mapToItem(null, 0, 0);
+                return Qt.vector2d(p.x, p.y);
+            }
+            topLeftRadius: Theme.radiusLg
+            topRightRadius: Theme.radiusLg
+            bottomLeftRadius: Theme.radiusLg
+            bottomRightRadius: Theme.radiusLg
+            tintColor: "#101018"
+            tintAmount: 0.42
+            bezel: Math.max(8, Math.min(20, Math.min(width, height) * 0.25))
+            frost: Math.max(6, Math.min(16, Math.min(width, height) * 0.20))
+            interiorShade: 0.38
+            rim: 0.95
+        }
 
         transform: Translate { y: (window.introPhase - 1) * window.s(60) }
         opacity: window.introPhase

@@ -31,7 +31,6 @@ Item {
     width: Screen.width
 
     Caching { id: paths }
-
     Scaler {
         id: scaler
         currentWidth: Screen.width
@@ -634,6 +633,11 @@ Item {
     readonly property real spacing: window.s(10)
     readonly property real skewFactor: -0.35
 
+    // Keep the picker tools visually independent from the wallpapers: the
+    // floating filter bar sits on the wallpaper, and the lens + grid begin
+    // below it with a small breathing gap.
+    readonly property real toolbarClearance: window.s(40) + window.s(56) + window.s(12)
+
     Timer {
         id: scrollThrottle
         interval: 150
@@ -1106,12 +1110,49 @@ Item {
         grid.view.forceActiveFocus();
     }
 
+    // Davincix is a full-screen picker; use the same smoked lens as the rest
+    // of the shell instead of a solid plate. The filter bar and grid cards keep
+    // their own opaque surfaces where they need contrast.
+    property bool hideShadow: true
+    // Davincix owns two independent lenses (toolbar + wallpaper grid); the
+    // window-wide lens would fill the gap between them and make them look
+    // joined, so opt out of it.
+    property bool disableSharedGlass: true
+
+    Rectangle {
+        anchors.fill: parent
+        anchors.topMargin: window.toolbarClearance
+        color: _theme.base
+        visible: !Theme.liquidGlass
+        z: -1
+    }
+
+    LiquidGlass {
+        anchors.fill: parent
+        anchors.topMargin: window.toolbarClearance
+        enabled: Theme.liquidGlass
+        screenPosOverride: {
+            const p = window.mapToItem(null, 0, 0);
+            return Qt.vector2d(p.x, p.y);
+        }
+        tintColor: "#101018"
+        tintAmount: 0.42
+        interiorShade: 0.38
+        bezel: Math.max(12, Math.min(28, Math.min(width, height) * 0.20))
+        frost: Math.max(10, Math.min(22, Math.min(width, height) * 0.16))
+        rim: 0.95
+        // The picker is full-bleed at x=0..screen width. Keep the top/bottom
+        // edge lit, but do not draw a specular strip against the side bezels.
+        rimSides: Qt.vector4d(0, 1, 0, 1)
+    }
+
     // ── View: grid + top filter bar ────────────────────────────────────────
     DavincixGrid {
         id: grid
         ctx: window
         theme: _theme
         anchors.fill: parent
+        anchors.topMargin: window.toolbarClearance
     }
 
     DavincixFilterBar {

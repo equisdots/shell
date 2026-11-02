@@ -41,13 +41,12 @@ Item {
         function gotoPage(id) { root.selected = ""; }
     }
 
-    // Solid menu chrome. This panel used to paint only its cards, so the page
-    // background (header, list margins and the plugin settings pages loaded by
-    // the Loader below) showed the desktop through. Force opaque alpha even
-    // when glass mode is on: these menus are meant to sit on the palette's
-    // solid base, with the tonal surfaceContainer* cards on top.
-    readonly property color menuBase: Qt.rgba(themeColors.base.r, themeColors.base.g,
-                                              themeColors.base.b, 1.0)
+    // Menu chrome. Standard mode keeps the palette base opaque so the page
+    // background (header, list margins, plugin settings pages) never shows the
+    // desktop through. Liquid mode drops the fill so the shared wallpaper lens
+    // behind the panel is visible; cards still provide the borders/type.
+    readonly property color menuBase: Theme.liquidGlass ? "transparent"
+        : Qt.rgba(themeColors.base.r, themeColors.base.g, themeColors.base.b, 1.0)
 
     onActiveModeChanged: if (root.activeMode !== "" && root.activeMode !== root.selected) root.selected = root.activeMode
 
@@ -155,11 +154,30 @@ Item {
 
     // ══ PAGE BACKGROUND ═══════════════════════════════════════════════════
     Rectangle {
+        id: pluginsGlass
         anchors.fill: parent
         radius: Theme.radiusLg
         color: root.menuBase
         border.width: 1
         border.color: themeColors.surface0
+        LiquidGlass {
+            anchors.fill: parent
+            enabled: Theme.liquidGlass
+            screenPosOverride: {
+                const p = pluginsGlass.mapToItem(null, 0, 0);
+                return Qt.vector2d(p.x, p.y);
+            }
+            topLeftRadius: Theme.radiusLg
+            topRightRadius: Theme.radiusLg
+            bottomLeftRadius: Theme.radiusLg
+            bottomRightRadius: Theme.radiusLg
+            tintColor: "#101018"
+            tintAmount: 0.42
+            bezel: Math.max(8, Math.min(20, Math.min(width, height) * 0.25))
+            frost: Math.max(6, Math.min(16, Math.min(width, height) * 0.20))
+            interiorShade: 0.38
+            rim: 0.95
+        }
     }
 
     // ══ LIST ═══════════════════════════════════════════════════════════════

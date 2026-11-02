@@ -106,11 +106,24 @@ Item {
             b.a
         );
     }
-    readonly property color surfaceContainerLowest: tone(0.00)
-    readonly property color surfaceContainerLow: tone(0.04)
-    readonly property color surfaceContainer: tone(0.07)
-    readonly property color surfaceContainerHigh: tone(0.11)
-    readonly property color surfaceContainerHighest: tone(0.15)
+    // In liquid-glass mode the shared backdrop sits behind panels, popups and
+    // settings, so the tonal fills step aside and only borders/text remain.
+    function surfaceTone(amount) {
+        const c = tone(amount);
+        return root.liquidGlass ? Qt.rgba(c.r, c.g, c.b, 0.0) : c;
+    }
+    function solidTone(amount) {
+        const c = tone(amount);
+        return Qt.rgba(c.r, c.g, c.b, 1.0);
+    }
+    readonly property color surfaceContainerLowest: surfaceTone(0.00)
+    readonly property color surfaceContainerLow: surfaceTone(0.04)
+    readonly property color surfaceContainer: surfaceTone(0.07)
+    readonly property color surfaceContainerHigh: surfaceTone(0.11)
+    readonly property color surfaceContainerHighest: surfaceTone(0.15)
+    // Opaque container for widgets: GlassCard uses the lens when centered and
+    // this solid fill otherwise (image faces keep their transparent fill).
+    readonly property color surfaceContainerHighSolid: solidTone(0.11)
 
     // Outlines (MD3) + state layers.
     readonly property color outline: tone(0.32)
@@ -132,7 +145,7 @@ Item {
             const b = root.base;
             return Qt.rgba(b.r, b.g, b.b, 0.5);
         }
-        return root.surfaceContainerHigh;
+        return root.surfaceContainerHighSolid;
     }
     readonly property color widgetHairline: root.widgetStyle === "glass"
         ? Qt.rgba(root.text.r, root.text.g, root.text.b, 0.18)
@@ -298,9 +311,43 @@ Item {
     // Glassmorphism (settings.json "glass"): same contract as ui/bar/Colors.qml.
     property var glassSettings: ({})
     readonly property bool glassOn: glassSettings.enabled === true
+    // Per-surface opt-out for future surfaces that must stay opaque.
+    property bool glassSuppressed: false
+    // Set while the Aurora Backdrop service is taking a shell-free screenshot.
+    // Top-level shell windows bind their visibility to this so the capture
+    // contains the desktop behind the shell, never the glass itself.
+    property bool captureFreeze: false
+    // Global Apple-style liquid glass: real backdrop lens on bar, shared
+    // popup/settings backdrop, widget faces and notifications.
+    readonly property bool prismGlass: glassSettings.prism === true && !root.glassSuppressed
+    // Aurora: Apple-style layered glass. Backdrop.qml supplies a shell-free
+    // screenshot (refreshed with the wallpaper); the Aurora shader supplies
+    // the rounded lens, tint and soft sheen.
+    readonly property bool auroraGlass: glassSettings.aurora === true
+        && glassSettings.prism !== true && !root.glassSuppressed
+    readonly property bool liquidGlass: (glassSettings.liquid === true || root.prismGlass || root.auroraGlass)
+        && !root.glassSuppressed
     readonly property real glassOpacity: glassSettings.opacity !== undefined
         ? Math.max(0.2, Math.min(1.0, glassSettings.opacity)) : 0.85
     readonly property real glassAlpha: root.glassOn ? root.glassOpacity : 1.0
+
+    // Prism-only controls. They live in settings.json glass.* and are read here
+    // so every local lens gets the same result. Defaults are deliberately
+    // darker and softer than Prism's first pass: coloured refraction should
+    // never outshine the type it sits behind.
+    function glassNumber(key, fallback) {
+        const v = root.glassSettings ? root.glassSettings[key] : undefined;
+        return (typeof v === "number" && isFinite(v)) ? v : fallback;
+    }
+    readonly property real prismIntensity: Math.max(0.15, Math.min(1.5, root.glassNumber("prismIntensity", 0.60)))
+    readonly property real prismBlur: Math.max(0.3, Math.min(2.5, root.glassNumber("prismBlur", 1.25)))
+    readonly property real prismTint: Math.max(0.3, Math.min(2.2, root.glassNumber("prismTint", 1.35)))
+    readonly property real prismShade: Math.max(0.0, Math.min(1.8, root.glassNumber("prismShade", 1.20)))
+    readonly property real prismBrightness: Math.max(0.0, Math.min(1.2, root.glassNumber("prismBrightness", 0.35)))
+    // Aurora controls: tint and sheen only. Blur/refraction are supplied by
+    // the compositor and the layer stack; keep the knobs small and legible.
+    readonly property real auroraTint: Math.max(0.25, Math.min(1.8, root.glassNumber("auroraTint", 0.75)))
+    readonly property real auroraSheen: Math.max(0.0, Math.min(1.5, root.glassNumber("auroraSheen", 0.85)))
 
     // Single choke point for settings.json content (called by the reader and
     // after every directory-watcher wakeup).

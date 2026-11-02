@@ -447,6 +447,25 @@ Item {
             color: Theme.surfaceContainerLow
             radius: root.s(Theme.radiusMd)
 
+            LiquidGlass {
+                anchors.fill: parent
+                enabled: Theme.liquidGlass
+                screenPosOverride: {
+                    const p = innerBg.mapToItem(null, 0, 0);
+                    return Qt.vector2d(p.x, p.y);
+                }
+                topLeftRadius: root.s(Theme.radiusMd)
+                topRightRadius: root.s(Theme.radiusMd)
+                bottomLeftRadius: root.s(Theme.radiusMd)
+                bottomRightRadius: root.s(Theme.radiusMd)
+                tintColor: "#101018"
+                tintAmount: 0.42
+                bezel: Math.max(8, Math.min(20, Math.min(width, height) * 0.25))
+                frost: Math.max(6, Math.min(16, Math.min(width, height) * 0.20))
+                interiorShade: 0.38
+            rim: 0.95
+            }
+
             // FIX: This forces the entire background to render as a single hardware texture,
             // preventing the UI from dragging and causing "shadow boxes" during the StackView transition!
             layer.enabled: true

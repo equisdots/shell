@@ -80,7 +80,26 @@ Item {
     }
 
     Rectangle {
+        id: wcGlass
         anchors.fill: parent; color: Theme.surfaceContainerLow; radius: Theme.radiusLg
+        LiquidGlass {
+            anchors.fill: parent
+            enabled: Theme.liquidGlass
+            screenPosOverride: {
+                const p = wcGlass.mapToItem(null, 0, 0);
+                return Qt.vector2d(p.x, p.y);
+            }
+            topLeftRadius: Theme.radiusLg
+            topRightRadius: Theme.radiusLg
+            bottomLeftRadius: Theme.radiusLg
+            bottomRightRadius: Theme.radiusLg
+            tintColor: "#101018"
+            tintAmount: 0.42
+            bezel: Math.max(8, Math.min(20, Math.min(width, height) * 0.25))
+            frost: Math.max(6, Math.min(16, Math.min(width, height) * 0.20))
+            interiorShade: 0.38
+            rim: 0.95
+        }
 
         ColumnLayout {
             anchors.fill: parent; anchors.margins: Theme.gapLg; spacing: Theme.gapSm

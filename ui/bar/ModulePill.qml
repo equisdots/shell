@@ -144,7 +144,7 @@ Item {
             if (root.unified || !bar.pillBg) return "transparent";
             if (accentVisible) return root.hasAccentColor ? root.accentColor : (colors[root.effectiveAccentRole] || colors.surface1);
             // barBg: standard islands become transparent and float on the bar strip.
-            if (bar.barBg) return "transparent";
+            if (bar.barBg || bar.liquidGlass) return "transparent";
             let role = root.bgRole;
             let c = colors[role] || colors.surface0;
             return Qt.rgba(c.r, c.g, c.b, bar.pillSolid ? colors.glassAlpha : (role === "surface0" ? 0.4 : 0.6) * colors.glassAlpha);
@@ -160,7 +160,7 @@ Item {
             }
             if (root.unified || !bar.pillBg) return "transparent";
             if (accentVisible) return root.hasAccentColor ? root.accentColor : (colors[root.effectiveAccentRole] || colors.surface1);
-            if (bar.barBg) {
+            if (bar.barBg || bar.liquidGlass) {
                 // subtle hover highlight floating on the bar strip
                 let c = colors.surface1;
                 return Qt.rgba(c.r, c.g, c.b, 0.28 * colors.glassAlpha);
