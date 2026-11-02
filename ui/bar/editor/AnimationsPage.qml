@@ -25,6 +25,35 @@ Item {
 
     readonly property var flickable: body.item ? body.item.flickable : null
 
+    readonly property var windowStyles: [
+        { id: "popin 80%",     label: "Pop-in 80%",     icon: "󰐊" },
+        { id: "popin 60%",     label: "Pop-in 60%",     icon: "󰒮" },
+        { id: "popin 100%",    label: "Pop-in 100%",    icon: "󰓅" },
+        { id: "slide",         label: "Slide",          icon: "󰒮" },
+        { id: "slidefade",     label: "Slide fade",     icon: "󰖌" },
+        { id: "slidevert",     label: "Slide vert",     icon: "󰁝" },
+        { id: "slidefadevert", label: "Vert fade",      icon: "󰒲" },
+        { id: "fade",          label: "Fade",           icon: "󰔟" }
+    ]
+    readonly property var windowCurves: [
+        { id: "smooth",         label: "Smooth",         icon: "󰒮" },
+        { id: "overshot",       label: "Overshot",       icon: "󰁝" },
+        { id: "easeOutExpo",    label: "Ease out expo",  icon: "󰓅" },
+        { id: "easeOutQuint",   label: "Ease out quint", icon: "󰐊" },
+        { id: "easeInOutQuart", label: "Ease in-out",    icon: "󰒲" },
+        { id: "linear",         label: "Linear",         icon: "󰁔" }
+    ]
+    function randomizeWindows() {
+        let st = root.windowStyles[Math.floor(Math.random() * root.windowStyles.length)].id;
+        let cu = root.windowCurves[Math.floor(Math.random() * root.windowCurves.length)].id;
+        let so = root.windowStyles[Math.floor(Math.random() * root.windowStyles.length)].id;
+        let co = root.windowCurves[Math.floor(Math.random() * root.windowCurves.length)].id;
+        root.bar.applyAnimations({
+            windowStyle: st, windowCurve: cu,
+            windowOutStyle: so, windowOutCurve: co
+        });
+    }
+
     Loader {
         id: body
         anchors.fill: parent
@@ -148,6 +177,133 @@ Item {
                         onInc: root.bar.applyAnimations({
                             speed: Math.min(2.0, Math.round((root.bar.animationsCfg.speed + 0.1) * 10) / 10)
                         })
+                    }
+
+                    // ── Window open/close ───────────────────────────────────
+                    Text {
+                        text: "Window open"
+                        font.family: "Hack Nerd Font"
+                        font.weight: Font.Black
+                        font.pixelSize: bar.s(16)
+                        color: bar.colors.text
+                    }
+                    GridLayout {
+                        width: parent.width
+                        columns: 3
+                        columnSpacing: bar.s(Theme.gapMd)
+                        rowSpacing: bar.s(Theme.gapMd)
+                        Repeater {
+                            model: root.windowStyles
+                            delegate: OptionCard {
+                                required property var modelData
+                                Layout.fillWidth: true
+                                bar: root.bar
+                                icon: modelData.icon
+                                label: modelData.label
+                                active: root.bar.animationsCfg.windowStyle === modelData.id
+                                onActivated: root.bar.applyAnimations({ windowStyle: modelData.id })
+                            }
+                        }
+                    }
+                    Text {
+                        text: "Window open curve"
+                        font.family: "Hack Nerd Font"
+                        font.weight: Font.Black
+                        font.pixelSize: bar.s(16)
+                        color: bar.colors.text
+                    }
+                    GridLayout {
+                        width: parent.width
+                        columns: 3
+                        columnSpacing: bar.s(Theme.gapMd)
+                        rowSpacing: bar.s(Theme.gapMd)
+                        Repeater {
+                            model: root.windowCurves
+                            delegate: OptionCard {
+                                required property var modelData
+                                Layout.fillWidth: true
+                                bar: root.bar
+                                icon: modelData.icon
+                                label: modelData.label
+                                active: root.bar.animationsCfg.windowCurve === modelData.id
+                                onActivated: root.bar.applyAnimations({ windowCurve: modelData.id })
+                            }
+                        }
+                    }
+                    EditLabel {
+                        bar: root.bar
+                        width: parent.width
+                        text: "Opening animation (windowsIn). Choose a style and curve; the same speed multiplier applies."
+                        font.pixelSize: bar.s(11)
+                        color: bar.colors.subtext0
+                        wrapMode: Text.WordWrap
+                    }
+
+                    // ── Window close ────────────────────────────────────────
+                    Text {
+                        text: "Window close"
+                        font.family: "Hack Nerd Font"
+                        font.weight: Font.Black
+                        font.pixelSize: bar.s(16)
+                        color: bar.colors.text
+                    }
+                    GridLayout {
+                        width: parent.width
+                        columns: 3
+                        columnSpacing: bar.s(Theme.gapMd)
+                        rowSpacing: bar.s(Theme.gapMd)
+                        Repeater {
+                            model: root.windowStyles
+                            delegate: OptionCard {
+                                required property var modelData
+                                Layout.fillWidth: true
+                                bar: root.bar
+                                icon: modelData.icon
+                                label: modelData.label
+                                active: root.bar.animationsCfg.windowOutStyle === modelData.id
+                                onActivated: root.bar.applyAnimations({ windowOutStyle: modelData.id })
+                            }
+                        }
+                    }
+                    Text {
+                        text: "Window close curve"
+                        font.family: "Hack Nerd Font"
+                        font.weight: Font.Black
+                        font.pixelSize: bar.s(16)
+                        color: bar.colors.text
+                    }
+                    GridLayout {
+                        width: parent.width
+                        columns: 3
+                        columnSpacing: bar.s(Theme.gapMd)
+                        rowSpacing: bar.s(Theme.gapMd)
+                        Repeater {
+                            model: root.windowCurves
+                            delegate: OptionCard {
+                                required property var modelData
+                                Layout.fillWidth: true
+                                bar: root.bar
+                                icon: modelData.icon
+                                label: modelData.label
+                                active: root.bar.animationsCfg.windowOutCurve === modelData.id
+                                onActivated: root.bar.applyAnimations({ windowOutCurve: modelData.id })
+                            }
+                        }
+                    }
+                    EditorButton {
+                        width: parent.width
+                        bar: root.bar
+                        icon: "󰒮"
+                        label: "Randomize open + close"
+                        onActivated: root.randomizeWindows()
+                    }
+                    EditLabel {
+                        bar: root.bar
+                        width: parent.width
+                        text: "Closing animation (windowsOut). Randomize picks a valid style/curve pair for open and another for close on each click."
+                        font.pixelSize: bar.s(11)
+                        color: bar.colors.subtext0
+                        wrapMode: Text.WordWrap
                     }
 
                     // ── Workspace transitions ───────────────────────────────

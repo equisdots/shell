@@ -36,7 +36,30 @@ Item {
 
     // Re-read the live values when the page opens (the singleton also
     // refreshes itself when the shell starts).
-    Component.onCompleted: HyprEffects.refresh()
+    property string layoutMode: "dwindle"
+    readonly property var layoutChoices: ["dwindle", "master", "scrolling", "monocle"]
+    function setLayout(mode) {
+        layoutMode = mode;
+        Quickshell.execDetached(["bash",
+            Quickshell.env("HOME") + "/.config/hypr/scripts/quickshell/ui/bar/editor/persist-hypr.sh",
+            "layout", mode]);
+    }
+    function randomLayout() {
+        let next = root.layoutChoices[Math.floor(Math.random() * root.layoutChoices.length)];
+        root.setLayout(next);
+    }
+    Process {
+        id: layoutRead
+        command: ["bash", "-c", "hyprctl -j getoption general:layout 2>/dev/null | jq -r '.str // \"dwindle\"'"]
+        running: true
+        stdout: StdioCollector {
+            onStreamFinished: {
+                let v = this.text.trim();
+                if (root.layoutChoices.indexOf(v) !== -1) root.layoutMode = v;
+            }
+        }
+    }
+    Component.onCompleted: { HyprEffects.refresh(); layoutRead.running = true; }
 
     // Reset: opacities/blur/rounding/shadow only (gaps and border untouched,
     // same as WindowControls.resetDefaults). Applied by the singleton.
@@ -114,6 +137,68 @@ Item {
                         font.pixelSize: bar.s(11)
                         color: bar.colors.subtext0
                         wrapMode: Text.WordWrap
+                    }
+
+                    // ── Window layout ──────────────────────────────────────
+                    Text {
+                        text: "Window layout"
+                        font.family: "Hack Nerd Font"
+                        font.weight: Font.Black
+                        font.pixelSize: bar.s(16)
+                        color: bar.colors.text
+                    }
+                    GridLayout {
+                        width: parent.width
+                        columns: 2
+                        columnSpacing: bar.s(Theme.gapMd)
+                        rowSpacing: bar.s(Theme.gapMd)
+                        OptionCard {
+                            Layout.fillWidth: true
+                            bar: root.bar
+                            icon: "󰕰"
+                            label: "Dwindle"
+                            active: root.layoutMode === "dwindle"
+                            onActivated: root.setLayout("dwindle")
+                        }
+                        OptionCard {
+                            Layout.fillWidth: true
+                            bar: root.bar
+                            icon: "󰕰"
+                            label: "Master"
+                            active: root.layoutMode === "master"
+                            onActivated: root.setLayout("master")
+                        }
+                        OptionCard {
+                            Layout.fillWidth: true
+                            bar: root.bar
+                            icon: "󰕰"
+                            label: "Scrolling"
+                            active: root.layoutMode === "scrolling"
+                            onActivated: root.setLayout("scrolling")
+                        }
+                        OptionCard {
+                            Layout.fillWidth: true
+                            bar: root.bar
+                            icon: "󰕰"
+                            label: "Monocle"
+                            active: root.layoutMode === "monocle"
+                            onActivated: root.setLayout("monocle")
+                        }
+                    }
+                    EditLabel {
+                        bar: root.bar
+                        width: parent.width
+                        text: "Dwindle is the dynamic split layout; Master keeps a main column; Scrolling and Monocle are the additional 0.57 layouts. The choice persists to config/user-layout.lua."
+                        font.pixelSize: bar.s(11)
+                        color: bar.colors.subtext0
+                        wrapMode: Text.WordWrap
+                    }
+                    EditorButton {
+                        width: parent.width
+                        bar: root.bar
+                        icon: "󰒮"
+                        label: "Random layout"
+                        onActivated: root.randomLayout()
                     }
 
                     // ── Opacity ─────────────────────────────────────────────
