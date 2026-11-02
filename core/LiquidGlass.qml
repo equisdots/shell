@@ -96,10 +96,18 @@ Item {
     // glass-sync: the wallpaper snapshot is rewritten when the wallpaper
     // changes. GlassBackdrop also revises the shell-free desktop capture for
     // Aurora; either change must make the Image reload.
+    // davincix/glass-sync replace the snapshot with tmp+mv, but the watcher can
+    // still fire while an external writer is mid-write. Debounce the revision so
+    // QML does not try to decode a partial PNG and log Image errors.
     FileView {
         path: root.fallbackWallpaperPath
         watchChanges: true
-        onFileChanged: root.wallpaperRev++
+        onFileChanged: wallpaperDebounce.restart()
+    }
+    Timer {
+        id: wallpaperDebounce
+        interval: 180
+        onTriggered: root.wallpaperRev++
     }
 
     visible: enabled && ready && width > 0 && height > 0 && (!centeredOnly || centered)
