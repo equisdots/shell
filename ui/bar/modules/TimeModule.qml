@@ -117,16 +117,25 @@ ModulePill {
         }
     }
 
-    // Compact: just HH:mm, clamped to the pill so it never overflows.
-    Text {
+    // Compact: keep the full clock (seconds included) centered in the vertical
+    // pill. Wrapping the Text in an Item is important: ModulePill measures
+    // implicitWidth, not the Text.width override, so the old fixed width made
+    // the clock look pushed to one side.
+    Item {
         visible: mod.compact
-        width: Math.max(bar.s(28), bar.pillWidth - bar.s(8))
-        text: bar.timeStr.length >= 5 ? bar.timeStr.substring(0, 5) : bar.timeStr
-        font.family: bar.fontFamily
-        font.pixelSize: mod.clockSize
-        font.weight: Font.Black
-        horizontalAlignment: Text.AlignHCenter
-        elide: Text.ElideRight
-        color: mod.contentColor
+        implicitWidth: Math.min(compactText.implicitWidth, bar.pillWidth - bar.s(4))
+        implicitHeight: compactText.implicitHeight
+
+        Text {
+            id: compactText
+            width: parent.width
+            text: bar.timeStr
+            font.family: bar.fontFamily
+            font.pixelSize: mod.compact ? bar.s(13) : mod.clockSize
+            font.weight: Font.Black
+            horizontalAlignment: Text.AlignHCenter
+            elide: Text.ElideRight
+            color: mod.contentColor
+        }
     }
 }
