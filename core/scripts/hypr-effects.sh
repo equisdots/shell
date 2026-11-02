@@ -37,11 +37,14 @@ SPECS=(
     "active_opacity decoration:active_opacity float"
     "inactive_opacity decoration:inactive_opacity float"
     "rounding decoration:rounding int"
+    "blur_enabled decoration:blur:enabled bool"
     "blur_size decoration:blur:size int"
     "blur_passes decoration:blur:passes int"
     "gaps_in general:gaps_in cssgap"
     "gaps_out general:gaps_out cssgap"
     "border_size general:border_size int"
+    "shadow_enabled decoration:shadow:enabled bool"
+    "dim_inactive decoration:dim_inactive bool"
     "shadow_range decoration:shadow:range int"
     "shadow_render_power decoration:shadow:render_power int"
     "shadow_offset_x decoration:shadow:offset vec2x"
@@ -122,7 +125,7 @@ clamp_value() {
         shadow_render_power) v="$(clamp_int 1 4 4 "$v")" ;;
         shadow_offset_x)     v="$(clamp_int -100 100 0 "$v")" ;;
         shadow_offset_y)     v="$(clamp_int -100 100 10 "$v")" ;;
-        blur_proportional|wobble_enabled)
+        blur_enabled|shadow_enabled|dim_inactive|blur_proportional|wobble_enabled)
             case "$v" in
                 1|true|True|TRUE|on|yes) v=1 ;;
                 *) v=0 ;;
@@ -246,21 +249,24 @@ join() { local IFS=', '; printf '%s' "$*"; }
 
 write_lua() {
     local state="$1" tmp
-    local ao io ro bs bp gr go bw sr sp ox oy
+    local ao io ro be bs bp se gr go bw sr sp ox oy di
     # Clamp on the way out too: a hand-edited state file must never produce an
     # invalid Lua override (0.57 rejects out-of-range options).
     ao="$(clamp_value active_opacity   "$(jq -r '.active_opacity // 0.85'    <<<"$state")")"
     io="$(clamp_value inactive_opacity "$(jq -r '.inactive_opacity // 0.80'  <<<"$state")")"
     ro="$(clamp_value rounding         "$(jq -r '.rounding // 20'            <<<"$state")")"
+    be="$(clamp_value blur_enabled     "$(jq -r 'if has("blur_enabled") then .blur_enabled else 1 end' <<<"$state")")"
     bs="$(clamp_value blur_size        "$(jq -r '.blur_size // 8'            <<<"$state")")"
     bp="$(clamp_value blur_passes      "$(jq -r '.blur_passes // 3'          <<<"$state")")"
     gr="$(clamp_value gaps_in          "$(jq -r '.gaps_in // 16'             <<<"$state")")"
     go="$(clamp_value gaps_out         "$(jq -r '.gaps_out // 25'            <<<"$state")")"
     bw="$(clamp_value border_size      "$(jq -r '.border_size // 2'          <<<"$state")")"
+    se="$(clamp_value shadow_enabled   "$(jq -r 'if has("shadow_enabled") then .shadow_enabled else 1 end' <<<"$state")")"
     sr="$(clamp_value shadow_range     "$(jq -r '.shadow_range // 35'        <<<"$state")")"
     sp="$(clamp_value shadow_render_power "$(jq -r '.shadow_render_power // 4' <<<"$state")")"
     ox="$(clamp_value shadow_offset_x  "$(jq -r '.shadow_offset_x // 0'      <<<"$state")")"
     oy="$(clamp_value shadow_offset_y  "$(jq -r '.shadow_offset_y // 10'     <<<"$state")")"
+    di="$(clamp_value dim_inactive     "$(jq -r 'if has("dim_inactive") then .dim_inactive else 1 end' <<<"$state")")"
 
     # 0.57-only blocks (empty on <= 0.56, so the Lua never carries unknown
     # keys there).
@@ -271,12 +277,12 @@ write_lua() {
         bprop="$(clamp_value blur_proportional "$(jq -r 'if has("blur_proportional") then .blur_proportional else 0 end' <<<"$state")")"
         we="$(clamp_value wobble_enabled "$(jq -r 'if has("wobble_enabled") then .wobble_enabled else 0 end' <<<"$state")")"
         wi="$(clamp_value wobble_intensity "$(jq -r '.wobble_intensity // 0.2' <<<"$state")")"
-        blur_block="$(printf '            size         = %s,\n            passes       = %s,\n            variant      = "%s",\n            proportional = %s,' \
-            "$bs" "$bp" "$bv" "$(lua_bool "$bprop")")"
+        blur_block="$(printf '            enabled      = %s,\n            size         = %s,\n            passes       = %s,\n            variant      = "%s",\n            proportional = %s,' \
+            "$(lua_bool "$be")" "$bs" "$bp" "$bv" "$(lua_bool "$bprop")")"
         wobble_block="$(printf '\n        wobble = {\n            enabled   = %s,\n            intensity = %s,\n        },' \
             "$(lua_bool "$we")" "$wi")"
     else
-        blur_block="$(printf '            size   = %s,\n            passes = %s,' "$bs" "$bp")"
+        blur_block="$(printf '            enabled = %s,\n            size   = %s,\n            passes = %s,' "$(lua_bool "$be")" "$bs" "$bp")"
     fi
 
     tmp="$(mktemp "$CONF_DIR/.we-lua.XXXXXX")" || return 1
@@ -293,10 +299,13 @@ $blur_block
         },
 
         shadow = {
+            enabled      = $(lua_bool "$se"),
             range        = $sr,
             render_power = $sp,
             offset       = { $ox, $oy },
-        },$wobble_block
+        },
+
+        dim_inactive = $(lua_bool "$di"),$wobble_block
     },
 })
 LUA
@@ -344,8 +353,10 @@ apply_live() {
     [[ -n "${patch[active_opacity]:-}"   ]] && dec+=("active_opacity = $(clamp_value active_opacity "${patch[active_opacity]}")")
     [[ -n "${patch[inactive_opacity]:-}" ]] && dec+=("inactive_opacity = $(clamp_value inactive_opacity "${patch[inactive_opacity]}")")
     [[ -n "${patch[rounding]:-}"         ]] && dec+=("rounding = $(clamp_value rounding "${patch[rounding]}")")
+    [[ -n "${patch[blur_enabled]:-}" ]] && blur+=("enabled = $(lua_bool "$(clamp_value blur_enabled "${patch[blur_enabled]}")")")
     [[ -n "${patch[blur_size]:-}"   ]] && blur+=("size = $(clamp_value blur_size "${patch[blur_size]}")")
     [[ -n "${patch[blur_passes]:-}" ]] && blur+=("passes = $(clamp_value blur_passes "${patch[blur_passes]}")")
+    [[ -n "${patch[shadow_enabled]:-}" ]] && shadow+=("enabled = $(lua_bool "$(clamp_value shadow_enabled "${patch[shadow_enabled]}")")")
     [[ -n "${patch[shadow_range]:-}"        ]] && shadow+=("range = $(clamp_value shadow_range "${patch[shadow_range]}")")
     [[ -n "${patch[shadow_render_power]:-}" ]] && shadow+=("render_power = $(clamp_value shadow_render_power "${patch[shadow_render_power]}")")
     if [[ -n "${patch[shadow_offset_x]:-}" || -n "${patch[shadow_offset_y]:-}" ]]; then

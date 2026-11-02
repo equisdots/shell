@@ -183,6 +183,7 @@ Item {
         case "d_gpu": return "GPU";
         case "d_notifications": return "Notifications";
         case "d_animations": return "Animations";
+        case "d_profiles": return "Profiles";
         case "d_input": return "Input";
         case "d_guide": return "About";
         }

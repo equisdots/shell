@@ -68,6 +68,8 @@ function pageEntries() {
         { page: "d_gpu", label: "Integrated",             desc: "Optimus mode: integrated GPU only",      icon: "󰁹", color: "green",    y: 128 },
         { page: "d_gpu", label: "Hybrid",                 desc: "Optimus mode: hybrid (default)",         icon: "󰚰", color: "blue",     y: 128 },
         { page: "d_gpu", label: "NVIDIA",                 desc: "Optimus mode: NVIDIA only",              icon: "󰓅", color: "red",      y: 128 },
+        // Performance (d_performance)
+        { page: "d_profiles", label: "Profiles", desc: "Apply X / Performance / Balanced / Gaming / Focus / Cinematic", icon: "󰓅", color: "mauve", y: 70 },
         // Animations (d_animations) — iconos de AnimationsPage
         { page: "d_animations", label: "Animations",        desc: "Enable or disable animations",           icon: "\uF0E7", color: "mauve",    y: 70 },
         { page: "d_animations", label: "Animation speed",   desc: "Snappy / Fast / Normal / Slow + fine",   icon: "\uF021", color: "sapphire", y: 150 },

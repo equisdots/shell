@@ -50,7 +50,8 @@ var GROUPS = [
             { id: "d_animations", icon: "󰔟", label: "Animations" },
             { id: "d_shadows",    icon: "󰹹", label: "Shadows" },
             { id: "d_frame",      icon: "󰝴", label: "Frame" },
-            { id: "d_glass",      icon: "󰖌", label: "Glass" }
+            { id: "d_glass",      icon: "󰖌", label: "Glass" },
+            { id: "d_profiles", icon: "󰓅", label: "Profiles" }
         ]
     },
     {

@@ -39,15 +39,18 @@ Item {
         active_opacity: 0.85,
         inactive_opacity: 0.80,
         rounding: 20,
+        blur_enabled: true,
         blur_size: 8,
         blur_passes: 3,
         gaps_in: 16,
         gaps_out: 25,
         border_size: 2,
+        shadow_enabled: true,
         shadow_range: 35,
         shadow_render_power: 4,
         shadow_offset_x: 0,
         shadow_offset_y: 10,
+        dim_inactive: true,
         // 0.57-only.
         blur_variant: "kawase",
         blur_proportional: false,
@@ -109,7 +112,9 @@ Item {
 
     // Booleans travel as 0/1 through the shell kernel.
     function _serialize(key, value) {
-        if (key === "blur_proportional" || key === "wobble_enabled")
+        if (key === "blur_proportional" || key === "wobble_enabled"
+                || key === "blur_enabled" || key === "shadow_enabled"
+                || key === "dim_inactive")
             return key + "=" + (value ? "1" : "0");
         return key + "=" + value;
     }
@@ -131,7 +136,9 @@ Item {
         if (key === "blur_variant") {
             if (typeof v !== "string") return;
             v = EffectRanges.clamp(key, v);
-        } else if (key === "blur_proportional" || key === "wobble_enabled") {
+        } else if (key === "blur_proportional" || key === "wobble_enabled"
+                || key === "blur_enabled" || key === "shadow_enabled"
+                || key === "dim_inactive") {
             v = !!v;
         } else {
             if (typeof v !== "number" || isNaN(v)) return;
@@ -172,12 +179,15 @@ Item {
         root.set("active_opacity", 0.85);
         root.set("inactive_opacity", 0.80);
         root.set("rounding", 20);
+        root.set("blur_enabled", true);
         root.set("blur_size", 8);
         root.set("blur_passes", 3);
+        root.set("shadow_enabled", true);
         root.set("shadow_range", 35);
         root.set("shadow_render_power", 4);
         root.set("shadow_offset_x", 0);
         root.set("shadow_offset_y", 10);
+        root.set("dim_inactive", true);
         root.set("blur_variant", "kawase");
         root.set("blur_proportional", false);
         root.set("wobble_enabled", false);

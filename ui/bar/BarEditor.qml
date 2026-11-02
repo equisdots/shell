@@ -113,7 +113,7 @@ Item {
             "hyprland": "d_hyprland", "idle": "d_idle", "gpu": "d_gpu",
             "notifications": "d_notifications", "guide": "d_guide", "about": "d_guide",
             "shadows": "d_shadows", "glass": "d_glass", "palette": "d_palette",
-            "plugins": "d_plugins"
+            "profiles": "d_profiles", "performance": "d_profiles", "plugins": "d_plugins"
         };
         let page = map[root.activeMode] !== undefined ? map[root.activeMode] : root.activeMode;
         if (root.navIndex(page) === -1) {
@@ -547,6 +547,7 @@ Item {
             "d_shadows":       "editor/ShadowsPage.qml",
             "d_frame":         "editor/FramePage.qml",
             "d_glass":         "editor/GlassPage.qml",
+            "d_profiles":       "editor/ProfilesPage.qml",
             "d_plugins":       "editor/PluginsPage.qml",
             "d_appearance":    "editor/AppearancePage.qml"
         };
@@ -577,6 +578,7 @@ Item {
             "d_shadows":       dShadowsLoader,
             "d_frame":         dFrameLoader,
             "d_glass":         dGlassLoader,
+            "d_profiles":       profilesLoader,
             "d_plugins":       dPluginsLoader,
             "d_appearance":    dAppearanceLoader
         };
@@ -1565,6 +1567,16 @@ Item {
                         property real slideY: visible ? 0 : root.s(10)
                         Behavior on slideY { NumberAnimation { duration: 250; easing.type: Easing.OutQuart } }
                         transform: Translate { y: dGlassLoader.slideY }
+                        Behavior on opacity { NumberAnimation { duration: 250 } }
+                    }
+                    Loader {
+                        id: profilesLoader
+                        anchors.fill: parent
+                        visible: root.currentPage === "d_profiles"
+                        opacity: visible ? 1.0 : 0.0
+                        property real slideY: visible ? 0 : root.s(10)
+                        Behavior on slideY { NumberAnimation { duration: 250; easing.type: Easing.OutQuart } }
+                        transform: Translate { y: profilesLoader.slideY }
                         Behavior on opacity { NumberAnimation { duration: 250 } }
                     }
                     Loader {
