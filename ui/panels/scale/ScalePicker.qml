@@ -48,9 +48,11 @@ Item {
     // -------------------------------------------------------------------------
     // STATE & LOGIC
     // -------------------------------------------------------------------------
-    // Kept in step with the ladder in scripts/scale-menu.sh. 0.75 and 0.7 are
-    // the low-end rungs; 0.7 rounds logical pixels, so it can look slightly soft.
-    readonly property var ladder: [0.7, 0.75, 0.8, 1.0, 1.25, 1.5, 2.0]
+    // Kept in step with the ladder in scripts/scale-menu.sh. Hyprland only
+    // keeps scales that divide the native resolution into whole logical pixels;
+    // 0.7 is not representable and gets snapped to 2/3 (0.6666667), so the
+    // low-end rung uses the exact 2/3 value instead.
+    readonly property var ladder: [0.6666667, 0.75, 0.8, 1.0, 1.25, 1.5, 2.0]
 
     property real currentScale: 1.0
     property int monWidth: 1920
@@ -158,7 +160,6 @@ Item {
         anchors.top: parent.top
         anchors.horizontalCenter: parent.horizontalCenter
 
-        id: scaleGlass
         radius: Theme.radiusLg
         color: Theme.surfaceContainerLow
         border.color: Theme.outlineVariant
@@ -168,7 +169,7 @@ Item {
             anchors.fill: parent
             enabled: Theme.liquidGlass
             screenPosOverride: {
-                const p = scaleGlass.mapToItem(null, 0, 0);
+                const p = mainBg.mapToItem(null, 0, 0);
                 return Qt.vector2d(p.x, p.y);
             }
             topLeftRadius: Theme.radiusLg
