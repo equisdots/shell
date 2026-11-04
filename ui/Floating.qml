@@ -4,7 +4,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
 import "./bar"
-import "panels/davincix"
+import "panels/davinci"
 import "../core"
 
 Variants {

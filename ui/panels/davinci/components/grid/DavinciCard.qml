@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// davincix · ui/components/grid — DavincixCard
+// davinci · ui/components/grid — DavinciCard
 //
 // ListView delegate: one wallpaper thumbnail with the skewed cover look, video
 // preview (MediaPlayer) and the play badge. Pure view: it reads the model
@@ -21,16 +21,17 @@ Item {
     required property string fileName
     required property url fileUrl
     required property int index
+    property bool currentOverride: false
 
     signal clicked()
     signal favoriteToggled()
 
     readonly property string safeFileName: String(fileName)
-    readonly property bool isCurrent: ListView.isCurrentItem && !ctx.isScrollingBlocked
+    readonly property bool isCurrent: (currentOverride || ListView.isCurrentItem) && !ctx.isScrollingBlocked
     readonly property bool isFakeSelected: ctx.isScrollingBlocked && index === 0
     readonly property bool isVisuallyEnlarged: isCurrent || isFakeSelected
     readonly property bool isLocalVideo: safeFileName.startsWith("000_")
-    // Escena interactiva de xwww (thumb "scn_<dir>.jpg", ver davincix/thumbs.sh).
+    // Interactive xwww scene (thumb "scn_<dir>.jpg", see davinci/thumbs.sh).
     readonly property bool isScene: safeFileName.startsWith("scn_")
     // Vídeo local o resultado de una búsqueda de vídeo (badge; el preview
     // MediaPlayer solo corre para vídeos locales).
@@ -74,6 +75,7 @@ Item {
     }
 
     property bool isPlayingVideo: false
+
 
     Timer {
         id: videoPlayTimer

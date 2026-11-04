@@ -17,6 +17,18 @@ QtObject {
     readonly property var focusCommand: ["bash", "-c",
         "hyprctl activewindow -j 2>/dev/null | jq -r 'if (.class != null and .class != \"\" and .address != null and .address != \"\") then (.class + \"\\n\" + .title) else empty end' 2>/dev/null"]
 
+    // Monitor snapshot used by compositor-neutral panels.
+    readonly property var monitorListCommand: ["hyprctl", "monitors", "-j"]
+
+    function monitorsFromOutput(text) {
+        try {
+            let list = JSON.parse(text);
+            return Array.isArray(list) ? list : [];
+        } catch (e) {
+            return [];
+        }
+    }
+
     // Spec → Lua value. Solid borders are 0xAARRGGBB numbers; gradients are
     // the table the 0.56 API expects: { colors = { 0x..., 0x... }, angle = N }.
     function borderLua(spec) {

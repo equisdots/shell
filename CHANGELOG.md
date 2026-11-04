@@ -59,7 +59,7 @@ Dates use YYYY-MM-DD.
 ## [2026-10-02]
 
 ### Added
-- **Wallpaper picker: interactive scenes** (`ui/panels/davincix/`): `scn_<name>.jpg` thumbnails are listed like any wallpaper, marked with a `JS` badge and applied through the davincix kernel. `getCleanName()` resolves the `scn_` and `000_` prefixes and the flattened `__` paths used by nested media.
+- **Wallpaper picker: interactive scenes** (`ui/panels/davinci/`): `scn_<name>.jpg` thumbnails are listed like any wallpaper, marked with a `JS` badge and applied through the davincix kernel. `getCleanName()` resolves the `scn_` and `000_` prefixes and the flattened `__` paths used by nested media.
 - **New transition set**: the filter-bar transition selector offers the reveal effects (`pixelate`, `ripple`, `blinds`, `spiral`, `static`, `parallax`, `parallax-left`, `parallax-right`, `parallax-invert`, `melt`, `shatter`) alongside the existing ones.
 - **Palette widget** (`ui/panels/palette/PaletteWidget.qml`, `SUPER + SHIFT + P`): standalone palette switcher with the same X / Custom / User sections, filter and cards as the editor's Palette page. Selecting a palette applies it live (same `Config.setSetting` write) and closes the widget; its anchor is configurable through `settings.widgets.palette.position`. Also listed in the mascot dock.
 

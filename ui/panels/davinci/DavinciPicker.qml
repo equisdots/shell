@@ -1,10 +1,11 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// davincix · ui — DavincixPicker
+// davinci · ui — DavinciPicker
 //
 // The wallpaper picker root. It owns the STATE and LOGIC (models, filters,
 // focus, search/apply orchestration) and composes the view components:
-//   - components/grid/DavincixGrid  → the thumbnail ListView + card delegate
-//   - components/filter/DavincixFilterBar → top bar (status, monitors, controls,
+//   - views/ → one modular presentation per view mode (coverflow, grid,
+//     library, stage, palette), sharing the same model and apply path
+//   - components/filter/DavinciFilterBar → top bar (status, monitors, controls,
 //     color chips, search)
 // Pure helpers live in lib/ (constants.js, color.js) and the headless engine
 // in ../kernel/. Components receive the picker root as `ctx` plus the Colors
@@ -19,11 +20,13 @@ import QtMultimedia
 import Quickshell
 import Quickshell.Io
 import "../../../core"
+import "../../../core/Personalization.js" as Personalization
 import "../../bar"
 import "lib/constants.js" as C
 import "components"
 import "components/grid"
 import "components/filter"
+import "views"
 import "lib/color.js" as Color
 
 Item {
@@ -40,16 +43,100 @@ Item {
         return scaler.s(val);
     }
 
-    // Resuelve el CLI del kernel: la UI vive en el shell y el kernel en su
-    // propio repo. Orden: override por entorno → hermano kernel/ junto a ui/.
-    function cliPath() {
-        let override = Quickshell.env("DAVINCIX_CLI");
-        if (override && override !== "") return override;
+    // Resolve the kernel CLI. New installs expose `davinci`; `davincix` stays
+    // as a compatibility fallback for older clones and wrappers. The probe runs once on open and leaves the
+    // optimistic ~/.local/bin/davinci path in place while it resolves.
+    property string cli: Quickshell.env("HOME") + "/.local/bin/davinci"
 
-        return Quickshell.env("HOME") + "/.local/bin/davincix";
+    Process {
+        id: cliProbe
+        command: ["bash", "-c",
+            "for p in \"$HOME/.local/bin/davinci\" \"$HOME/.local/bin/davincix\" " +
+            "\"$HOME/.local/share/equisdots/davinci/davinci.sh\" " +
+            "\"$HOME/.local/share/equisdots/davinci/davincix.sh\" " +
+            "\"$HOME/.local/share/equisdots/davincix/davinci.sh\" " +
+            "\"$HOME/.local/share/equisdots/davincix/davincix.sh\"; do " +
+            "[ -x \"$p\" ] && { printf '%s\\n' \"$p\"; exit 0; }; done; true"]
+        running: false
+        stdout: StdioCollector {
+            onStreamFinished: {
+                let p = this.text.trim();
+                if (p !== "") window.cli = p;
+            }
+        }
+    }
+
+    function resolveCli() {
+        let env = Quickshell.env("DAVINCI_CLI") || Quickshell.env("DAVINCIX_CLI") || "";
+        if (env !== "") {
+            window.cli = env;
+            return;
+        }
+        cliProbe.running = true;
+    }
+
+    function cliPath() {
+        return window.cli;
     }
 
     Colors { id: _theme }
+
+    // ── Personalization-backed options ─────────────────────────────────────
+    // Everything below is stored in settings.json under the "davinci" section
+    // and is safe to edit from the main settings panel. `Config.rev` is read
+    // so bindings refresh after an in-place settings write.
+    readonly property var davinci: (Config.rev, Personalization.normalize("davinci", Config.rawSettings.davinci))
+    readonly property string viewMode: {
+        let v = String(davinci.viewMode || "coverflow");
+        return ["coverflow", "grid", "library", "stage", "palette"].indexOf(v) !== -1
+            ? v : "coverflow";
+    }
+    readonly property int gridColumns: Math.max(2, Math.min(8, Number(davinci.gridColumns) || 4))
+    readonly property bool showFilterBar: davinci.showFilterBar !== false
+    readonly property bool showStatus: davinci.showStatus !== false
+    readonly property bool showMonitors: davinci.showMonitors !== false
+    readonly property bool showColorFilters: davinci.showColorFilters !== false
+    readonly property bool showTransition: davinci.showTransition !== false
+    readonly property bool showSlideshow: davinci.showSlideshow !== false
+    readonly property bool showPalettePreview: davinci.showPalettePreview !== false
+    readonly property bool showSearch: davinci.showSearch !== false
+    readonly property bool showKeys: davinci.showKeys !== false
+    readonly property bool showFilmstrip: davinci.showFilmstrip !== false
+    readonly property bool showSidebar: davinci.showSidebar !== false
+    readonly property bool showInspector: davinci.showInspector !== false
+    readonly property bool showMetadata: davinci.showMetadata !== false
+    readonly property bool showShortcuts: davinci.showShortcuts !== false
+
+    property bool _loadingPrefs: false
+    property bool _settingsReady: false
+
+    function davinciRaw() {
+        let raw = Config.rawSettings.davinci;
+        return (raw && typeof raw === "object" && !Array.isArray(raw)) ? raw : {};
+    }
+
+    function saveDavinciOption(key, value) {
+        if (_loadingPrefs) return;
+        let raw = Object.assign({}, davinciRaw());
+        raw[key] = value;
+        Config.setSetting("davinci", raw);
+    }
+
+    function applyPersonalization() {
+        let raw = davinciRaw();
+        let cfg = Personalization.normalize("davinci", raw);
+        _loadingPrefs = true;
+        gridOrientation = cfg.gridOrientation === "vertical" ? "vertical" : "horizontal";
+        cardShape = C.SHAPES.indexOf(cfg.cardShape) !== -1 ? cfg.cardShape : "rect";
+        roundedThumbs = cfg.roundedThumbs !== false;
+        transition = cfg.transition || "random";
+        slideshowInterval = Math.max(60, Math.min(3600, Number(cfg.slideshowInterval) || 300));
+        searchSource = cfg.searchSource || "ddg";
+        searchKind = cfg.searchKind === "video" ? "video" : "image";
+        favoriteNames = Array.isArray(raw.favorites) ? raw.favorites.slice() : [];
+        _loadingPrefs = false;
+        _settingsReady = true;
+    }
 
     property string widgetArg: ""
     property string targetWallName: ""
@@ -103,7 +190,7 @@ Item {
 
     Process {
         id: monitorProc
-        command: ["sh", "-c", "export PATH=$PATH:/usr/bin:/usr/local/bin:/run/current-system/sw/bin && hyprctl monitors -j"]
+        command: Compositor.monitorListCommand
         running: false
 
         stdout: StdioCollector {
@@ -112,7 +199,7 @@ Item {
 
                 if (response && response.trim().length > 0) {
                     try {
-                        var monitors = JSON.parse(response);
+                        var monitors = Compositor.monitorsFromOutput(response);
                         monitorModel.clear();
                         for (var i = 0; i < monitors.length; i++) {
                             monitorModel.append({ "name": monitors[i].name, "selected": true });
@@ -196,7 +283,7 @@ Item {
         return selected.join(",");
     }
 
-    // Apply a wallpaper through the davincix CLI (kernel layer): the UI
+    // Apply a wallpaper through the davinci CLI (kernel layer): the UI
     // decides WHAT to apply; download/convert/cache/apply live in kernel/.
     function applyWallpaper(safeFileName, isVideo) {
         if (!safeFileName || window.isApplying) return;
@@ -248,7 +335,7 @@ Item {
 
     Settings {
         id: searchState
-        location: "file://" + Quickshell.statePath("davincix-search.ini")
+        location: "file://" + Quickshell.statePath("davinci-search.ini")
         category: "QS_Davincix"
         property string query: ""
         property bool searched: false
@@ -336,13 +423,14 @@ Item {
         return false;
     }
 
-    // ── View modes: setters + persistencia en settings.json ─────────────────
+    // ── View modes: setters + persistence in settings.json ─────────────────
     function saveViewPrefs() {
-        Config.setSetting("davincixView", {
-            orientation: window.gridOrientation,
-            shape: window.cardShape,
-            favorites: window.favoriteNames
-        });
+        if (window._loadingPrefs) return;
+        let raw = Object.assign({}, window.davinciRaw());
+        raw.gridOrientation = window.gridOrientation;
+        raw.cardShape = window.cardShape;
+        raw.favorites = window.favoriteNames.slice();
+        Config.setSetting("davinci", raw);
     }
 
     function setOrientation(v) {
@@ -390,7 +478,7 @@ Item {
     function toggleSlideshow() {
         if (window.isApplying) return;
         let cli = window.cliPath();
-        let action = window.slideshowOn ? "stop" : "start " + C.SLIDESHOW_INTERVAL;
+        let action = window.slideshowOn ? "stop" : "start " + window.slideshowInterval;
         Quickshell.execDetached(["bash", "-c", '"' + cli + '" slideshow ' + action]);
         window.slideshowOn = !window.slideshowOn;
     }
@@ -400,8 +488,8 @@ Item {
         if (window.isApplying || window.confirmOpen) return;
         if (window.currentFilter === "Search") return; // resultados de búsqueda: no se borran
         let targetModel = window.getModelForFilter(window.currentFilter);
-        if (grid.view.currentIndex < 0 || grid.view.currentIndex >= targetModel.count) return;
-        let fname = targetModel.get(grid.view.currentIndex).fileName;
+        if (viewHost.currentIndex < 0 || viewHost.currentIndex >= targetModel.count) return;
+        let fname = targetModel.get(viewHost.currentIndex).fileName;
         if (!fname) return;
         window.confirmTarget = String(fname);
         window.confirmOpen = true;
@@ -420,7 +508,7 @@ Item {
         window.confirmTarget = "";
     }
 
-    // ── Import: disponible solo como CLI (davincix.sh import); la UI no lo
+    // Import is CLI-only (davinci.sh import, with davincix.sh as fallback); the UI does not
     // expone para no depender de herramientas externas (rofi/zenity) que
     // rompen la estética del shell.
 
@@ -446,12 +534,16 @@ Item {
         if (targetIndex !== -1 && targetIndex < targetModel.count) {
             window.isModelChanging = true;
 
-            if (requirePositioning) {
-                grid.view.forceLayout();
-                grid.view.positionViewAtIndex(targetIndex, ListView.Center);
-            }
+            viewHost.setCurrentIndex(targetIndex);
 
-            grid.view.currentIndex = targetIndex;
+            // Position AFTER the index is current: the first focus can arrive
+            // before the view has received its model, in which case an earlier
+            // centerView() is a no-op and the first card would stay clipped at
+            // the leading edge.
+            if (requirePositioning) {
+                viewHost.forceLayout();
+                viewHost.centerView(targetIndex);
+            }
 
             if (isSearchRestore) {
                 window.searchIndexRestored = true;
@@ -547,8 +639,8 @@ Item {
         searchState.lastName = "";
 
         if (window.currentFilter === "Search") {
-            grid.view.currentIndex = 0;
-            grid.view.positionViewAtIndex(0, ListView.Center);
+            viewHost.setCurrentIndex(0);
+            viewHost.centerView(0);
         }
         window.isModelChanging = false;
 
@@ -580,17 +672,24 @@ Item {
     property bool roundedThumbs: true
     property int thumbRadius: roundedThumbs ? Theme.radiusMd : 0
 
-    // ── View modes (persisted via Config → settings.json, key "davincixView")
+    // ── View modes (persisted in settings.json under "davinci")
     property string gridOrientation: "horizontal"
     property string cardShape: "rect"
     readonly property var shapeOrder: C.SHAPES
     property bool slideshowOn: false
+    property int slideshowInterval: 300
     property var favoriteNames: []
 
     // Search provider (kernel providers/: ddg | wallhaven | pexels | pixabay).
     property string searchSource: "ddg"
     property string searchKind: "image"   // image | video
     readonly property var searchSources: C.SEARCH_SOURCES
+
+    onTransitionChanged: if (_settingsReady && !_loadingPrefs) saveDavinciOption("transition", transition)
+    onSlideshowIntervalChanged: if (_settingsReady && !_loadingPrefs) saveDavinciOption("slideshowInterval", slideshowInterval)
+    onSearchSourceChanged: if (_settingsReady && !_loadingPrefs) saveDavinciOption("searchSource", searchSource)
+    onSearchKindChanged: if (_settingsReady && !_loadingPrefs) saveDavinciOption("searchKind", searchKind)
+    onRoundedThumbsChanged: if (_settingsReady && !_loadingPrefs) saveDavinciOption("roundedThumbs", roundedThumbs)
 
     // API keys de proveedores (panel de la tuerca; fuente: kernel `keys list`).
     property bool keysPanelOpen: false
@@ -636,7 +735,7 @@ Item {
     // Keep the picker tools visually independent from the wallpapers: the
     // floating filter bar sits on the wallpaper, and the lens + grid begin
     // below it with a small breathing gap.
-    readonly property real toolbarClearance: window.s(40) + window.s(56) + window.s(12)
+    readonly property real toolbarClearance: Compositor.isNiri ? 0 : (window.s(40) + window.s(56) + window.s(12))
 
     Timer {
         id: scrollThrottle
@@ -756,7 +855,7 @@ Item {
         let targetModel = window.getModelForFilter(window.currentFilter);
         if (!targetModel || targetModel.count === 0) return;
 
-        let start = grid.view.currentIndex;
+        let start = viewHost.currentIndex;
         let found = -1;
 
         if (direction === 1) {
@@ -778,7 +877,7 @@ Item {
         }
 
         if (found !== -1) {
-            grid.view.currentIndex = found;
+            viewHost.setCurrentIndex(found);
             return;
         }
 
@@ -792,7 +891,7 @@ Item {
                 let isVid = fname.startsWith("000_");
 
                 if (checkItemMatchesFilter(fname, isVid, window.cacheVersion, window.currentFilter)) {
-                    grid.view.currentIndex = current;
+                    viewHost.setCurrentIndex(current);
                     return;
                 }
             }
@@ -887,7 +986,7 @@ Item {
         }
 
         Qt.callLater(() => {
-            grid.view.forceActiveFocus();
+            viewHost.forceActiveFocus();
 
             if (window.currentFilter === "Search") {
                 if (window.hasSearched) {
@@ -917,8 +1016,8 @@ Item {
         enabled: !window.searchInputFocused && !window.isScrollingBlocked && !window.isApplying && !window.confirmOpen && !window.keysPanelOpen
         onActivated: {
             let targetModel = window.getModelForFilter(window.currentFilter);
-            if (grid.view.currentIndex >= 0 && grid.view.currentIndex < targetModel.count) {
-                let fname = targetModel.get(grid.view.currentIndex).fileName;
+            if (viewHost.currentIndex >= 0 && viewHost.currentIndex < targetModel.count) {
+                let fname = targetModel.get(viewHost.currentIndex).fileName;
                 if (fname) {
                     let isVid = String(fname).startsWith("000_");
                     window.applyWallpaper(String(fname), isVid);
@@ -1036,9 +1135,9 @@ Item {
             }
 
             if (window.isScrollingBlocked && startIdx === 0 && searchProxyModel.count > 0 && window.lastSearchName === "") {
-                grid.view.forceLayout();
-                grid.view.currentIndex = 0;
-                grid.view.positionViewAtIndex(0, ListView.Center);
+                viewHost.forceLayout();
+                viewHost.setCurrentIndex(0);
+                viewHost.centerView(0);
             }
         }
     }
@@ -1066,10 +1165,10 @@ Item {
         window.isItemAnimating = true;
         itemAnimationTimer.restart();
 
-        if (grid.view.model !== searchProxyModel || window.currentFilter !== "Search") return;
+        if (window.currentFilter !== "Search") return;
 
         if (!window.isModelChanging && window.hasSearched && window.searchIndexRestored) {
-            let ci = grid.view.currentIndex;
+            let ci = viewHost.currentIndex;
             if (ci >= 0 && ci < searchProxyModel.count) {
                 let fname = searchProxyModel.get(ci).fileName;
                 if (fname !== undefined && fname !== "") {
@@ -1107,30 +1206,42 @@ Item {
     }
 
     function gridFocus() {
-        grid.view.forceActiveFocus();
+        viewHost.forceActiveFocus();
     }
 
-    // Davincix is a full-screen picker; use the same smoked lens as the rest
+    // Davinci is a full-screen picker; use the same smoked lens as the rest
     // of the shell instead of a solid plate. The filter bar and grid cards keep
     // their own opaque surfaces where they need contrast.
-    property bool hideShadow: true
-    // Davincix owns two independent lenses (toolbar + wallpaper grid); the
-    // window-wide lens would fill the gap between them and make them look
-    // joined, so opt out of it.
+    // On Hyprland the picker owns the full-bleed lens and the grid starts
+    // below the filter bar. The niri shell keeps the shared lens, so both
+    // switches follow the active compositor.
+    readonly property bool useOwnLens: false
+    property bool hideShadow: false
     property bool disableSharedGlass: true
+
+    // The presentation views need more vertical room than the compact
+    // cover-flow strip. Keep cover-flow at the original picker height, but
+    // grow the whole panel for grid/library/stage/palette and re-center it.
+    // Main.qml follows these targets live when the mode changes.
+    readonly property bool expandedView: viewMode !== "coverflow"
+    readonly property real pickerHeight: expandedView
+        ? Math.min(window.s(1150), Screen.height - window.s(40))
+        : window.s(650)
+    property real targetMasterHeight: pickerHeight
+    property real targetMasterY: Math.floor((Screen.height - pickerHeight) / 2)
 
     Rectangle {
         anchors.fill: parent
-        anchors.topMargin: window.toolbarClearance
+        anchors.topMargin: window.showFilterBar ? window.toolbarClearance : 0
         color: _theme.base
-        visible: !Theme.liquidGlass
+        visible: useOwnLens && !Theme.liquidGlass
         z: -1
     }
 
     LiquidGlass {
         anchors.fill: parent
-        anchors.topMargin: window.toolbarClearance
-        enabled: Theme.liquidGlass
+        anchors.topMargin: window.showFilterBar ? window.toolbarClearance : 0
+        enabled: useOwnLens && Theme.liquidGlass
         screenPosOverride: {
             const p = window.mapToItem(null, 0, 0);
             return Qt.vector2d(p.x, p.y);
@@ -1147,16 +1258,19 @@ Item {
     }
 
     // ── View: grid + top filter bar ────────────────────────────────────────
-    DavincixGrid {
-        id: grid
+    DavinciViewHost {
+        id: viewHost
         ctx: window
         theme: _theme
+        mode: window.viewMode
+        gridColumns: window.gridColumns
         anchors.fill: parent
-        anchors.topMargin: window.toolbarClearance
+        anchors.topMargin: window.showFilterBar ? window.toolbarClearance : 0
     }
 
-    DavincixFilterBar {
+    DavinciFilterBar {
         id: filterBar
+        visible: window.showFilterBar
         ctx: window
         theme: _theme
         monitors: monitorModel
@@ -1184,21 +1298,55 @@ Item {
         onClosed: window.keysPanelOpen = false
     }
 
+    // Settings changes (including the main panel) refresh the picker live.
+    Connections {
+        target: Config
+        function onRevChanged() {
+            window.applyPersonalization();
+        }
+    }
+
+    onViewModeChanged: {
+        window.initialFocusSet = false;
+    }
+
+    Connections {
+        target: viewHost
+        function onViewLoaded() {
+            window.applyFilters(true);
+            viewHost.forceActiveFocus();
+        }
+    }
+
     Component.onCompleted: {
+        // Refresh the thumbnail cache on every open, including direct IPC or
+        // settings launches that do not go through qs_manager.sh. The kernel
+        // locks concurrent runs, so this remains cheap.
+        Quickshell.execDetached([window.cliPath(), "thumbs"]);
         Quickshell.execDetached(["bash", "-c", "mkdir -p '" + decodeURIComponent(window.searchDir.replace("file://", "")) + "'"]);
 
         window.loadMonitors();
 
-        // Preferencias de vista + favoritos persistidos (settings.json).
-        let prefs = Config.getSetting("davincixView", {});
-        window.gridOrientation = (prefs.orientation === "vertical") ? "vertical" : "horizontal";
-        window.cardShape = (C.SHAPES.indexOf(prefs.shape) !== -1) ? prefs.shape : "rect";
-        window.favoriteNames = Array.isArray(prefs.favorites) ? prefs.favorites : [];
+        // Load personalization and migrate the legacy "davincixView" block
+        // once. The new "davinci" section also owns favorites, transition,
+        // search provider and slideshow interval.
+        let raw = Config.rawSettings.davinci;
+        if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+            let legacy = Config.getSetting("davincixView", {});
+            let migrated = Object.assign({}, Personalization.defaults("davinci"), {
+                gridOrientation: legacy.orientation === "vertical" ? "vertical" : "horizontal",
+                cardShape: C.SHAPES.indexOf(legacy.shape) !== -1 ? legacy.shape : "rect",
+                favorites: Array.isArray(legacy.favorites) ? legacy.favorites : []
+            });
+            Config.setSetting("davinci", migrated);
+        }
+        window.applyPersonalization();
+        window.resolveCli();
 
-        // Estado real del slideshow (el flag persistido puede mentir tras reboot).
+        // Real slideshow state; the persisted flag can be stale after reboot.
         window.refreshSlideshowState();
 
-        grid.view.forceActiveFocus();
+        viewHost.forceActiveFocus();
         window.processMarkers();
         window.triggerColorExtraction();
     }

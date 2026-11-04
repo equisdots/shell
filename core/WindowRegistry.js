@@ -79,7 +79,7 @@ function getLayout(name, mx, my, mw, mh, userScale) {
         "window-controls": { w: s(480, scale), h: s(900, scale), rx: Math.floor((mw/2)-(s(480, scale)/2)), ry: Math.floor((mh/2)-(s(900, scale)/2)), comp: "ui/panels/window-controls/WindowControls.qml" },
         "bar-editor": { w: Math.min(s(1260, scale), mw - s(40, scale)), h: s(760, scale), rx: Math.floor((mw - Math.min(s(1260, scale), mw - s(40, scale))) / 2), ry: Math.floor((mh/2)-(s(760, scale)/2)), comp: "ui/bar/BarEditor.qml" },
         "plugins": { w: s(1000, scale), h: s(780, scale), rx: Math.floor((mw/2)-(s(1000, scale)/2)), ry: Math.floor((mh/2)-(s(780, scale)/2)), comp: "ui/panels/plugins/PluginsPanel.qml" },
-        "wallpaper": { w: mw, h: s(650, scale), rx: 0, ry: Math.floor((mh/2)-(s(650, scale)/2)), comp: "ui/panels/davincix/DavincixPicker.qml" },
+        "wallpaper": { w: mw, h: s(650, scale), rx: 0, ry: Math.floor((mh/2)-(s(650, scale)/2)), comp: "ui/panels/davinci/DavinciPicker.qml" },
         
         // --- Top Left Edge ---
         "music":     { w: s(700, scale), h: s(650, scale), rx: s(5, scale), ry: s(60, scale), comp: "ui/bar/popups/music/MusicPopup.qml" },

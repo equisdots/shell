@@ -8,7 +8,7 @@ import "../../bar"
 // ═══════════════════════════════════════════════════════════════════════════
 // PaletteWidget — palette carousel (SUPER + SHIFT + P).
 //
-// Horizontal, davincix-style picker focused on colour: each palette is a card
+// Horizontal, davinci-style picker focused on colour: each palette is a card
 // with a rich thumbnail (four mini apps — VS Code, kitty + xfetch, xtop, nvim —
 // painted with that palette) plus the 16 base16 tokens as circles. Browse with
 // ‹ › (or ← →), filter by name, apply with Enter or a click (writes bar.palette

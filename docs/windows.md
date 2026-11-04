@@ -46,7 +46,7 @@ dispatch through `qs_manager.sh` → `Main.qml` → `core/WindowRegistry.js`:
 | Clipboard | `ui/plugins/clipboard/ui/ClipboardManager.qml` (clipboard plugin panel) | SUPER + C | Center |
 | Calendar | `ui/plugins/timex/ui/TimexPopup.qml` (timex plugin panel) | SUPER + S | Top center |
 | Music Player | `ui/bar/popups/music/MusicPopup.qml` | SUPER + M | Top left |
-| Davincix (wallpaper) | `ui/panels/davincix/DavincixPicker.qml` | SUPER + W | Center |
+| Davinci (wallpaper) | `ui/panels/davinci/DavinciPicker.qml` | SUPER + W | Center |
 | About | Settings panel, About tab (`ui/bar/editor/GuidePage.qml`) | SUPER + H | Center |
 | System Monitor | `ui/bar/popups/system-monitor/SystemMonitor.qml` | SUPER + I | Center |
 | Updater | `ui/bar/popups/updater/UpdaterPopup.qml` | SUPER + U | Center |
@@ -124,15 +124,15 @@ look as the Hyprland windows. Two pieces:
   **Theme → Glass** page (`ui/bar/editor/GlassPage.qml`), applied live. With
   glass off, `base` is byte-identical to before (no visual change).
 
-## Wallpaper subsystem (davincix)
+## Wallpaper subsystem (davinci)
 
-The wallpaper picker is the frontend of **davincix**, which lives in its own
-repo ([`equisdots/davincix`](https://github.com/equisdots/davincix)):
+The wallpaper picker is the frontend of **davinci**, whose kernel lives in its
+own repository (`equisdots/davinci`; the old `davincix` clone and wrapper remain compatibility fallbacks):
 
-- UI: `ui/panels/davincix/DavincixPicker.qml` composes its view components
-  under `ui/panels/davincix/components/` (`grid/`, `filter/`) plus `lib/`.
+- UI: `ui/panels/davinci/DavinciPicker.qml` composes its view components
+  under `ui/panels/davinci/components/` (`grid/`, `filter/`) plus `lib/`.
   It only decides **what** to apply; the kernel decides **how**.
-- Kernel: resolved through `$DAVINCIX_CLI` or `~/.local/bin/davincix` (dots
+- Kernel: resolved through `$DAVINCI_CLI` / `$DAVINCIX_CLI` or `~/.local/bin/davinci` (`davincix` remains a fallback; dots
   installs it from the repo: `set`, `fetch`, `current`, `thumbs`, `search`,
   `stop`, `import`, `slideshow`, `keys`, `paths`).
 - Callers: the picker itself, `qs_manager.sh` (`thumbs`, `current`),

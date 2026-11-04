@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// davincix · ui/components/filter — DavincixFilterBar
+// davinci · ui/components/filter — DavinciFilterBar
 //
 // Top bar: status notification + spinner, multi-monitor selector, quick
 // controls (transition / rounded corners / palette preview), the color filter
@@ -66,7 +66,7 @@ Rectangle {
             id: notifDrawer
             height: ctx.s(44)
             property real paddingLeft: ctx.showSpinner ? ctx.s(40) : ctx.s(16)
-            property real targetWidth: ctx.showNotification ? Math.min(notifTextDrawer.implicitWidth + paddingLeft + ctx.s(20), ctx.s(300)) : 0
+            property real targetWidth: (ctx.showStatus && ctx.showNotification) ? Math.min(notifTextDrawer.implicitWidth + paddingLeft + ctx.s(20), ctx.s(300)) : 0
             width: targetWidth
             visible: width > 0.1
             radius: Theme.radiusMd
@@ -139,7 +139,7 @@ Rectangle {
         }
 
         // ── Multi-monitor selector ─────────────────────────────────────────
-        DavincixMonitors {
+        DavinciMonitors {
             ctx: filterBarBackground.ctx
             theme: filterBarBackground.theme
             monitors: filterBarBackground.monitors
@@ -153,7 +153,8 @@ Rectangle {
             // Transition selector — click to cycle through xwww transitions.
             Rectangle {
                 id: transBtn
-                width: transLabel.implicitWidth + ctx.s(30)
+                visible: ctx.showTransition
+                width: visible ? transLabel.implicitWidth + ctx.s(30) : 0
                 height: ctx.s(36)
                 radius: Theme.radiusMd
                 anchors.verticalCenter: parent.verticalCenter
@@ -266,7 +267,8 @@ Rectangle {
 
             // Slideshow: rotates the wallpaper every N minutes.
             Rectangle {
-                width: ctx.s(36)
+                visible: ctx.showSlideshow
+                width: visible ? ctx.s(36) : 0
                 height: ctx.s(36)
                 radius: Theme.radiusMd
                 anchors.verticalCenter: parent.verticalCenter
@@ -295,7 +297,8 @@ Rectangle {
 
             // Active palette preview (base + accent swatches).
             Rectangle {
-                width: ctx.s(58)
+                visible: ctx.showPalettePreview
+                width: visible ? ctx.s(58) : 0
                 height: ctx.s(36)
                 radius: Theme.radiusMd
                 anchors.verticalCenter: parent.verticalCenter
@@ -317,7 +320,8 @@ Rectangle {
             model: ctx.filterData
 
             delegate: Item {
-                visible: modelData.name !== "Search"
+                readonly property bool isColor: modelData.hex !== ""
+                visible: modelData.name !== "Search" && (!isColor || ctx.showColorFilters)
                 width: !visible ? 0 : ((modelData.name === "Video" || modelData.name === "All") ? ctx.s(44) : (modelData.hex === "" ? filterText.contentWidth + ctx.s(24) : ctx.s(36)))
                 height: !visible ? 0 : ctx.s(36)
                 anchors.verticalCenter: parent.verticalCenter
@@ -406,7 +410,7 @@ Rectangle {
         }
 
         // ── Search control ────────────────────────────────────────────────
-        DavincixSearch {
+        DavinciSearch {
             id: search
             ctx: filterBarBackground.ctx
             theme: filterBarBackground.theme

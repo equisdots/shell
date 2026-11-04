@@ -17,11 +17,19 @@ QtObject {
     id: root
 
     readonly property var backend: Hyprland {}
+    readonly property bool isNiri: false
 
     // Data sources for the bar pollers (same output shape as before the port).
     readonly property var workspacesCommand: root.backend.workspacesCommand
     readonly property var keyboardCommand: root.backend.keyboardCommand
     readonly property var focusCommand: root.backend.focusCommand
+    readonly property var monitorListCommand: root.backend.monitorListCommand
+
+    // Pure decoder for a monitor snapshot. The Hyprland backend returns the
+    // hyprctl array; the niri overlay returns the neutral normalized array.
+    function monitorsFromOutput(text) {
+        return root.backend.monitorsFromOutput(text);
+    }
 
     // Live actions. Each border spec is { hex, alpha, second, angle } (see
     // Colors.borderSpec); the backend translates it to its own notation.

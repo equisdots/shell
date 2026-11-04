@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// davincix · ui/components/filter — DavincixMonitors
+// davinci · ui/components/filter — DavinciMonitors
 //
 // Multi-monitor selector: an icon that expands into a row of monitor chips.
 // Selection is stored on the passed-in ListModel (`monitors`); the picker
@@ -15,7 +15,7 @@ Rectangle {
     required property var theme      // Colors instance
     required property var monitors   // ListModel { name, selected }
 
-    visible: monitors.count > 1
+    visible: monitors.count > 1 && ctx.showMonitors
     height: ctx.s(44)
 
     property real expandedWidth: ctx.s(44) + monitorListRow.width + ctx.s(8)

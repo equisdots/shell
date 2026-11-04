@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// davincix · ui/components/filter — DavincixSearch
+// davinci · ui/components/filter — DavinciSearch
 //
 // Search control: the pause/play button plus the expanding search box
 // (input + submit). Owns the input text and the search-state persistence
@@ -13,7 +13,7 @@ Row {
 
     required property var ctx        // picker root
     required property var theme      // Colors instance
-    required property var settings   // Settings (QS_Davincix)
+    required property var settings   // Settings (QS_Davincix, legacy category)
 
     height: ctx.s(44)
     spacing: Theme.gapMd
@@ -48,7 +48,7 @@ Row {
 
     Rectangle {
         id: searchControlBtn
-        visible: ctx.currentFilter === "Search" && ctx.hasSearched
+        visible: ctx.showSearch && ctx.currentFilter === "Search" && ctx.hasSearched
         width: visible ? ctx.s(44) : 0
         height: ctx.s(44)
         radius: Theme.radiusMd
@@ -106,7 +106,7 @@ Row {
     // Load more: siguiente página de resultados (solo con búsqueda pausada).
     Rectangle {
         id: loadMoreBtn
-        visible: ctx.currentFilter === "Search" && ctx.hasSearched && ctx.isSearchPaused && ctx.searchResultCount > 0
+        visible: ctx.showSearch && ctx.currentFilter === "Search" && ctx.hasSearched && ctx.isSearchPaused && ctx.searchResultCount > 0
         width: visible ? ctx.s(44) : 0
         height: ctx.s(44)
         radius: Theme.radiusMd
@@ -139,6 +139,7 @@ Row {
 
     Rectangle {
         id: searchBox
+        visible: ctx.showSearch
         height: ctx.s(44)
         width: ctx.currentFilter === "Search" ? ctx.s(440) : ctx.s(44)
         radius: Theme.radiusMd
@@ -348,7 +349,8 @@ Row {
     // Búsqueda de vídeo (fondos animados): lupa + play para diferenciarla.
     Rectangle {
         id: videoSearchBtn
-        width: ctx.s(44)
+        visible: ctx.showSearch
+        width: visible ? ctx.s(44) : 0
         height: ctx.s(44)
         radius: Theme.radiusMd
         anchors.verticalCenter: parent.verticalCenter
@@ -432,7 +434,8 @@ Row {
     // API keys de proveedores (tuerca): despliega el panel de keys.
     Rectangle {
         id: keysBtn
-        width: ctx.s(44)
+        visible: ctx.showKeys
+        width: visible ? ctx.s(44) : 0
         height: ctx.s(44)
         radius: Theme.radiusMd
         anchors.verticalCenter: parent.verticalCenter

@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// davincix · ui/lib — constants
+// davinci · ui/lib — constants
 //
 // Pure data shared by the picker UI: filter definitions, xwww transitions and
 // the filter cycling order. No QML context, no side effects.

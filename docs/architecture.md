@@ -30,7 +30,7 @@ Lock.qml                   alternate entry: PAM session lock (WlSessionLock,
     │   ├── edit/          editor controls (FieldCard, ToggleCard, ...)
     │   └── popups/        applauncher, battery, guide, music, network,
     │                      system-monitor, updater, volume (bar-triggered)
-    ├── panels/            davincix, focustime, idle, quickactions, scale,
+    ├── panels/            davinci, focustime, idle, quickactions, scale,
     │                      window-controls (plugin panels — timex,
     │                      rss-reader, clipboard, quicknotes, file-search —
     │                      resolve from their manifests via ui/Main.qml)

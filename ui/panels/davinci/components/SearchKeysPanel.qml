@@ -1,11 +1,11 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// davincix · ui/components — SearchKeysPanel
+// davinci · ui/components — SearchKeysPanel
 //
 // Panel de API keys de proveedores (las que pidan). Los datos vienen del
-// kernel (`davincix.sh keys list`: NAME|label|where|0-1); guardar delega en
+// kernel (`davinci.sh keys list`, with `davincix.sh` as a compatibility fallback)
 // `keys set`.
 //
-// Estilo: réplica del panel principal (DavincixFilterBar) — contenedor
+// Estilo: réplica del panel principal (DavinciFilterBar) — contenedor
 // mantle 0.90 + borde surface2 + radio s(18), y dentro pills surface0/
 // surface1 con radio s(13), bordes y tipografías del mismo lenguaje.
 // Se renderiza centrado bajo la tira de wallpapers, ancho de la búsqueda.

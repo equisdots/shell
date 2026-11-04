@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// davincix · ui/components/grid — DavincixGrid
+// davinci · ui/components/grid — DavinciGrid
 //
 // The thumbnail ListView (horizontal o vertical según ctx.gridOrientation;
 // scroll, highlight range, add animations, wheel handling) plus the card
@@ -16,6 +16,34 @@ Item {
 
     // Exposed so the picker root can drive focus/positioning.
     property alias view: listView
+
+    // Uniform navigation contract shared by every view mode.
+    property int currentIndex: listView.currentIndex
+    readonly property int count: listView.count
+
+    onCurrentIndexChanged: {
+        if (listView.currentIndex !== currentIndex)
+            listView.currentIndex = currentIndex;
+    }
+
+    Connections {
+        target: listView
+        function onCurrentIndexChanged() {
+            gridRoot.currentIndex = listView.currentIndex;
+        }
+    }
+
+    function centerView(index) {
+        // The header already reserves half a viewport, so index 0 is centered
+        // at contentX 0. positionViewAtIndex(Center) double-applies the header
+        // here and pushes the first card off the leading edge.
+        listView.forceLayout();
+        listView.currentIndex = index;
+    }
+    function positionViewAtIndex(index, mode) { listView.positionViewAtIndex(index, mode); }
+    function forceLayout() { listView.forceLayout(); }
+    function forceActiveFocus() { listView.forceActiveFocus(); }
+
 
     ListView {
         id: listView
@@ -43,7 +71,6 @@ Item {
         highlightMoveDuration: gridRoot.ctx.initialFocusSet ? 500 : 0
         focus: true
 
-        onCurrentIndexChanged: gridRoot.ctx.gridIndexChanged()
 
         // New items slide + fade in once focus has been snapped.
         add: Transition {
@@ -79,9 +106,10 @@ Item {
             onWheel: (wheel) => gridRoot.ctx.gridWheel(wheel)
         }
 
-        delegate: DavincixCard {
+        delegate: DavinciCard {
             ctx: gridRoot.ctx
             theme: gridRoot.theme
+            currentOverride: index === gridRoot.currentIndex
             onClicked: {
                 listView.currentIndex = index
                 gridRoot.ctx.applyWallpaper(String(fileName), String(fileName).startsWith("000_"))

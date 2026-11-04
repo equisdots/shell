@@ -58,7 +58,7 @@ the backdrop through** and light/dark palettes both behave.
 - [x] Bar popups (`ui/bar/popups/**`) — 8 files: outer card `radiusLg` +
       `surfaceContainerLow` + `outlineVariant`; inner tiles `radiusMd` +
       `surfaceContainer`; chips `radiusSm`; state layers.
-- [x] Panels (`ui/panels/**`) — davincix, focustime, idle, palette, plugins,
+- [x] Panels (`ui/panels/**`) — davinci, focustime, idle, palette, plugins,
       quickactions, scale, window-controls.
 - [x] Editor primitives (`ui/bar/edit/**`) and pages (`ui/bar/editor/**`):
       outer cards on the tokens, uniform `gap*` section spacing.

@@ -91,7 +91,7 @@ fi
 
 # Repo revisions (dots clones; empty when the system was not installed via dots).
 # A trailing * marks a dirty working tree.
-for r in shell hyprland palettes theme-sync davincix timex dots; do
+for r in shell hyprland palettes theme-sync davinci timex dots; do
     d="$HOME/.local/share/equisdots/$r"
     if [ -d "$d/.git" ]; then
         rev="$(git -C "$d" rev-parse --short HEAD 2>/dev/null)"

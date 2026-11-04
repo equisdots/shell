@@ -37,7 +37,7 @@ Running subsystems:
   overlays and edge-anchored widgets (launcher/panels) with rounded corners
   and morphs live with them (`ui/frame/Frame.qml`, `core/FrameGeometry.js`,
   `core/FrameBus.qml`; `settings.json → frame`; Theme → Frame page).
-- **Panels** — clipboard, davincix, file-search, focustime, idle,
+- **Panels** — clipboard, davinci, file-search, focustime, idle,
   quickactions, quicknotes, rss-reader, scale, window-controls.
 - **Lock**, **notifications** (server + history + popups) and the **floating
   widgets** (faces, redactor, loader).
@@ -67,7 +67,7 @@ Known pending:
 | `core/compositors/Hyprland.qml` | Hyprland backend of the compositor surface |
 | `core/scripts/watchers/` | Data-fetcher scripts the bar polls |
 | `ui/bar/` | Bar host, zones engine, modules, `Colors.qml`, `edit/` + `editor/`, `popups/` |
-| `ui/panels/` | Standalone widgets (davincix, clipboard, focustime, ...) |
+| `ui/panels/` | Standalone widgets (davinci, clipboard, focustime, ...) |
 | `Lock.qml` (root) | PAM session lock (alternate entry point) |
 | `ui/notifications/`, `ui/widgets/` | Notification layer, floating widgets |
 | `ui/settings/tabs/` | Shared settings tabs (host API) |
