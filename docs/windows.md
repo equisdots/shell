@@ -127,12 +127,12 @@ look as the Hyprland windows. Two pieces:
 ## Wallpaper subsystem (davinci)
 
 The wallpaper picker is the frontend of **davinci**, whose kernel lives in its
-own repository (`equisdots/davinci`; the old `davincix` clone and wrapper remain compatibility fallbacks):
+own repository (`equisdots/davinci`):
 
 - UI: `ui/panels/davinci/DavinciPicker.qml` composes its view components
   under `ui/panels/davinci/components/` (`grid/`, `filter/`) plus `lib/`.
   It only decides **what** to apply; the kernel decides **how**.
-- Kernel: resolved through `$DAVINCI_CLI` / `$DAVINCIX_CLI` or `~/.local/bin/davinci` (`davincix` remains a fallback; dots
+- Kernel: resolved through `$DAVINCI_CLI` or `~/.local/bin/davinci` (dots
   installs it from the repo: `set`, `fetch`, `current`, `thumbs`, `search`,
   `stop`, `import`, `slideshow`, `keys`, `paths`).
 - Callers: the picker itself, `qs_manager.sh` (`thumbs`, `current`),

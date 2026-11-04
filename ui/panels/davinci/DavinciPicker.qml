@@ -43,19 +43,15 @@ Item {
         return scaler.s(val);
     }
 
-    // Resolve the kernel CLI. New installs expose `davinci`; `davincix` stays
-    // as a compatibility fallback for older clones and wrappers. The probe runs once on open and leaves the
+    // Resolve the kernel CLI. The probe runs once on open and leaves the
     // optimistic ~/.local/bin/davinci path in place while it resolves.
     property string cli: Quickshell.env("HOME") + "/.local/bin/davinci"
 
     Process {
         id: cliProbe
         command: ["bash", "-c",
-            "for p in \"$HOME/.local/bin/davinci\" \"$HOME/.local/bin/davincix\" " +
-            "\"$HOME/.local/share/equisdots/davinci/davinci.sh\" " +
-            "\"$HOME/.local/share/equisdots/davinci/davincix.sh\" " +
-            "\"$HOME/.local/share/equisdots/davincix/davinci.sh\" " +
-            "\"$HOME/.local/share/equisdots/davincix/davincix.sh\"; do " +
+            "for p in \"$HOME/.local/bin/davinci\" " +
+            "\"$HOME/.local/share/equisdots/davinci/davinci.sh\"; do " +
             "[ -x \"$p\" ] && { printf '%s\\n' \"$p\"; exit 0; }; done; true"]
         running: false
         stdout: StdioCollector {
@@ -67,7 +63,7 @@ Item {
     }
 
     function resolveCli() {
-        let env = Quickshell.env("DAVINCI_CLI") || Quickshell.env("DAVINCIX_CLI") || "";
+        let env = Quickshell.env("DAVINCI_CLI") || "";
         if (env !== "") {
             window.cli = env;
             return;
@@ -336,7 +332,7 @@ Item {
     Settings {
         id: searchState
         location: "file://" + Quickshell.statePath("davinci-search.ini")
-        category: "QS_Davincix"
+        category: "QS_Davinci"
         property string query: ""
         property bool searched: false
         property string lastName: ""
@@ -508,7 +504,7 @@ Item {
         window.confirmTarget = "";
     }
 
-    // Import is CLI-only (davinci.sh import, with davincix.sh as fallback); the UI does not
+    // Import is CLI-only (davinci.sh import); the UI does not
     // expone para no depender de herramientas externas (rofi/zenity) que
     // rompen la estética del shell.
 
@@ -1327,18 +1323,11 @@ Item {
 
         window.loadMonitors();
 
-        // Load personalization and migrate the legacy "davincixView" block
-        // once. The new "davinci" section also owns favorites, transition,
-        // search provider and slideshow interval.
+        // Load the davinci personalization block. Older view keys are no
+        // longer read; the canonical settings live under "davinci".
         let raw = Config.rawSettings.davinci;
         if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
-            let legacy = Config.getSetting("davincixView", {});
-            let migrated = Object.assign({}, Personalization.defaults("davinci"), {
-                gridOrientation: legacy.orientation === "vertical" ? "vertical" : "horizontal",
-                cardShape: C.SHAPES.indexOf(legacy.shape) !== -1 ? legacy.shape : "rect",
-                favorites: Array.isArray(legacy.favorites) ? legacy.favorites : []
-            });
-            Config.setSetting("davinci", migrated);
+            Config.setSetting("davinci", Personalization.defaults("davinci"));
         }
         window.applyPersonalization();
         window.resolveCli();

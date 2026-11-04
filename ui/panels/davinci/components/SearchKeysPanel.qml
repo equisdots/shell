@@ -2,7 +2,7 @@
 // davinci · ui/components — SearchKeysPanel
 //
 // Panel de API keys de proveedores (las que pidan). Los datos vienen del
-// kernel (`davinci.sh keys list`, with `davincix.sh` as a compatibility fallback)
+// kernel (`davinci.sh keys list`)
 // `keys set`.
 //
 // Estilo: réplica del panel principal (DavinciFilterBar) — contenedor

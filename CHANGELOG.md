@@ -59,7 +59,7 @@ Dates use YYYY-MM-DD.
 ## [2026-10-02]
 
 ### Added
-- **Wallpaper picker: interactive scenes** (`ui/panels/davinci/`): `scn_<name>.jpg` thumbnails are listed like any wallpaper, marked with a `JS` badge and applied through the davincix kernel. `getCleanName()` resolves the `scn_` and `000_` prefixes and the flattened `__` paths used by nested media.
+- **Wallpaper picker: interactive scenes** (`ui/panels/davinci/`): `scn_<name>.jpg` thumbnails are listed like any wallpaper, marked with a `JS` badge and applied through the davinci kernel. `getCleanName()` resolves the `scn_` and `000_` prefixes and the flattened `__` paths used by nested media.
 - **New transition set**: the filter-bar transition selector offers the reveal effects (`pixelate`, `ripple`, `blinds`, `spiral`, `static`, `parallax`, `parallax-left`, `parallax-right`, `parallax-invert`, `melt`, `shatter`) alongside the existing ones.
 - **Palette widget** (`ui/panels/palette/PaletteWidget.qml`, `SUPER + SHIFT + P`): standalone palette switcher with the same X / Custom / User sections, filter and cards as the editor's Palette page. Selecting a palette applies it live (same `Config.setSetting` write) and closes the widget; its anchor is configurable through `settings.widgets.palette.position`. Also listed in the mascot dock.
 
@@ -67,7 +67,7 @@ Dates use YYYY-MM-DD.
 - Wallpaper deletion supports scene directories and flattened nested paths.
 
 ### Documentation
-- `docs/davincix-scenes.md` documents the picker integration (entry naming, badge, apply and delete flows).
+- `docs/davinci-scenes.md` documents the picker integration (entry naming, badge, apply and delete flows).
 
 ### Fixed
 - **Palette widget previews**: the second swatch row used `model: [2, 3]` with `colors[index]`, so every card repainted `color0`/`color1` on the bottom row; it now uses `model: [0, 1]` with `colors[2 + index]`, matching the editor's cards and the real palette files.
@@ -100,4 +100,4 @@ Dates use YYYY-MM-DD.
 - Mascots: `idleTimer` / `moodTimer` were referenced as root properties (`overlay.idleTimer`), which is not how QML ids resolve, so the idle-sleep restart threw on hover and never ran from cursor movement.
 - Settings menu (SUPER+SHIFT+D) did not open: a missing comma in the `BarEditor.qml` page map broke the whole component, so switching to it left the previous widget's frame on screen.
 - Calendar was unreachable: its `WindowRegistry.js` entry was on the same line as a `//` comment and got swallowed, so `getLayout("calendar")` returned null. `scripts/check.sh` now runs a semantic smoke test over the widget registry, since `node --check` cannot see this class of bug.
-- Mascots dock/page icons: 5-digit font codepoints were written as `\uXXXX` escapes, which QML parses as 4 hex digits plus a leftover character; the glyphs are now literal characters. The Timex card uses a clock, the pager uses plain chevrons and the Davincix card shows a live thumbnail of the current wallpaper (`current_wallpaper.png`) with the image glyph as fallback.
+- Mascots dock/page icons: 5-digit font codepoints were written as `\uXXXX` escapes, which QML parses as 4 hex digits plus a leftover character; the glyphs are now literal characters. The Timex card uses a clock, the pager uses plain chevrons and the Davinci card shows a live thumbnail of the current wallpaper (`current_wallpaper.png`) with the image glyph as fallback.
