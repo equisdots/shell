@@ -126,7 +126,7 @@ Item {
         { label: "timex", icon: "󰖐", url: "https://github.com/equisdots/timex" },
         { label: "dots", icon: "󰒓", url: "https://github.com/equisdots/dots" },
         { label: "palettes", icon: "✦", url: "https://github.com/equisdots/palettes" },
-        { label: "davincix", icon: "󰹑", url: "https://github.com/equisdots/davincix" },
+        { label: "davinci", icon: "󰹑", url: "https://github.com/equisdots/davinci" },
         { label: "theme-sync", icon: "󰏘", url: "https://github.com/equisdots/theme-sync" }
     ]
 
@@ -218,7 +218,7 @@ Item {
                             }
                         }
                         Text {
-                            text: "shell · hyprland · timex · palettes · davincix · theme-sync"
+                            text: "shell · hyprland · timex · palettes · davinci · theme-sync"
                             font.family: "Hack Nerd Font"; font.pixelSize: bar.s(12)
                             color: bar.colors.subtext0
                         }

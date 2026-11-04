@@ -334,7 +334,7 @@ Item {
     }
 
     // ════ Preview del wallpaper actual ════
-    // Misma fuente que la pantalla de bloqueo: davincix cachea en
+    // Misma fuente que la pantalla de bloqueo: davinci cachea en
     // wallpaper_picker/current_wallpaper.png lo último aplicado vía xwww.
     // FileView vigila el png: si el fondo cambia en caliente, la preview se
     // recarga sola (wpCacheBust fuerza un source distinto en la Image).
@@ -1364,7 +1364,7 @@ Item {
                                     }
                                 }
 
-                                // Botón de cambio: mismo toggle que SUPER+W (abre davincix)
+                                // Botón de cambio: mismo toggle que SUPER+W (abre davinci)
                                 Rectangle {
                                     Layout.alignment: Qt.AlignVCenter
                                     width: root.s(34); height: root.s(34); radius: root.s(Theme.radiusFull)

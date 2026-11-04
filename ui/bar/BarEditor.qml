@@ -529,6 +529,7 @@ Item {
             "s_startup":  "../settings/tabs/StartupTab.qml",
             // Páginas del editor (bar = root)
             "d_general":    "editor/GeneralPage.qml",
+            "d_davinci":    "editor/DavinciPage.qml",
             "d_widgets":    "editor/WidgetsPage.qml",
             "d_position":   "editor/PositionPage.qml",
             "d_style":      "editor/BarStylePage.qml",
@@ -560,6 +561,7 @@ Item {
             "s_monitors": sMonitorsLoader,
             "s_startup":  sStartupLoader,
             "d_general":    dGeneralLoader,
+            "d_davinci":    dDavinciLoader,
             "d_widgets":    dWidgetsLoader,
             "d_position":   dPositionLoader,
             "d_style":      dStyleLoader,
@@ -1529,6 +1531,16 @@ Item {
                     scale: 0.95 + (0.05 * root.introContent)
                     transform: Translate { y: s(20) * (1.0 - root.introContent) }
 
+                    Loader {
+                        id: dDavinciLoader
+                        anchors.fill: parent
+                        visible: root.currentPage === "d_davinci"
+                        opacity: visible ? 1.0 : 0.0
+                        property real slideY: visible ? 0 : root.s(10)
+                        Behavior on slideY { NumberAnimation { duration: 250; easing.type: Easing.OutQuart } }
+                        transform: Translate { y: dDavinciLoader.slideY }
+                        Behavior on opacity { NumberAnimation { duration: 250 } }
+                    }
                     Loader {
                         id: dWidgetsLoader
                         anchors.fill: parent

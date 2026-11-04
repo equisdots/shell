@@ -156,7 +156,7 @@ override); the generic `colors` map is normalized by `moduleConfig`.
 Ported subsystems without a dedicated module expose their options through
 `core/Personalization.js`, one settings section per subsystem:
 
-`lock`, `battery`, `volume`, `music`, `network`, `calendar`, `updater`, `applauncher`, `system-monitor`, `focustime`, `idle`, `scale`, `window-controls`, `widgets`
+`lock`, `battery`, `volume`, `music`, `network`, `calendar`, `updater`, `applauncher`, `system-monitor`, `focustime`, `idle`, `scale`, `window-controls`, `davinci`, `widgets`
 
 The `timex`, `rss-reader`, `clipboard`, `quicknotes` and `file-search`
 subsystems moved to plugins: their options (including the calendar popup's
@@ -169,7 +169,7 @@ entry point at the repo root launched by `lock.sh`):
 `revealDurationMs`, `clockPollMs`, `batteryPollMs`, `wallpaperBlur` (0–1),
 `wallpaperDim` (0–0.85, base-color overlay), `showClock`, `showBattery`,
 `showPower` and `clockScale` (0.6–1.6). It always follows the active palette
-and the current wallpaper (the davincix cache that xwww updates when a
+and the current wallpaper (the davinci cache that xwww updates when a
 wallpaper is applied).
 
 Each section mirrors the subsystem's defaults (sizes, timeouts, poll rates,
@@ -177,14 +177,27 @@ booleans). API: `defaults(section)`, `normalize(section, raw)`,
 `value(section, raw, key)`, `setOption(section, raw, key, value)`,
 `patch(section, raw, key, value)` (ready for `Config.updateJsonBulk`).
 
+The `davinci` section configures the wallpaper picker: `viewMode`
+(`coverflow`, `grid`, `library`, `stage`, `palette`), `gridColumns` (2–8),
+`gridOrientation`, `cardShape`, `roundedThumbs`, the `show*` visibility
+switches (`showFilterBar`, `showStatus`, `showMonitors`, `showColorFilters`,
+`showTransition`, `showSlideshow`, `showPalettePreview`, `showSearch`,
+`showKeys`, `showFilmstrip`, `showSidebar`, `showInspector`, `showMetadata`,
+`showShortcuts`), `transition`, `slideshowInterval`, `searchSource` and
+`searchKind`.
+The picker reads it through `Personalization.normalize("davinci", ...)` and
+persists changes with `Config.setSetting("davinci", ...)`; the Settings ->
+Widgets -> Davinci page edits the same section. Favourites remain in the same
+section as an array and are preserved by the editor.
+
 Wiring status: the option tables are defined and documented; components
 replace their hardcoded values with `value(...)` reads as they are validated
 in the testing phase (one line per option).
 
 ## Settings panel (BarEditor)
 
-The panel navigation is data-driven from `core/EditorNav.js`: five collapsible
-groups (Shell, Bar, Theme, Behavior, System) with their pages. `GROUPS` defines
+The panel navigation is data-driven from `core/EditorNav.js`: six collapsible
+groups (Shell, Bar, Theme, Behavior, Widgets, System) with their pages. `GROUPS` defines
 the defaults; everything else lives in `settings.editor`:
 
 ```json

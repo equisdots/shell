@@ -103,7 +103,7 @@ Item {
         }
     }
 
-    // davincix/xwww updates this file; glass-sync mirrors direct xwww changes.
+    // davinci/xwww updates this file; glass-sync mirrors direct xwww changes.
     FileView {
         path: root.wallpaperPath
         watchChanges: true

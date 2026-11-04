@@ -1,6 +1,6 @@
 # Wallpaper picker: interactive scenes
 
-The davincix picker is a thin frontend over the kernel CLI: the kernel lists
+The davinci picker is a thin frontend over the kernel CLI: the kernel lists
 thumbnails and applies wallpapers, the UI decides what to apply. Interactive
 scenes (`xwww` scene engine) are ordinary entries in that model.
 
@@ -15,7 +15,7 @@ Scenes appear in the thumbnail directory as `scn_<name>.jpg` (videos use the
 - `__` -> `/` (flattened nested paths).
 
 `applyWallpaper()` resolves the source path with `getCleanName()` and calls
-`davincix set <path> --monitors <outputs> --transition <selected>`. The kernel
+`davinci set <path> --monitors <outputs> --transition <selected>`. The kernel
 detects the scene directory and starts it with the chosen entry transition.
 
 ## Card badge
@@ -28,11 +28,11 @@ the thumbnail is the scene cover.
 
 - Applying works with a mouse click and `Return`; the transition selector in
   the filter bar applies to scenes too.
-- When the picker opens, the shell queries `davincix current --thumb-name` and
+- When the picker opens, the shell queries `davinci current --thumb-name` and
   passes it as the initial target, so the active scene is selected.
-- `Delete` moves the whole scene directory to the trash through `davincix rm`.
+- `Delete` moves the whole scene directory to the trash through `davinci rm`.
 
 ## Related documentation
 
-- `equisdots/davincix` - `docs/interactive-scenes.md` (kernel contract).
+- [`equisdots/davinci`](https://github.com/equisdots/davinci) - `docs/interactive-scenes.md` (kernel contract).
 - `equisdots/background` - `docs/interactive-scenes.md` (scene collection).

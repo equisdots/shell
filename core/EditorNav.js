@@ -68,6 +68,7 @@ var GROUPS = [
         label: "Widgets",
         icon: "󰍜",
         items: [
+            { id: "d_davinci", icon: "󰏘", label: "Davinci" },
             { id: "d_widgets", icon: "󰍜", label: "Popups" }
         ]
     },

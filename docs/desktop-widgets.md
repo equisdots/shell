@@ -116,11 +116,11 @@ to `layout.json.bak` and the screen starts empty.
 
 Image widgets pull from the wallpaper collection:
 
-- Gallery source: `$WALLPAPER_DIR` / `davincix` wallpaper dir
+- Gallery source: `$WALLPAPER_DIR` / `davinci` wallpaper dir
   (`~/.config/hypr/wallpapers` by default), image files only (jpg / jpeg / png
   / gif / webp — video wallpapers are excluded).
 - Thumbnails: the picker prefers `~/.cache/quickshell/wallpaper_picker/thumbs/`
-  (maintained by `qs_manager.sh` / davincix) and falls back to loading the file
+  (maintained by `qs_manager.sh` / davinci) and falls back to loading the file
   itself.
 - A manual path field accepts any absolute image path and validates it live;
   leaving it empty clears the widget's image (the face shows its placeholder).

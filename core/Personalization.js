@@ -92,6 +92,31 @@ var SECTIONS = {
         useAccent: false,   // tint with the module accent instead of content color
         size: 18
     },
+    "davinci": {
+        viewMode: "coverflow",       // coverflow | grid | library | stage | palette
+        gridColumns: 4,              // 2..8
+        gridOrientation: "horizontal", // horizontal | vertical (cover flow)
+        cardShape: "rect",           // rect | square | circle
+        roundedThumbs: true,
+        showFilterBar: true,
+        showStatus: true,
+        showMonitors: true,
+        showColorFilters: true,
+        showTransition: true,
+        showSlideshow: true,
+        showPalettePreview: true,
+        showSearch: true,
+        showKeys: true,
+        showFilmstrip: true,
+        showSidebar: true,
+        showInspector: true,
+        showMetadata: true,
+        showShortcuts: true,
+        transition: "random",
+        slideshowInterval: 300,      // seconds
+        searchSource: "ddg",         // ddg | wallhaven | pexels | pixabay
+        searchKind: "image"          // image | video
+    },
     "widgets": {
         redactorWidth: 1920,
         redactorHeight: 1080

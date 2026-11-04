@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// davincix · ui/lib — color
+// davinci · ui/lib — color
 //
 // Pure color helpers. hexBucket() maps a hex color into the named filter
 // bucket (Red/Green/Blue/.../Monochrome) used by the color filters.

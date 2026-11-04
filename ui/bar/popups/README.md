@@ -29,7 +29,7 @@ From xlinux, these popups are opened by bar modules and belong here:
 Widgets with keybinds but no bar module keep their own place under `panels/`
 (or a future top-level folder):
 
-- `wallpaper` (davincix) — already ported as `panels/davincix/`.
+- `wallpaper` (davinci) — already ported as `panels/davinci/`.
 - `clipboard` (SUPER+C), `focustime` (SUPER+SHIFT+T), `quicknotes` (SUPER+Y).
 - Settings-side UI (the bar editor, shared tabs) stays in `bar/editor/` and
   `settings/`.

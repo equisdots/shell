@@ -10,7 +10,7 @@ import Quickshell.Io
 // edge with a small refraction, then adds a tint, a specular rim and grain.
 // It is an approximation of Apple's Liquid Glass, not a copy of it.
 //
-// The wallpaper is the file davincix already writes (or glass-sync refreshes
+// The wallpaper is the file davinci already writes (or glass-sync refreshes
 // from xwww):
 //   $XDG_CACHE_HOME/quickshell/wallpaper_picker/current_wallpaper.png
 // The shader is `shaders/liquid_glass.frag.qsb`; it samples the wallpaper at
@@ -96,7 +96,7 @@ Item {
     // glass-sync: the wallpaper snapshot is rewritten when the wallpaper
     // changes. GlassBackdrop also revises the shell-free desktop capture for
     // Aurora; either change must make the Image reload.
-    // davincix/glass-sync replace the snapshot with tmp+mv, but the watcher can
+    // davinci/glass-sync replace the snapshot with tmp+mv, but the watcher can
     // still fire while an external writer is mid-write. Debounce the revision so
     // QML does not try to decode a partial PNG and log Image errors.
     FileView {

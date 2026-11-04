@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// davincix · ui/components — ConfirmDialog
+// davinci · ui/components — ConfirmDialog
 //
 // Overlay de confirmación genérico (dim + card con dos acciones). Emite
 // confirmed()/dismissed(); el picker root decide qué hacer en cada caso.

@@ -15,7 +15,7 @@ import "ui/bar"
 //
 // Same language as the login: the (current) user, a password field with an
 // expanding underline and a clock right below; the wallpaper currently set
-// (the davincix cache written when xwww applies it) is blurred behind.
+// (the davinci cache written when xwww applies it) is blurred behind.
 //
 // Personalizable from settings.json -> "lock" (see core/Personalization.js):
 // blur amount, dim, clock/battery/power visibility and clock scale. Palette
@@ -184,7 +184,7 @@ ShellRoot {
                     onFinished: inputField.forceActiveFocus()
                 }
 
-                // The wallpaper currently set: davincix caches what xwww applies.
+                // The wallpaper currently set: davinci caches what xwww applies.
                 readonly property string staticWallpaperPath: "file://" + paths.getCacheDir("wallpaper_picker") + "/current_wallpaper.png"
 
                 Image {
