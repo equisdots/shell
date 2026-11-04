@@ -13,7 +13,7 @@ Row {
 
     required property var ctx        // picker root
     required property var theme      // Colors instance
-    required property var settings   // Settings (QS_Davincix, legacy category)
+    required property var settings   // Settings (QS_Davinci, legacy category)
 
     height: ctx.s(44)
     spacing: Theme.gapMd
