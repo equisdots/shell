@@ -65,8 +65,10 @@ Item {
 
             Image {
                 anchors.fill: parent
-                source: root.currentItem ? root.currentItem.fileUrl : ""
-                sourceSize: Qt.size(1600, 900)
+                source: root.currentItem
+                    ? root.ctx.displaySource(String(root.currentItem.fileName), root.currentItem.fileUrl)
+                    : ""
+                sourceSize: Qt.size(1920, 1080)
                 asynchronous: true
                 fillMode: Image.PreserveAspectCrop
             }
@@ -283,7 +285,7 @@ Item {
                 Image {
                     anchors.fill: parent
                     source: fileUrl
-                    sourceSize: Qt.size(180, 100)
+                    sourceSize: Qt.size(240, 140)
                     asynchronous: true
                     fillMode: Image.PreserveAspectCrop
                 }

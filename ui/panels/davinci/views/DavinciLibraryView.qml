@@ -211,8 +211,10 @@ Item {
 
                     Image {
                         anchors.fill: parent
-                        source: root.currentItem ? root.currentItem.fileUrl : ""
-                        sourceSize: Qt.size(500, 320)
+                        source: root.currentItem
+                            ? root.ctx.displaySource(String(root.currentItem.fileName), root.currentItem.fileUrl)
+                            : ""
+                        sourceSize: Qt.size(900, 600)
                         asynchronous: true
                         fillMode: Image.PreserveAspectCrop
                     }

@@ -166,6 +166,7 @@ Item {
                 height: cardRoot.effSkew !== 0 ? ctx.itemHeight + ctx.s(30) : parent.height
                 fillMode: Image.PreserveAspectCrop
                 source: fileUrl
+                sourceSize: Qt.size(1440, 900)
                 asynchronous: true
                 visible: !cardRoot.isCircle   // en circle lo pinta el MultiEffect
 
