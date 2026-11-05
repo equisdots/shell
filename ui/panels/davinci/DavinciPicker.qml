@@ -411,6 +411,20 @@ Item {
         return clean.split("__").join("/");
     }
 
+    // Prefer the original wallpaper for the single focused preview, but keep
+    // the cached thumbnail for grids, search results, videos and scenes. The
+    // original is decoded at a bounded sourceSize so an 8K wallpaper does not
+    // allocate a full-size texture just to fill the stage.
+    function displaySource(fileName, thumbUrl) {
+        let name = String(fileName || "");
+        if (name === "" || !thumbUrl) return thumbUrl || "";
+        if (name.startsWith("000_") || name.startsWith("scn_")) return thumbUrl;
+        if (window.currentFilter === "Search") return thumbUrl;
+        let clean = window.getCleanName(name);
+        if (!clean) return thumbUrl;
+        return "file://" + window.srcDir + "/" + clean;
+    }
+
     function isDownloaded(name) {
         if (!name) return false;
         for (let i = 0; i < srcModel.count; i++) {

@@ -51,7 +51,7 @@ Rectangle {
             Image {
                 anchors.fill: parent
                 source: row.fileUrl
-                sourceSize: Qt.size(160, 100)
+                sourceSize: Qt.size(320, 200)
                 asynchronous: true
                 fillMode: Image.PreserveAspectCrop
             }

@@ -45,7 +45,7 @@ Item {
         Image {
             anchors.fill: parent
             source: tile.fileUrl
-            sourceSize: Qt.size(320, 240)
+            sourceSize: Qt.size(960, 720)
             asynchronous: true
             fillMode: Image.PreserveAspectCrop
         }
