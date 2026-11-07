@@ -153,6 +153,40 @@ Item {
             root.sh = h;
     }
 
+    // The master surface lives on the primary/preferred screen; the widget
+    // editor must edit the screen the user is actually working on. Hyprland
+    // knows the focused monitor, so override the Screen attached property
+    // once the focused monitor snapshot arrives.
+    function applyFocusedTarget(name) {
+        name = String(name || "").trim();
+        if (name === "")
+            return;
+        let old = root.targetScreen;
+        let scr = null;
+        for (let i = 0; i < (Quickshell.screens ? Quickshell.screens.length : 0); i++) {
+            let candidate = Quickshell.screens[i];
+            if (!candidate)
+                continue;
+            let n = (candidate.name && candidate.name !== "") ? String(candidate.name) : String(candidate.model || "");
+            if (n === name) {
+                scr = candidate;
+                break;
+            }
+        }
+        root.targetScreen = name;
+        root.safeTarget = name.replace(/[^a-zA-Z0-9_-]/g, "_");
+        if (scr) {
+            if (scr.width)
+                root.sw = Math.round(scr.width);
+            if (scr.height)
+                root.sh = Math.round(scr.height);
+        }
+        if (old !== "" && old !== name && WidgetSync.redactorOpen)
+            WidgetSync.setRedactMode(old, false);
+        WidgetSync.setRedactMode(name, true);
+        root.refreshModel();
+    }
+
     function extractConstraints(item) {
         if (!item)
             return null;
@@ -392,6 +426,7 @@ Item {
         let r = proxyModel.get(i);
         let e = root.effSize(r.wType, r.wVariant, r.wW, r.wH);
         root.selectedId = String(r.wId);
+        root.refreshToolbarState();
         root.gesture = {
             "id": String(r.wId),
             "mode": mode,
@@ -896,6 +931,7 @@ Item {
     }
     Component.onCompleted: {
         root.resolveTarget();
+        focusMonitor.running = true;
         // Make sure the thumbnails folder exists so FolderListModel settles.
         Quickshell.execDetached(["mkdir", "-p", root.thumbsDir]);
         WidgetSync.setRedactMode(root.targetScreen, true);
@@ -957,6 +993,16 @@ Item {
         }
 
         target: WidgetSync
+    }
+
+    Process {
+        id: focusMonitor
+
+        command: ["bash", "-c", "hyprctl monitors -j 2>/dev/null | jq -r '.[] | select(.focused == true) | .name' | head -n1"]
+        running: false
+        stdout: StdioCollector {
+            onStreamFinished: root.applyFocusedTarget(this.text)
+        }
     }
 
     Process {
@@ -1322,33 +1368,27 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         y: 48 + s(8)
         z: 10
-        width: Math.min(root.width - 2 * s(8), toolbarRow.implicitWidth + s(20))
-        height: s(46)
+        width: Math.min(root.width - 2 * s(8), s(1280))
+        height: s(132)
         radius: s(14)
         color: Qt.rgba(Theme.base.r, Theme.base.g, Theme.base.b, 0.94 * Theme.base.a)
         border.width: 1
         border.color: Theme.surface1
 
-        Flickable {
-            id: toolbarScroll
+        Flow {
+            id: toolbarFlow
 
-            anchors.fill: parent
-            anchors.margins: s(6)
-            contentWidth: toolbarRow.width
-            contentHeight: toolbarRow.height
-            clip: true
-            boundsBehavior: Flickable.StopAtBounds
-
-            Row {
-                id: toolbarRow
-
-                height: toolbarScroll.height
-                spacing: s(6)
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.margins: s(8)
+            height: s(116)
+            spacing: s(6)
+            flow: Flow.LeftToRight
 
                 // ---- Done: finish editing. Edits are already applied live; the
                 // real widgets (hidden while editing) reappear on the desktop. ----
                 Button {
-                    anchors.verticalCenter: parent.verticalCenter
                     width: s(86)
                     height: s(30)
                     hoverEnabled: true
@@ -1370,7 +1410,7 @@ Item {
                         verticalAlignment: Text.AlignVCenter
                     }
                 }
-                Rectangle { width: 1; height: s(22); anchors.verticalCenter: parent.verticalCenter; color: Theme.surface2 }
+                Rectangle { width: 1; height: s(22); color: Theme.surface2 }
 
                 // ---- add types ----
                 Repeater {
@@ -1379,8 +1419,7 @@ Item {
                     delegate: Button {
                         required property var modelData
 
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: s(88)
+                            width: s(88)
                         height: s(30)
                         hoverEnabled: true
                         enabled: true
@@ -1411,7 +1450,6 @@ Item {
 
                 // ---- widget card style (solid <-> glass) ----
                 Button {
-                    anchors.verticalCenter: parent.verticalCenter
                     width: s(104)
                     height: s(30)
                     hoverEnabled: true
@@ -1438,13 +1476,11 @@ Item {
                 Rectangle {
                     width: 1
                     height: s(22)
-                    anchors.verticalCenter: parent.verticalCenter
                     color: Theme.surface2
                 }
 
                 // ---- selection controls ----
                 Button {
-                    anchors.verticalCenter: parent.verticalCenter
                     width: s(126)
                     height: s(30)
                     hoverEnabled: true
@@ -1474,7 +1510,6 @@ Item {
                 }
 
                 Button {
-                    anchors.verticalCenter: parent.verticalCenter
                     width: s(96)
                     height: s(30)
                     hoverEnabled: true
@@ -1504,7 +1539,6 @@ Item {
                 }
 
                 Button {
-                    anchors.verticalCenter: parent.verticalCenter
                     width: s(108)
                     height: s(30)
                     hoverEnabled: true
@@ -1534,7 +1568,6 @@ Item {
                 }
 
                 Button {
-                    anchors.verticalCenter: parent.verticalCenter
                     width: s(112)
                     height: s(30)
                     hoverEnabled: true
@@ -1564,7 +1597,6 @@ Item {
                 }
 
                 Button {
-                    anchors.verticalCenter: parent.verticalCenter
                     width: s(96)
                     height: s(30)
                     hoverEnabled: true
@@ -1594,7 +1626,6 @@ Item {
                 }
 
                 Button {
-                    anchors.verticalCenter: parent.verticalCenter
                     width: s(80)
                     height: s(30)
                     hoverEnabled: true
@@ -1617,7 +1648,7 @@ Item {
                     }
 
                     contentItem: Text {
-                        text: "Delete"
+                        text: "󰆴  Delete"
                         font.family: Theme.fontFamily
                         font.pixelSize: s(10)
                         color: parent.enabled ? Theme.red : Theme.overlay1
@@ -1629,20 +1660,18 @@ Item {
                 Rectangle {
                     width: 1
                     height: s(22)
-                    anchors.verticalCenter: parent.verticalCenter
                     color: Theme.surface2
                 }
 
                 // ---- opacity ----
                 Item {
                     width: s(150)
-                    height: parent.height
+                    height: s(30)
                     visible: !!root.selRow
 
                     Text {
                         anchors.left: parent.left
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: "Opacity"
+                            text: "Opacity"
                         font.family: Theme.fontFamily
                         font.pixelSize: s(10)
                         color: Theme.overlay1
@@ -1655,8 +1684,7 @@ Item {
                         anchors.right: parent.right
                         anchors.leftMargin: s(44)
                         anchors.rightMargin: s(26)
-                        anchors.verticalCenter: parent.verticalCenter
-                        from: 10
+                            from: 10
                         to: 100
                         value: 100
                         onValueChanged: {
@@ -1707,8 +1735,7 @@ Item {
 
                     Text {
                         anchors.right: parent.right
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: Math.round(opacitySlider.value) + "%"
+                            text: Math.round(opacitySlider.value) + "%"
                         font.family: Theme.fontFamily
                         font.pixelSize: s(10)
                         color: Theme.text
@@ -1717,7 +1744,6 @@ Item {
 
                 // ---- clear all (two-pulse confirm) ----
                 Button {
-                    anchors.verticalCenter: parent.verticalCenter
                     width: s(96)
                     height: s(30)
                     hoverEnabled: true
@@ -1748,7 +1774,6 @@ Item {
                         verticalAlignment: Text.AlignVCenter
                     }
                 }
-            }
         }
     }
 
