@@ -5,6 +5,13 @@ Dates use YYYY-MM-DD.
 
 ## [2026-11-09]
 
+### Added
+- **Startup layout selector** in Settings → Monitors → Saved layout: **Saved**
+  (the default; `monitors.lua` registers `display-config` as `hl.monitor()`
+  rules at config load — boot/reload/hotplug, no polling), **Auto** (ignore the
+  saved layout, wildcard `highrr`/auto) and **Reconciler** (the legacy ~2 s
+  drift poll, for stubborn docks). Persists `settings.json → monitorsMode`.
+
 ### Fixed
 - **Keybind editor generated invalid Hyprland 0.57 binds**: stored mods were
   written verbatim (`$mainMod SHIFT_L + K`) — `$mainMod` is not a Lua variable

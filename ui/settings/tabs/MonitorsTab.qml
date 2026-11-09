@@ -47,6 +47,13 @@ Item {
     property color monSelectedResAccent: mauve
     property color monSelectedRateAccent: blue
     property int monChangeTrigger: 0
+    // Startup layout mode (settings.json → monitorsMode): the saved rules are
+    // registered by monitors.lua (static), additionally enforced by the legacy
+    // reconciler daemon, or ignored in favour of Hyprland's wildcard/auto.
+    property string monitorsMode: {
+        let _ = Config.rev;
+        return Config.getSetting("monitorsMode", "static");
+    }
     property var monResAccentColors: [root.pink, root.mauve, root.blue, root.teal, root.yellow, root.peach, root.green, root.red, root.sapphire, root.sky, root.lavender, root.flamingo]
     
     function getResLabel(w, h) {
@@ -1093,6 +1100,51 @@ Item {
                     spacing: root.s(Theme.gapMd)
 
                     MonSectionTitle { text: "Saved layout" }
+
+                    // Startup mode. "Saved" registers display-config rules in
+                    // monitors.lua (boot / reload / hotplug, no polling);
+                    // "Reconciler" adds the legacy ~2 s drift poll; "Auto"
+                    // ignores the saved file and lets Hyprland place screens.
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: root.s(Theme.gapSm)
+                        Text {
+                            Layout.preferredWidth: root.s(84)
+                            text: "At startup"
+                            font.family: "Hack Nerd Font"; font.pixelSize: root.s(11)
+                            color: root.subtext0
+                        }
+                        MonPill {
+                            label: "Saved"
+                            active: root.monitorsMode === "static"
+                            accent: root.green
+                            onActivated: Config.setSetting("monitorsMode", "static")
+                        }
+                        MonPill {
+                            label: "Auto"
+                            active: root.monitorsMode === "off"
+                            accent: root.yellow
+                            onActivated: Config.setSetting("monitorsMode", "off")
+                        }
+                        MonPill {
+                            label: "Reconciler"
+                            active: root.monitorsMode === "reconciler"
+                            accent: root.peach
+                            onActivated: Config.setSetting("monitorsMode", "reconciler")
+                        }
+                        Item { Layout.fillWidth: true }
+                    }
+                    Text {
+                        Layout.fillWidth: true
+                        text: root.monitorsMode === "static"
+                            ? "Saved applies the layout from compositor config (boot, reload and hotplug)."
+                            : root.monitorsMode === "reconciler"
+                                ? "Reconciler also re-applies drift every ~2 s. Use it only if a dock misbehaves."
+                                : "Auto ignores the saved layout and lets Hyprland arrange screens (highrr + auto)."
+                        font.family: "Hack Nerd Font"; font.pixelSize: root.s(10)
+                        color: root.subtext0
+                        wrapMode: Text.WordWrap
+                    }
 
                     RowLayout {
                         Layout.fillWidth: true
