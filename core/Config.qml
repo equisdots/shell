@@ -106,6 +106,21 @@ Item {
         }
     }
 
+    // Stored keybind mods come from the capture UI as space-separated tokens
+    // ("$mainMod SHIFT_L") and, in older settings, with '&'. Hyprland 0.57 has
+    // no $mainMod variable and requires every modifier separated by " + "
+    // (a bare "SUPER SHIFT + K" is rejected as an unknown key).
+    function luaBindMods(mods) {
+        let out = [];
+        let parts = (mods || "").replace(/&/g, " ").split(/[\s+]+/);
+        for (let i = 0; i < parts.length; i++) {
+            let m = parts[i];
+            if (!m) continue;
+            out.push(m === "$mainMod" ? "SUPER" : m);
+        }
+        return out.join(" + ");
+    }
+
     function saveAllKeybinds(bindsArray) {
         config.keybindsData = bindsArray;
         config.setSetting("keybinds", bindsArray);
@@ -120,10 +135,13 @@ Item {
             let b = bindsArray[i];
             if (!b.key || !b.dispatcher) continue;
             let flags = [];
-            if (b.type === "bindl") flags.push("locked = true");
+            if (b.type === "binde") flags.push("repeating = true");
+            else if (b.type === "bindl") flags.push("locked = true");
             else if (b.type === "bindel") { flags.push("locked = true"); flags.push("repeating = true"); }
             else if (b.type === "bindm") flags.push("mouse = true");
-            let keys = (b.mods ? b.mods.replace(/&/g, " ").trim() + " + " : "") + b.key;
+            else if (b.type === "bindr") flags.push("release = true");
+            let mods = config.luaBindMods(b.mods);
+            let keys = (mods !== "" ? mods + " + " : "") + b.key;
             let dsp = config.luaDispatcherFor(b.dispatcher, b.command);
             if (!dsp) {
                 lines.push("-- [skipped] " + b.dispatcher + " " + (b.command || "") + " (no Lua equivalent)");

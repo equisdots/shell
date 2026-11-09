@@ -6,6 +6,12 @@ Dates use YYYY-MM-DD.
 ## [2026-11-09]
 
 ### Fixed
+- **Keybind editor generated invalid Hyprland 0.57 binds**: stored mods were
+  written verbatim (`$mainMod SHIFT_L + K`) — `$mainMod` is not a Lua variable
+  and space-separated modifiers are rejected as an unknown key. The generator
+  now expands `$mainMod` to `SUPER` and joins every modifier with `" + "`; it
+  also maps the `binde` type to `repeating = true` (it was silently dropped)
+  and accepts `bindr` as `release = true`.
 - **Desktop widgets piled up and destroyed their saved layout at login**:
   `WidgetLoader` clamped every widget to the live screen and persisted the
   clamped geometry while Hyprland was still at the `monitors.lua` wildcard
