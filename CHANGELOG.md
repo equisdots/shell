@@ -3,6 +3,21 @@
 All notable changes to the equisdots shell are documented here.
 Dates use YYYY-MM-DD.
 
+## [2026-11-09]
+
+### Fixed
+- **Desktop widgets piled up and destroyed their saved layout at login**:
+  `WidgetLoader` clamped every widget to the live screen and persisted the
+  clamped geometry while Hyprland was still at the `monitors.lua` wildcard
+  bootstrap scale (`scale = "auto"` resolves to the panel's default scale,
+  1.5 here) — `restore-monitors.sh` applies the saved scale (0.75) a few
+  seconds later, so the clamp happened in a 1280x720 logical screen and the
+  damaged positions were written back to `layout.json`. The loader now:
+  keeps the raw persisted layout as the geometry source of truth, never saves
+  automatic clamps, holds the layout (bounded to 5 s) until it fits the live
+  screen, and re-derives geometry from the raw file when the screen logical
+  size changes (scale/mode/hotplug). User edits still persist via `changed()`.
+
 ## [2026-11-01]
 
 ### Added
