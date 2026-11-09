@@ -11,6 +11,12 @@ import "../../core"
 // ~/.local/state/quickshell/widgets/<safeMonitorName>/layout.json with
 // atomic writes (tmp + mv) debounced ~300 ms.
 //
+// The persisted file is the source of truth for geometry. At login Hyprland
+// exposes the wildcard bootstrap scale first and restore-monitors.sh applies
+// the saved scale a few seconds later; the loader therefore holds the layout
+// (bounded) until it fits the live screen, and re-derives clamped values from
+// the raw file on later geometry changes. Automatic clamps are never saved.
+//
 // The bus (WidgetSync singleton) dispatches redactor commands to the loader
 // whose screen matches; this loader also answers redactor queries
 // (redactorInfo / layoutForRedactor).
@@ -34,6 +40,24 @@ Item {
     readonly property string safeMonitorName: monitorName.replace(/[^a-zA-Z0-9_-]/g, "_")
     readonly property string stateDir: Quickshell.env("HOME") + "/.local/state/quickshell/widgets/" + loaderRoot.safeMonitorName
     readonly property string stateFile: loaderRoot.stateDir + "/layout.json"
+
+    // Raw layout as persisted on disk: the source of truth for geometry. The
+    // model may hold clamped/on-screen values while the compositor is at a
+    // different scale than the one the layout was authored at; those
+    // display-only values are NEVER written back (a bootstrap scale used to
+    // pile every widget up and destroy the saved arrangement).
+    property var persistedLayout: []
+    property bool layoutLoaded: false
+    property bool layoutPending: false
+    property double layoutPendingSince: 0
+
+    // Live screen logical size. Hyprland changes it when the monitor scale is
+    // applied (monitors.lua wildcard first, restore-monitors.sh shortly after).
+    readonly property int screenW: loaderRoot.screen && loaderRoot.screen.width ? loaderRoot.screen.width : 0
+    readonly property int screenH: loaderRoot.screen && loaderRoot.screen.height ? loaderRoot.screen.height : 0
+
+    onScreenWChanged: loaderRoot.geometryChanged()
+    onScreenHChanged: loaderRoot.geometryChanged()
 
     property bool isRedacting: false
 
@@ -98,13 +122,22 @@ Item {
         };
     }
 
-    // Model mutated: keep the redactor bus in sync and persist (debounced).
+    // Model mutated by a user/redactor op: this IS the new persisted intent.
     // Every op* ends in changed(), so this is the single path that schedules
     // persistence — no caller may mutate the model without persisting.
     function changed() {
+        loaderRoot.persistedLayout = loaderRoot.snapshot();
         loaderRoot.refreshRedactorInfo();
         WidgetSync.notifyWidgetsChanged();
         loaderRoot.scheduleSave();
+    }
+
+    // Notify consumers WITHOUT touching the persisted layout. Used by the
+    // load/re-apply paths: automatic clamps for a transient screen size must
+    // never overwrite the user's saved arrangement.
+    function notifyOnly() {
+        loaderRoot.refreshRedactorInfo();
+        WidgetSync.notifyWidgetsChanged();
     }
 
     // --- persistence (atomic write: printf base64 -> tmp, then mv) ----------------
@@ -164,6 +197,46 @@ Item {
         saveTimer.restart();
     }
 
+    // Bootstrap wait: restore-monitors.sh applies the saved scale a few seconds
+    // after hyprland.start. Until then the wildcard rule may expose a different
+    // logical size; hold the layout (bounded to 5 s) instead of clamping every
+    // widget into the bootstrap resolution.
+    Timer {
+        id: pendingTimer
+        interval: 300
+        repeat: true
+        onTriggered: loaderRoot.tryApplyLayout()
+    }
+
+    // Screen geometry changed after load (scale/mode/hotplug): re-derive the
+    // model from the persisted raw layout, never the other way around.
+    Timer {
+        id: geometryTimer
+        interval: 300
+        onTriggered: {
+            loaderRoot.reapplyPersistedGeometry();
+            loaderRoot.notifyOnly();
+        }
+    }
+
+    function geometryChanged() {
+        if (loaderRoot.layoutPending) {
+            loaderRoot.tryApplyLayout();
+        } else if (loaderRoot.layoutLoaded) {
+            geometryTimer.restart();
+        }
+    }
+
+    function tryApplyLayout() {
+        if (!loaderRoot.layoutPending) return;
+        if (!loaderRoot.layoutFitsScreen() && (Date.now() - loaderRoot.layoutPendingSince) < 5000)
+            return;
+        loaderRoot.layoutPending = false;
+        pendingTimer.stop();
+        loaderRoot.buildModelFromPersisted();
+        loaderRoot.layoutLoaded = true;
+    }
+
     // --- model ops (called by the bus / redactor) -----------------------------------
     function uniqueId() {
         return "w_" + Date.now().toString(36) + "_" + Math.floor(Math.random() * 0xfffff).toString(36);
@@ -204,6 +277,113 @@ Item {
         let nx = Math.min(Math.max(0, Math.floor(num(x, 16))), Math.max(0, sw - nw));
         let ny = Math.min(Math.max(0, Math.floor(num(y, 16))), Math.max(0, sh - nh));
         return { x: nx, y: ny, w: nw, h: nh };
+    }
+
+    // --- persisted-layout helpers ---------------------------------------------------
+    function rawValue(item, key, legacy) {
+        let v = item[key] !== undefined ? item[key] : item[legacy];
+        return parseFloat(v);
+    }
+
+    function rawItemFor(id) {
+        let target = String(id);
+        for (let i = 0; i < loaderRoot.persistedLayout.length; i++) {
+            let it = loaderRoot.persistedLayout[i] || {};
+            if (String(it.id || it.wId) === target) return it;
+        }
+        return null;
+    }
+
+    // Does the persisted layout fit the live screen? While Hyprland is still
+    // at its bootstrap scale (monitors.lua wildcard before restore-monitors.sh
+    // applies the saved layout) this is false; the layout then stays pending
+    // instead of being clamped into a resolution it was not authored for.
+    function layoutFitsScreen() {
+        let sw = loaderRoot.screenWidth();
+        let sh = loaderRoot.screenHeight();
+        let reg = loaderRoot.registryOf();
+        for (let i = 0; i < loaderRoot.persistedLayout.length; i++) {
+            let it = loaderRoot.persistedLayout[i] || {};
+            let type = it.type || it.wType || "time";
+            let def = reg.defaultSize(type);
+            let num = (v, fb) => {
+                let n = parseFloat(v);
+                return isNaN(n) || n <= 0 ? fb : n;
+            };
+            let x = Math.max(0, Math.floor(num(it.x !== undefined ? it.x : it.wX, 16)));
+            let y = Math.max(0, Math.floor(num(it.y !== undefined ? it.y : it.wY, 16)));
+            let w = Math.max(16, Math.floor(num(it.w !== undefined ? it.w : it.wWidth, def.w)));
+            let h = Math.max(16, Math.floor(num(it.h !== undefined ? it.h : it.wHeight, def.h)));
+            if (x + w > sw || y + h > sh) return false;
+        }
+        return true;
+    }
+
+    // Re-derive the model geometry from persistedLayout. Used when the screen
+    // logical size changes after load (scale/mode/hotplug); it never saves.
+    function reapplyPersistedGeometry() {
+        if (loaderRoot.persistedLayout.length === 0) return;
+        let reg = loaderRoot.registryOf();
+        for (let i = 0; i < widgetsModel.count; i++) {
+            let row = widgetsModel.get(i);
+            let it = loaderRoot.rawItemFor(row.wId);
+            if (!it) continue;
+            let def = reg.defaultSize(row.wType || it.type || it.wType || "time");
+            let g = loaderRoot.sanitizeGeometry(
+                loaderRoot.rawValue(it, "x", "wX"),
+                loaderRoot.rawValue(it, "y", "wY"),
+                loaderRoot.rawValue(it, "w", "wWidth"),
+                loaderRoot.rawValue(it, "h", "wHeight"),
+                def.w, def.h);
+            if (row.wX !== g.x) widgetsModel.setProperty(i, "wX", g.x);
+            if (row.wY !== g.y) widgetsModel.setProperty(i, "wY", g.y);
+            if (row.wWidth !== g.w) widgetsModel.setProperty(i, "wWidth", g.w);
+            if (row.wHeight !== g.h) widgetsModel.setProperty(i, "wHeight", g.h);
+        }
+    }
+
+    // Rebuild the model from persistedLayout (display-clamped, never saved).
+    function buildModelFromPersisted() {
+        let data = loaderRoot.persistedLayout;
+        let reg = loaderRoot.registryOf();
+        widgetsModel.clear();
+        for (let i = 0; i < data.length; i++) {
+            let item = data[i] || {};
+            let itemId = item.id || item.wId;
+            if (!itemId) {
+                itemId = loaderRoot.uniqueId();
+                // Keep the generated id on the raw entry so reapply can match
+                // this row; it reaches disk only after the next user edit.
+                item.id = String(itemId);
+            }
+            let type = item.type || item.wType || "time";
+            let variant = item.variant || item.wVariant || reg.defaultVariant(type);
+            let defSize = reg.defaultSize(type);
+            let g = loaderRoot.sanitizeGeometry(
+                loaderRoot.rawValue(item, "x", "wX"),
+                loaderRoot.rawValue(item, "y", "wY"),
+                loaderRoot.rawValue(item, "w", "wWidth"),
+                loaderRoot.rawValue(item, "h", "wHeight"),
+                defSize.w, defSize.h);
+            let op = parseFloat(item.opacity !== undefined ? item.opacity : item.wOpacity);
+            if (isNaN(op)) op = 1.0;
+            op = Math.max(0.0, Math.min(1.0, op));
+            let rot = parseFloat(item.rotation !== undefined ? item.rotation : item.wRotation);
+            if (isNaN(rot)) rot = 0;
+            widgetsModel.append({
+                wId: String(itemId),
+                wType: type,
+                wVariant: variant,
+                wX: g.x,
+                wY: g.y,
+                wWidth: g.w,
+                wHeight: g.h,
+                wOpacity: op,
+                wRotation: rot,
+                wImagePath: String(item.imagePath || item.wImagePath || item.path || "")
+            });
+        }
+        loaderRoot.notifyOnly();
     }
 
     // Random non-overlapping position for a new widget of the given size.
@@ -365,66 +545,18 @@ Item {
                     // Unreadable layout file: move it aside (bash mv, atomic)
                     // so the corruption is preserved for inspection but stops
                     // shadowing future saves, then continue with an empty
-                    // layout — never leave the model silently empty with the
-                    // broken file still in place. changed() below re-creates
-                    // layout.json from the (empty) model.
+                    // layout. The next user edit re-creates layout.json.
                     let bak = loaderRoot.stateFile + ".bak";
                     Quickshell.execDetached(["bash", "-c", "if [ -f '" + loaderRoot.stateFile + "' ]; then mv -f '" + loaderRoot.stateFile + "' '" + bak + "'; fi"]);
                 }
-                let reg = loaderRoot.registryOf();
-                let needSave = false;
-                widgetsModel.clear();
-                for (let i = 0; i < data.length; i++) {
-                    let item = data[i] || {};
-                    let itemId = item.id || item.wId;
-                    if (!itemId) {
-                        itemId = loaderRoot.uniqueId();
-                        needSave = true;
-                    }
-                    let type = item.type || item.wType || "time";
-                    let variant = item.variant || item.wVariant || reg.defaultVariant(type);
-                    let defSize = reg.defaultSize(type);
-                    let rawX = parseFloat(item.x !== undefined ? item.x : item.wX);
-                    let rawY = parseFloat(item.y !== undefined ? item.y : item.wY);
-                    let rawW = parseFloat(item.w !== undefined ? item.w : item.wWidth);
-                    let rawH = parseFloat(item.h !== undefined ? item.h : item.wHeight);
-                    // Clamp against the screen + a 16 px minimum; NaN values
-                    // fall back to the type default size / 16. Face-level
-                    // fine clamping happens in Widget.updateEffectiveSize().
-                    let g = loaderRoot.sanitizeGeometry(rawX, rawY, rawW, rawH, defSize.w, defSize.h);
-                    let op = parseFloat(item.opacity !== undefined ? item.opacity : item.wOpacity);
-                    let rot = parseFloat(item.rotation !== undefined ? item.rotation : item.wRotation);
-                    if (isNaN(rawX) || isNaN(rawY) || isNaN(rawW) || isNaN(rawH)
-                        || rawX !== g.x || rawY !== g.y || rawW !== g.w || rawH !== g.h) needSave = true;
-                    if (isNaN(op)) {
-                        op = 1.0;
-                        needSave = true;
-                    } else {
-                        op = Math.max(0.0, Math.min(1.0, op));
-                        if (op !== parseFloat(item.opacity !== undefined ? item.opacity : item.wOpacity)) needSave = true;
-                    }
-                    if (isNaN(rot)) {
-                        rot = 0;
-                        needSave = true;
-                    }
-                    widgetsModel.append({
-                        wId: String(itemId),
-                        wType: type,
-                        wVariant: variant,
-                        wX: g.x,
-                        wY: g.y,
-                        wWidth: g.w,
-                        wHeight: g.h,
-                        wOpacity: op,
-                        wRotation: rot,
-                        wImagePath: String(item.imagePath || item.wImagePath || item.path || "")
-                    });
-                }
-                // Persist the cleaned layout right away when anything was
-                // normalized (missing ids, NaN/out-of-range values, off-screen
-                // geometry) so the state file matches the running model.
-                if (needSave) loaderRoot.saveNow();
-                loaderRoot.changed();
+                // Keep the raw persisted layout as the geometry source of
+                // truth. The model is built from it with display-only clamps;
+                // this path never writes to disk.
+                loaderRoot.persistedLayout = data;
+                loaderRoot.layoutPending = true;
+                loaderRoot.layoutPendingSince = Date.now();
+                loaderRoot.tryApplyLayout();
+                if (loaderRoot.layoutPending) pendingTimer.start();
             }
         }
     }
