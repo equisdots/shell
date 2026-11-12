@@ -33,8 +33,15 @@ PanelWindow {
         return _notifMap[uid] || null;
     }
 
-    function removeNotif(uid) {
+    function removeNotif(uid, reason) {
+        let n = _notifMap[uid];
         delete _notifMap[uid];
+        if (n && n.tracked) {
+            try {
+                if (reason === "expired") n.expire();
+                else if (reason !== "closed") n.dismiss();
+            } catch (e) {}
+        }
         popupWindow.removeRequested(uid);
     }
 
@@ -159,16 +166,22 @@ PanelWindow {
 
                 property int effectiveTimeout: {
                     var n = popupWindow.getNotif(model.uid);
-                    if (!n || n.timeout === undefined) return Notifications.defaultTimeout(Config.rawSettings.notifications);
-                    if (n.timeout === 0) return 0;
-                    if (n.timeout > 0) return n.timeout;
-                    return 5000;
+                    if (!n) return Notifications.defaultTimeout(Config.rawSettings.notifications);
+                    // Quickshell 0.3.2 exposes expireTimeout in seconds. Fall
+                    // back to the legacy millisecond timeout when present.
+                    var sec = Number(n.expireTimeout);
+                    if (isFinite(sec) && sec > 0) return Math.max(1, Math.round(sec * 1000));
+                    var ms = Number(n.timeout);
+                    if (isFinite(ms) && ms > 0) return Math.max(1, Math.round(ms));
+                    // 0/undefined: use the shell default so action notifications
+                    // cannot wait forever (the client is dismissed on expiry).
+                    return Notifications.defaultTimeout(Config.rawSettings.notifications);
                 }
 
                 Connections {
                     target: delegateRoot.sourceNotif || null
                     function onClosed() {
-                        popupWindow.removeNotif(delegateRoot.popupUid);
+                        popupWindow.removeNotif(delegateRoot.popupUid, "closed");
                     }
                 }
 
@@ -229,7 +242,7 @@ PanelWindow {
                     Timer {
                         interval: delegateRoot.effectiveTimeout > 0 ? delegateRoot.effectiveTimeout : 5000
                         running: delegateRoot.effectiveTimeout > 0
-                        onTriggered: popupWindow.removeNotif(delegateRoot.popupUid)
+                        onTriggered: popupWindow.removeNotif(delegateRoot.popupUid, "expired")
                     }
 
 
@@ -249,7 +262,7 @@ PanelWindow {
                                     }
                                 }
                             }
-                            Qt.callLater(function() { popupWindow.removeNotif(delegateRoot.popupUid); });
+                            Qt.callLater(function() { popupWindow.removeNotif(delegateRoot.popupUid, "dismiss"); });
                         }
 
                         Rectangle {
@@ -388,7 +401,7 @@ PanelWindow {
                                                     }
                                                 }
                                             }
-                                            Qt.callLater(function() { popupWindow.removeNotif(delegateRoot.popupUid); });
+                                            Qt.callLater(function() { popupWindow.removeNotif(delegateRoot.popupUid, "dismiss"); });
                                         }
                                     }
                                 }
