@@ -8,6 +8,7 @@ import Quickshell.Wayland
 import Quickshell.Services.Notifications
 import "../core"
 import "../core/WindowRegistry.js" as Registry
+import "../core/Notifications.js" as Notifications
 
 import "./notifications" as Notifs
 
@@ -212,6 +213,7 @@ PanelWindow {
     // =========================================================
     ListModel { id: globalNotificationHistory }
     ListModel { id: activePopupsModel }
+    readonly property int notificationHistoryLimit: 200
 
     property var liveNotifs: ({})
     property int _popupCounter: 0
@@ -224,11 +226,70 @@ PanelWindow {
         onTriggered: masterWindow.isStartup = false
     }
 
+    function notificationIsActive(uid) {
+        for (let i = 0; i < activePopupsModel.count; i++) {
+            if (activePopupsModel.get(i).uid === uid) return true;
+        }
+        return false;
+    }
+
+    // Remove the popup, its live object and (if still tracked) the
+    // corresponding server notification. NotificationPopups does the normal
+    // dismiss/expire before emitting removeRequested; this is the safety net
+    // for cap evictions and direct removals.
     function removePopup(uid) {
         for (let i = 0; i < activePopupsModel.count; i++) {
             if (activePopupsModel.get(i).uid === uid) {
                 activePopupsModel.remove(i);
                 break;
+            }
+        }
+        let n = masterWindow.liveNotifs[uid];
+        if (n) {
+            delete masterWindow.liveNotifs[uid];
+            if (n.tracked) {
+                try { n.dismiss(); } catch (e) {}
+            }
+        }
+    }
+
+    // The history is a bounded overview; entries are cheap data, but their
+    // live QObjects must not outlive the notification. Keep live objects for
+    // active popups only and dismiss anything evicted from the history.
+    function trimNotificationHistory() {
+        while (globalNotificationHistory.count > masterWindow.notificationHistoryLimit) {
+            let old = globalNotificationHistory.get(globalNotificationHistory.count - 1);
+            globalNotificationHistory.remove(globalNotificationHistory.count - 1);
+            if (!old || old.uid === undefined) continue;
+            if (masterWindow.notificationIsActive(old.uid)) continue;
+            let n = masterWindow.liveNotifs[old.uid];
+            if (n) {
+                delete masterWindow.liveNotifs[old.uid];
+                if (n.tracked) {
+                    try { n.dismiss(); } catch (e) {}
+                }
+            }
+        }
+    }
+
+    // Honor notifications.maxVisible (default 3). Evictions go through the
+    // popup so the client receives a close reason and stops waiting.
+    function trimActivePopups() {
+        let cap = Notifications.maxVisible(Config.rawSettings ? Config.rawSettings.notifications : null);
+        if (!(cap > 0)) return;
+        while (activePopupsModel.count > cap) {
+            let uid = activePopupsModel.get(0).uid;
+            osdPopups.removeNotif(uid, "evicted");
+            // Defensive fallback if the popup model was not in its local map.
+            if (activePopupsModel.count > 0 && activePopupsModel.get(0).uid === uid) {
+                activePopupsModel.remove(0);
+                let n = masterWindow.liveNotifs[uid];
+                if (n) {
+                    delete masterWindow.liveNotifs[uid];
+                    if (n.tracked) {
+                        try { n.dismiss(); } catch (e) {}
+                    }
+                }
             }
         }
     } 
@@ -264,17 +325,18 @@ PanelWindow {
                 "body":        n.body     !== "" ? n.body     : "",
                 "iconPath":    n.appIcon  !== "" ? n.appIcon  : "",
                 "actionsJson": JSON.stringify(extractedActions),
-                "uid":         currentUid,
-                "notif":       n
+                "uid":         currentUid
             };
 
-            // Always silently add to the history list
+            // Always add to the bounded history overview.
             globalNotificationHistory.insert(0, notifData);
+            masterWindow.trimNotificationHistory();
 
-            // --- CHANGED: Only trigger the visual popup if we are past the startup phase ---
+            // --- Only trigger the visual popup past the startup phase ---
             if (!masterWindow.isStartup) {
                 activePopupsModel.append(notifData);
                 osdPopups.storeNotif(currentUid, n);
+                masterWindow.trimActivePopups();
             }
         }
     }

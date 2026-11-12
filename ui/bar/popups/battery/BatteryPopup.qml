@@ -306,6 +306,8 @@ Item {
             if (notifModel.get(i).appName === appName) {
                 let uid = notifModel.get(i).uid;
                 if (window.liveNotifs && window.liveNotifs[uid]) {
+                    let n = window.liveNotifs[uid];
+                    if (n && n.tracked) { try { n.dismiss(); } catch (e) {} }
                     delete window.liveNotifs[uid];
                 }
                 notifModel.remove(i);
@@ -600,6 +602,8 @@ Item {
                                     for (let i = 0; i < window.notifModel.count; i++) {
                                         if (window.notifModel.get(i).uid === model.uid) {
                                             if (window.liveNotifs && window.liveNotifs[model.uid]) {
+                                                let n = window.liveNotifs[model.uid];
+                                                if (n && n.tracked) { try { n.dismiss(); } catch (e) {} }
                                                 delete window.liveNotifs[model.uid];
                                             }
                                             window.notifModel.remove(i);
