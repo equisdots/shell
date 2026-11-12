@@ -1368,8 +1368,11 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         y: 48 + s(8)
         z: 10
-        width: Math.min(root.width - 2 * s(8), s(1280))
-        height: s(132)
+        width: Math.min(root.width - 2 * s(8), s(1600))
+        // The Flow wraps whenever a plugin adds/removes widget types. The
+        // toolbar must grow with it: a fixed height used to push the extra
+        // rows over the canvas (and over each other).
+        height: Math.max(s(54), toolbarFlow.implicitHeight + s(16))
         radius: s(14)
         color: Qt.rgba(Theme.base.r, Theme.base.g, Theme.base.b, 0.94 * Theme.base.a)
         border.width: 1
@@ -1382,7 +1385,7 @@ Item {
             anchors.right: parent.right
             anchors.top: parent.top
             anchors.margins: s(8)
-            height: s(116)
+            height: implicitHeight
             spacing: s(6)
             flow: Flow.LeftToRight
 
@@ -1419,11 +1422,15 @@ Item {
                     delegate: Button {
                         required property var modelData
 
-                            width: s(88)
+                        width: s(104)
                         height: s(30)
                         hoverEnabled: true
                         enabled: true
                         onClicked: root.addWidgetOfType(modelData.id)
+
+                        ToolTip.visible: hovered
+                        ToolTip.text: modelData.name
+                        ToolTip.delay: 450
 
                         background: Rectangle {
                             radius: s(8)
@@ -1444,6 +1451,8 @@ Item {
                             color: parent.enabled ? Theme.text : Theme.overlay1
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
+                            elide: Text.ElideRight
+                            wrapMode: Text.NoWrap
                         }
                     }
                 }
