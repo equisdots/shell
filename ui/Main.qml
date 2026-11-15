@@ -218,14 +218,6 @@ PanelWindow {
     property var liveNotifs: ({})
     property int _popupCounter: 0
 
-    // --- NEW: Startup Grace Period Flag & Timer ---
-    property bool isStartup: true
-    Timer {
-        interval: 500
-        running: true
-        onTriggered: masterWindow.isStartup = false
-    }
-
     function notificationIsActive(uid) {
         for (let i = 0; i < activePopupsModel.count; i++) {
             if (activePopupsModel.get(i).uid === uid) return true;
@@ -332,12 +324,11 @@ PanelWindow {
             globalNotificationHistory.insert(0, notifData);
             masterWindow.trimNotificationHistory();
 
-            // --- Only trigger the visual popup past the startup phase ---
-            if (!masterWindow.isStartup) {
-                activePopupsModel.append(notifData);
-                osdPopups.storeNotif(currentUid, n);
-                masterWindow.trimActivePopups();
-            }
+            // Always surface the popup: a reload must not swallow the first
+            // notification (the old 500 ms startup gate only kept it in history).
+            activePopupsModel.append(notifData);
+            osdPopups.storeNotif(currentUid, n);
+            masterWindow.trimActivePopups();
         }
     }
 

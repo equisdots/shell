@@ -6,6 +6,9 @@ Dates use YYYY-MM-DD.
 ## [2026-11-15]
 
 ### Fixed
+- **Notifications after a shell reload**: removed the 500 ms startup gate that
+  kept the first notification in history without showing its popup. A reload
+  (manual or from `dots update`) now surfaces the next notification normally.
 - **Notification theme following**: the popup background now uses the active
   palette background in both opaque and liquid-glass modes (the glass tint was
   hardcoded to `#101018`). The primary action accent follows the active accent
