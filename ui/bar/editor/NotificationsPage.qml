@@ -235,6 +235,24 @@ Item {
                     ToggleCard {
                         width: parent.width
                         bar: root.bar
+                        icon: "󰏘"
+                        label: "Follow active theme"
+                        checked: (nLayout.nTick, nLayout.nCfg().followTheme !== false)
+                        onToggled: nLayout.nSet("followTheme", !(nLayout.nCfg().followTheme !== false))
+                    }
+
+                    EditLabel {
+                        bar: root.bar
+                        width: parent.width
+                        text: "Uses the active palette accent for notification actions. Off keeps the legacy blue accent."
+                        font.pixelSize: bar.s(11)
+                        color: bar.colors.subtext0
+                        wrapMode: Text.WordWrap
+                    }
+
+                    ToggleCard {
+                        width: parent.width
+                        bar: root.bar
                         icon: "󰂛"
                         label: "Do Not Disturb"
                         checked: root.dnd

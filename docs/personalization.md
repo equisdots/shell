@@ -127,9 +127,11 @@ through the pure API in `core/Notifications.js`):
 | `radius` / `padding` | 14 / 12 | Popup corner radius and inner padding |
 | `timeout` | 5000 | Default dismiss time in ms for notifications without their own (0 = never) |
 | `maxVisible` | 3 | How many popups stay on screen (0 = no limit) |
+| `followTheme` | `true` | Primary action accent uses the active palette; `false` keeps the legacy blue (`color6`) accent. The popup background always uses the active palette background, including the liquid-glass tint. |
 
 API (`core/Notifications.js`): `normalize(raw)`, `layout(raw, scale)`,
-`defaultTimeout(raw)`, `maxVisible(raw)`, `setOption(raw, key, value)`.
+`defaultTimeout(raw)`, `maxVisible(raw)`, `followTheme(raw)`,
+`setOption(raw, key, value)`.
 
 
 ### Workspaces color slots

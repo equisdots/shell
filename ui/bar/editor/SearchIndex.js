@@ -80,7 +80,8 @@ function pageEntries() {
         { page: "d_input", label: "Natural scroll",        desc: "Touchpad natural scrolling",             icon: "\uF7A4", color: "mauve",    y: 240 },
         { page: "d_input", label: "Disable while typing",  desc: "Touchpad off while typing",              icon: "\uF11C", color: "sapphire", y: 280 },
         // Notifications (d_notifications)
-        { page: "d_notifications", label: "Do Not Disturb", desc: "Silences notification popups",         icon: "󰂛", color: "mauve",    y: 60 },
+        { page: "d_notifications", label: "Follow active theme", desc: "Use the active palette accent for notification actions", icon: "󰏘", color: "mauve", y: 100 },
+        { page: "d_notifications", label: "Do Not Disturb", desc: "Silences notification popups",         icon: "󰂛", color: "mauve",    y: 180 },
         // Guide (d_guide) — popup de la X embebido tal cual (sistema/paletas/about)
         { page: "d_guide", label: "About", desc: "System info, GitHub, palettes and repos", icon: "\uF05A", color: "mauve", y: 0 },
         // Páginas de barra (resumen; y = 0 → arriba). Iconos = navGroups.

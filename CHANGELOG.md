@@ -3,6 +3,17 @@
 All notable changes to the equisdots shell are documented here.
 Dates use YYYY-MM-DD.
 
+## [2026-11-15]
+
+### Fixed
+- **Notification theme following**: the popup background now uses the active
+  palette background in both opaque and liquid-glass modes (the glass tint was
+  hardcoded to `#101018`). The primary action accent follows the active accent
+  by default (`notifications.followTheme`); previously it used the `color6`
+  blue role unconditionally, so fresh installs looked blue even after switching
+  themes. Settings → Notifications exposes the toggle; turning it off keeps the
+  legacy blue accent.
+
 ## [2026-11-09]
 
 ### Added
