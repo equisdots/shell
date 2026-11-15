@@ -19,7 +19,8 @@ var DEFAULTS = {
     radius: 14,
     padding: 12,
     timeout: 5000,    // ms for notifications without an explicit timeout (0 = never)
-    maxVisible: 3     // how many popups stay on screen (0 = no limit)
+    maxVisible: 3,    // how many popups stay on screen (0 = no limit)
+    followTheme: true // primary action accent follows the active palette
 };
 
 // Normalized section: every known option with a valid value (defaults fill in).
@@ -28,7 +29,11 @@ function normalize(raw) {
     let src = (raw && typeof raw === "object" && !Array.isArray(raw)) ? raw : {};
     for (let key in DEFAULTS) {
         let v = src[key];
-        out[key] = (typeof v === "number" && v >= 0) ? v : DEFAULTS[key];
+        if (typeof DEFAULTS[key] === "boolean") {
+            out[key] = (typeof v === "boolean") ? v : DEFAULTS[key];
+        } else {
+            out[key] = (typeof v === "number" && v >= 0) ? v : DEFAULTS[key];
+        }
     }
     return out;
 }
@@ -61,6 +66,10 @@ function defaultTimeout(raw) {
 
 function maxVisible(raw) {
     return normalize(raw).maxVisible;
+}
+
+function followTheme(raw) {
+    return normalize(raw).followTheme;
 }
 
 // New section with one option changed (for the editor / API users).

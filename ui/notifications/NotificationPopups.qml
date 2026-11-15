@@ -51,6 +51,9 @@ PanelWindow {
     // (settings.json "notifications" section).
     property var layoutConfig: (Config.rev, Notifications.layout(Config.rawSettings.notifications,
                                                     Registry.getScale(Screen.width, Screen.height, popupWindow.uiScale)))
+    // settings.json notifications.followTheme (default true): the primary
+    // action uses the active palette accent; false keeps the legacy color6 blue.
+    readonly property bool followTheme: (Config.rev, Notifications.followTheme(Config.rawSettings.notifications))
 
     WlrLayershell.namespace: "qs-popups"
     WlrLayershell.layer: WlrLayer.Overlay
@@ -219,7 +222,7 @@ PanelWindow {
                     id: popupCard
                     anchors.fill: parent
                     radius: popupWindow.layoutConfig.radius
-                    color: _theme.liquidGlass ? "transparent" : _theme.base
+                    color: _theme.liquidGlass ? "transparent" : _theme.background
                     border.color: _theme.surface1
                     border.width: 1
                     clip: true
@@ -231,7 +234,7 @@ PanelWindow {
                         topRightRadius: popupCard.radius
                         bottomLeftRadius: popupCard.radius
                         bottomRightRadius: popupCard.radius
-                        tintColor: "#101018"
+                        tintColor: _theme.background
                         tintAmount: 0.38
                         bezel: Math.max(8, Math.min(22, Math.min(width, height) * 0.28))
                         frost: Math.max(6, Math.min(16, Math.min(width, height) * 0.22))
@@ -358,17 +361,19 @@ PanelWindow {
                                     radius: 13 * popupWindow.uiScale
 
                                     property bool isPrimary: index === 0
+                                    readonly property color actionAccent: popupWindow.followTheme
+                                        ? _theme.accent : _theme.blue
 
                                     color: {
-                                        if (!_theme.blue) return "transparent";
+                                        if (!actionAccent) return "transparent";
                                         if (isPrimary) {
-                                            return actionMouseArea.containsMouse ? _theme.blue : Qt.darker(_theme.blue, 1.2)
+                                            return actionMouseArea.containsMouse ? actionAccent : Qt.darker(actionAccent, 1.2)
                                         } else {
                                             return actionMouseArea.containsMouse ? _theme.surface2 : _theme.surface1
                                         }
                                     }
 
-                                    border.color: (!_theme.blue) ? "transparent" : (isPrimary ? _theme.blue : _theme.surface2)
+                                    border.color: (!actionAccent) ? "transparent" : (isPrimary ? actionAccent : _theme.surface2)
                                     border.width: 1
 
                                     Behavior on color { ColorAnimation { duration: 150 } }
