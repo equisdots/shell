@@ -3,6 +3,13 @@
 All notable changes to the equisdots shell are documented here.
 Dates use YYYY-MM-DD.
 
+## [2026-11-18]
+
+### Added
+
+- The davinci transition selector lists the xwww `ink`, `paint`, `contagion` and
+  `waterdrop` transitions.
+
 ## [2026-11-15]
 
 ### Fixed
